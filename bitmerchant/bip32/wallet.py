@@ -54,8 +54,10 @@ def new_wallet(key=None):
     You need to save the private key somewhere. It is OK to just write
     it down on a piece of paper! Don't share this key with anyone!
 
-        >>> private, public = wallet.get_keys()
-        >>> print(private)
+        >>> my_wallet = new_wallet(key='correct horse battery staple')
+        >>> private, public = my_wallet.get_keys()
+        >>> private  # doctest: +NORMALIZE_WHITESPACE
+        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiVYJ3gvoGtazbgKYs1v8rByDYg4LPpQPL6jHjwwhv7DWhWjyXo'
     """
     key = key or _random_wallet_secret()
     return Wallet.from_master_secret(key)
@@ -107,12 +109,12 @@ class Wallet(wallet.Wallet):
     def get_keys(self):
         """Get the keys necessary to rebuild this Wallet.
 
-        >>> wallet = Wallet(key='correct horse battery staple')
+        >>> wallet = new_wallet(key='correct horse battery staple')
         >>> private, public = wallet.get_keys()
-        >>> print(private)
-        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiVYJ3gvoGtazbgKYs1v8rByDYg4LPpQPL6jHjwwhv7DWhWjyXo'  # nopep8
-        >>> print(public)
-        u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4qNp9LpztfGPdCWGmtAqKbgxNAVKxbNxoosK1aQxS995eweD5vi3sfWnz'  # nopep8
+        >>> private
+        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiVYJ3gvoGtazbgKYs1v8rByDYg4LPpQPL6jHjwwhv7DWhWjyXo'
+        >>> public
+        u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4qNp9LpztfGPdCWGmtAqKbgxNAVKxbNxoosK1aQxS995eweD5vi3sfWnz'
         """
         private = self.get_private_key()
         public = self.get_public_key()
