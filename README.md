@@ -49,7 +49,7 @@ NEVER connected to the internet.
 ### Generating master keys
 
 ```python
-from bitmerchant.bip32.master import create_master_keys
+from bitmerchant.bip32 import create_master_keys
 
 private_key, public_key = create_master_keys()
 ```
