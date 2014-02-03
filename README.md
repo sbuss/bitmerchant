@@ -1,3 +1,9 @@
+# WORK IN PROGRESS
+
+The README below is a goal I an working toward. This library is not ready
+for public use.
+
+# Bitmerchant
 Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
 merchant uses.
 
