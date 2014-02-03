@@ -5,12 +5,13 @@ import random
 from pycoin import wallet
 
 
-def _random_wallet_key(size=1024, chars=string.printable):
+def _random_wallet_secret(size=1024, chars=string.printable):
     """Generate a random key for a bitcoin wallet.
 
     TODO: Verify that this is a good idea.
     """
-    return sha256(''.join(random.choice(chars) for x in xrange(size))).digest()
+    return (sha256(''.join(random.choice(chars) for x in xrange(size)))
+            .hexdigest())
 
 
 def create_address(master_pub_key, address_id):
@@ -33,33 +34,34 @@ def create_address(master_pub_key, address_id):
     public key of your wallet as a parameter to this method.
     """
     wallet = Wallet.from_public_key(master_pub_key)
-    return wallet.subkey(address_id).bitcoin_address
+    return wallet.subkey(address_id).bitcoin_address()
+
+
+def new_wallet(key=None):
+    """Create a new BIP32 compliant Wallet.
+
+    Args:
+        key: The key to use to generate this wallet. It may be a long
+            string. Do not use a phrase from a book or song, as that will
+            be guessed and is not secure. My advice is to not supply this
+            argument and let me generate a new random key for you.
+
+    **WARNING**:
+
+    When creating a new wallet you MUST back up the private key. If
+    you don't then any coins sent to your address will be LOST FOREVER.
+
+    You need to save the private key somewhere. It is OK to just write
+    it down on a piece of paper! Don't share this key with anyone!
+
+        >>> private, public = wallet.get_keys()
+        >>> print(private)
+    """
+    key = key or _random_wallet_secret()
+    return Wallet.from_master_secret(key)
 
 
 class Wallet(wallet.Wallet):
-    def __init__(self, key=None):
-        """Create a new BIP32 compliant Wallet.
-
-        Args:
-            key: The key to use to generate this wallet. It may be a long
-                string. Do not use a phrase from a book or song, as that will
-                be guessed and is not secure. My advice is to not supply this
-                argument and let me generate a new random key for you.
-
-        **WARNING**:
-
-        When creating a new wallet you MUST back up the private key. If
-        you don't then any coins sent to your address will be LOST FOREVER.
-
-        You need to save the private key somewhere. It is OK to just write
-        it down on a piece of paper! Don't share this key with anyone!
-
-            >>> private, public = wallet.get_keys()
-            >>> print(private)
-        """
-        key = key or _random_wallet_key()
-        return self.from_master_key(key)
-
     def get_private_key(self):
         """Get the private key for this Wallet.
 
