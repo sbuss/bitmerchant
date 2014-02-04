@@ -72,7 +72,7 @@ class _Wallet(wallet.Wallet):
         master public key of your wallet as a parameter to this method.
         """
         wallet = cls.from_public_key(master_pub_key)
-        return wallet.subkey(address_id).bitcoin_address()
+        return wallet.subkey(address_id).address()
 
     @classmethod
     def from_private_key(cls, key):
