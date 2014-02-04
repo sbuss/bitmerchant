@@ -1,7 +1,7 @@
 try:
     from setuptools import setup
 except ImportError:
-    from distutils import setup
+    from distutils import setup  # NOQA
 
 
 def load_readme():
