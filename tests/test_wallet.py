@@ -4,11 +4,13 @@ from bitmerchant.bip32.wallet import new_wallet
 from bitmerchant.bip32.wallet import Wallet
 
 
-class TestWallet(TestCase):
+class _TestWalletBase(TestCase):
     def setUp(self):
         self.key = 'correct horse battery staple'
         self.wallet = new_wallet(self.key)
 
+
+class TestWallet(_TestWalletBase):
     def test_private_key_export(self):
         self.assertEqual(
             self.wallet.get_private_key(),
@@ -30,7 +32,45 @@ class TestWallet(TestCase):
     def test_wallet_from_public_key(self):
         pubkey = self.wallet.get_public_key()
         wallet = Wallet.from_public_key(pubkey)
+        self.assertEqual(pubkey, wallet.get_public_key())
+        self.assertFalse(wallet.is_private)
+
+
+class TestWalletComparisons(_TestWalletBase):
+    def test_eq_same_key(self):
+        """Wallets created with the same master key should be equal."""
+        wallet = new_wallet(self.key)
+        self.assertEqual(self.wallet, wallet)
+        self.assertFalse(self.wallet != wallet)
+
+    def test_eq_same_private_key(self):
+        """Wallets created via a private key should be equal."""
+        wallet = Wallet.from_private_key(self.wallet.get_private_key())
+        self.assertEqual(self.wallet, wallet)
+        self.assertFalse(self.wallet != wallet)
+
+    def test_not_equal_diff_key(self):
+        """Wallets created with different master keys are not equal."""
+        key = "%s1" % self.key
+        wallet = new_wallet(key)
+        self.assertNotEqual(self.wallet, wallet)
+        self.assertFalse(self.wallet == wallet)
+
+    def test_not_equal_private_public_key(self):
+        pubkey = self.wallet.get_public_key()
+        wallet = Wallet.from_public_key(pubkey)
         self.assertNotEqual(self.wallet, wallet)
         self.assertEqual(wallet.get_public_key(),
                          self.wallet.get_public_key())
-        self.assertFalse(wallet.is_private)
+
+    def test_fail_lt(self):
+        self.assertRaises(TypeError, self.wallet.__lt__, self.wallet)
+
+    def test_fail_le(self):
+        self.assertRaises(TypeError, self.wallet.__le__, self.wallet)
+
+    def test_fail_gt(self):
+        self.assertRaises(TypeError, self.wallet.__gt__, self.wallet)
+
+    def test_fail_ge(self):
+        self.assertRaises(TypeError, self.wallet.__ge__, self.wallet)
