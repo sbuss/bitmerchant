@@ -120,6 +120,22 @@ class Wallet(wallet.Wallet):
         public = self.get_public_key()
         return private, public
 
+    def __eq__(self, other):
+        eq = (isinstance(other, self.__class__) and
+              self.get_keys() == other.get_keys() and
+              self.is_private == other.is_private and
+              self.public_pair == other.public_pair and
+              self.chain_code == other.chain_code and
+              self.depth == other.depth and
+              self.parent_fingerprint == other.parent_fingerprint and
+              self.child_number == other.child_number)
+
+        if self.is_private:
+            eq = eq and (
+                self.secret_exponent == other.secret_exponent)
+
+        return eq
+
 
 class PrivateKeyException(Exception):
     """Exception for problems with a private key."""
