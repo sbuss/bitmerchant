@@ -1,10 +1,10 @@
 import random
 from unittest import TestCase
 
-from bitmerchant.bip32.wallet import _random_wallet_secret
-from bitmerchant.bip32.wallet import create_address
-from bitmerchant.bip32.wallet import new_wallet
-from bitmerchant.bip32.wallet import Wallet
+from bitmerchant.wallet.bip32 import _random_wallet_secret
+from bitmerchant.wallet.bip32 import create_address
+from bitmerchant.wallet.bip32 import new_wallet
+from bitmerchant.wallet.bip32 import Wallet
 
 
 class _TestWalletBase(TestCase):
