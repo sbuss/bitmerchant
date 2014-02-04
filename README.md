@@ -28,9 +28,9 @@ If you haven't created a wallet yet, do so like this:
 be able to retrieve the coins sent to your public addresses.
 
 ```python
-from bitmerchant.bip32 import wallet
+from bitmerchant.wallet import new_wallet
 
-my_wallet = wallet.new_wallet()
+my_wallet = new_wallet()
 
 # Then back up your private key
 
@@ -51,7 +51,7 @@ BIP32 wallets allow you to generate public addresses without revealing your
 private key. 
 
 ```python
-from bitmerchant.bip32 import wallet
+from bitmerchant.wallet import create_address
 from myapp.settings import master_public_key
 
 payment_address = wallet.create_address(master_public_key, user_id)
@@ -95,9 +95,9 @@ ipython
 Once inside your ipython shell, generate a new wallet:
 
 ```python
-from bitmerchant.bip32 import wallet
+from bitmerchant.wallet import new_wallet
 
-my_wallet = wallet.new_wallet()
+my_wallet = new_wallet()
 private_key, public_key = my_wallet.get_keys()
 
 print(private_key)
