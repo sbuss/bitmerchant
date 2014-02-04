@@ -1,3 +1,3 @@
-from bitmerchant.wallet.bip32 import create_address  # NOQA
-from bitmerchant.wallet.bip32 import new_wallet  # NOQA
-from bitmerchant.wallet.bip32 import Wallet  # NOQA
+from bitmerchant.wallet.bip32 import BitcoinWallet  # NOQA
+from bitmerchant.wallet.bip32 import LitecoinWallet  # NOQA
+from bitmerchant.wallet.bip32 import DogecoinWallet  # NOQA
