@@ -118,3 +118,11 @@ class TestRandomSecret(TestCase):
         self.assertNotEqual(result1, _random_wallet_secret())
         random.seed(1234567)
         self.assertEqual(result1, _random_wallet_secret())
+
+
+def load_tests(loader, tests, ignore):
+    """Add doctests to the test suite."""
+    import doctest
+    from bitmerchant.bip32 import wallet
+    tests.addTests(doctest.DocTestSuite(wallet))
+    return tests
