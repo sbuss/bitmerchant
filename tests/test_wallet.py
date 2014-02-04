@@ -1,5 +1,8 @@
+import random
 from unittest import TestCase
 
+from bitmerchant.bip32.wallet import _random_wallet_secret
+from bitmerchant.bip32.wallet import create_address
 from bitmerchant.bip32.wallet import new_wallet
 from bitmerchant.bip32.wallet import Wallet
 
@@ -10,7 +13,7 @@ class _TestWalletBase(TestCase):
         self.wallet = new_wallet(self.key)
 
 
-class TestWallet(_TestWalletBase):
+class TestWalletKeys(_TestWalletBase):
     def test_private_key_export(self):
         self.assertEqual(
             self.wallet.get_private_key(),
@@ -74,3 +77,44 @@ class TestWalletComparisons(_TestWalletBase):
 
     def test_fail_ge(self):
         self.assertRaises(TypeError, self.wallet.__ge__, self.wallet)
+
+
+class TestAddressCreation(_TestWalletBase):
+    def setUp(self):
+        super(TestAddressCreation, self).setUp()
+        self.pubkey = self.wallet.get_public_key()
+
+    def test_creation_same_result(self):
+        self.assertEqual(
+            create_address(self.pubkey, 1),
+            create_address(self.pubkey, 1))
+
+    def test_same_as_calling_subkey_directly(self):
+        direct = self.wallet.subkey(1).bitcoin_address()
+        loaded = create_address(self.pubkey, 1)
+        self.assertEqual(direct, loaded)
+
+    def test_different(self):
+        self.assertNotEqual(
+            create_address(self.pubkey, 1),
+            create_address(self.pubkey, 2))
+
+    def test_big_number(self):
+        number = 18375283
+        direct = self.wallet.subkey(number).bitcoin_address()
+        loaded = create_address(self.pubkey, number)
+        self.assertEqual(direct, loaded)
+
+
+class TestRandomSecret(TestCase):
+    def test_subsequent_calls_different_results(self):
+        result1 = _random_wallet_secret()
+        result2 = _random_wallet_secret()
+        self.assertNotEqual(result1, result2)
+
+    def test_random_seed(self):
+        random.seed(1234567)
+        result1 = _random_wallet_secret()
+        self.assertNotEqual(result1, _random_wallet_secret())
+        random.seed(1234567)
+        self.assertEqual(result1, _random_wallet_secret())
