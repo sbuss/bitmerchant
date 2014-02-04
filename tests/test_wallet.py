@@ -123,6 +123,6 @@ class TestRandomSecret(TestCase):
 def load_tests(loader, tests, ignore):
     """Add doctests to the test suite."""
     import doctest
-    from bitmerchant.bip32 import wallet
-    tests.addTests(doctest.DocTestSuite(wallet))
+    from bitmerchant.wallet import bip32
+    tests.addTests(doctest.DocTestSuite(bip32))
     return tests
