@@ -147,6 +147,24 @@ class Wallet(wallet.Wallet):
 
         return eq
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def _no_ordering(self):
+        raise TypeError("Objects of this type have no ordering")
+
+    def __lt__(self, other):
+        self._no_ordering()
+
+    def __le__(self, other):
+        self._no_ordering()
+
+    def __gt__(self, other):
+        self._no_ordering()
+
+    def __ge__(self, other):
+        self._no_ordering()
+
 
 class PrivateKeyException(Exception):
     """Exception for problems with a private key."""
