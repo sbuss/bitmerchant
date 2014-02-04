@@ -109,14 +109,25 @@ class Wallet(wallet.Wallet):
     def get_keys(self):
         """Get the keys necessary to rebuild this Wallet.
 
+        If this is called on a public-only wallet, the first element of
+        the returned tuple will be None. Note, though, that
+        self.get_private_key() will have actually thrown an error in this
+        case.
+
         >>> wallet = new_wallet(key='correct horse battery staple')
         >>> private, public = wallet.get_keys()
         >>> private  # doctest: +ELLIPSIS
         u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unka...'
         >>> public  # doctest: +ELLIPSIS
         u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4q...'
+        >>> Wallet.from_public_key(wallet.get_public_key()).get_keys()
+        ... # doctest: +ELLIPSIS
+        (None, u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4q...')
         """
-        private = self.get_private_key()
+        try:
+            private = self.get_private_key()
+        except wallet.PublicPrivateMismatchError:
+            private = None
         public = self.get_public_key()
         return private, public
 
