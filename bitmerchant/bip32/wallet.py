@@ -56,8 +56,8 @@ def new_wallet(key=None):
 
         >>> my_wallet = new_wallet(key='correct horse battery staple')
         >>> private, public = my_wallet.get_keys()
-        >>> private  # doctest: +NORMALIZE_WHITESPACE
-        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiVYJ3gvoGtazbgKYs1v8rByDYg4LPpQPL6jHjwwhv7DWhWjyXo'
+        >>> private  # doctest: +ELLIPSIS
+        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unka...'
     """
     key = key or _random_wallet_secret()
     return Wallet.from_master_secret(key)
@@ -111,10 +111,10 @@ class Wallet(wallet.Wallet):
 
         >>> wallet = new_wallet(key='correct horse battery staple')
         >>> private, public = wallet.get_keys()
-        >>> private
-        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiVYJ3gvoGtazbgKYs1v8rByDYg4LPpQPL6jHjwwhv7DWhWjyXo'
-        >>> public
-        u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4qNp9LpztfGPdCWGmtAqKbgxNAVKxbNxoosK1aQxS995eweD5vi3sfWnz'
+        >>> private  # doctest: +ELLIPSIS
+        u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unka...'
+        >>> public  # doctest: +ELLIPSIS
+        u'xpub661MyMwAqRbcFFHmcATE1PtLXFRkKaoz8ZxAeWXTrmzi1dLF2L4q...'
         """
         private = self.get_private_key()
         public = self.get_public_key()
