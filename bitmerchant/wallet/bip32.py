@@ -217,6 +217,48 @@ class BitcoinWallet(_Wallet):
     TEST_PRIVATE_KEY_PREFIX = 239
 
 
+class PeercoinWallet(BitcoinWallet):
+    """Wallet for Peercoin."""
+
+
+class PrimecoinWallet(BitcoinWallet):
+    """Wallet for PrimeCoin."""
+
+
+class ZetacoinWallet(BitcoinWallet):
+    """Wallet for Zetacoin."""
+
+
+class LitecoinWallet(_Wallet):
+    """Wallet for Litecoin."""
+
+    # public keys / script:
+    # https://github.com/litecoin-project/litecoin/blob/88e2a2e8988b89f905145bdc9af8c34028d0af90/src/base58.h#L275  # nopep8
+    # private keys:
+    # https://github.com/litecoin-project/litecoin/blob/88e2a2e8988b89f905145bdc9af8c34028d0af90/src/base58.h#L403  # nopep8
+    PUBKEY_HASH_PREFIX = 48
+    SCRIPT_HASH_PREFIX = 5
+    PRIVATE_KEY_PREFIX = PUBKEY_HASH_PREFIX + 128
+    TEST_PUBKEY_HASH_PREFIX = 111
+    TEST_SCRIPT_HASH_PREFIX = 196
+    TEST_PRIVATE_KEY_PREFIX = TEST_PUBKEY_HASH_PREFIX + 128
+
+
+class DogecoinWallet(_Wallet):
+    """Wallet for Dogecoin."""
+
+    # public keys / script:
+    # https://github.com/dogecoin/dogecoin/blob/25d26b4848267372ef5b9f6f91480d244afd6884/src/base58.h#L281  # nopep8
+    # private keys:
+    # https://github.com/dogecoin/dogecoin/blob/25d26b4848267372ef5b9f6f91480d244afd6884/src/base58.h#L409  # nopep8
+    PUBKEY_HASH_PREFIX = 30
+    SCRIPT_HASH_PREFIX = 22
+    PRIVATE_KEY_PREFIX = PUBKEY_HASH_PREFIX + 128
+    TEST_PUBKEY_HASH_PREFIX = 113
+    TEST_SCRIPT_HASH_PREFIX = 196
+    TEST_PRIVATE_KEY_PREFIX = TEST_PUBKEY_HASH_PREFIX + 12
+
+
 class PrivateKeyException(Exception):
     """Exception for problems with a private key."""
 

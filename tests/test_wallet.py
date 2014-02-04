@@ -3,6 +3,10 @@ from unittest import TestCase
 
 from bitmerchant.wallet.bip32 import _Wallet
 from bitmerchant.wallet.bip32 import BitcoinWallet
+from bitmerchant.wallet.bip32 import DogecoinWallet
+from bitmerchant.wallet.bip32 import LitecoinWallet
+from bitmerchant.wallet.bip32 import PeercoinWallet
+from bitmerchant.wallet.bip32 import PrimecoinWallet
 
 
 class _TestWalletBase(TestCase):
@@ -64,6 +68,23 @@ class TestWalletComparisons(_TestWalletBase):
         self.assertEqual(wallet.get_public_key(),
                          self.wallet.get_public_key())
 
+    def test_not_equal_incompatible(self):
+        btcw = BitcoinWallet.new_wallet(self.key)
+        dogew = DogecoinWallet.new_wallet(self.key)
+        ltcw = LitecoinWallet.new_wallet(self.key)
+        peerw = PeercoinWallet.new_wallet(self.key)
+        primew = PrimecoinWallet.new_wallet(self.key)
+        self.assertNotEqual(btcw, dogew)
+        self.assertNotEqual(btcw, ltcw)
+        self.assertNotEqual(btcw, peerw)
+        self.assertNotEqual(btcw, primew)
+        self.assertNotEqual(dogew, ltcw)
+        self.assertNotEqual(dogew, peerw)
+        self.assertNotEqual(dogew, primew)
+        self.assertNotEqual(ltcw, peerw)
+        self.assertNotEqual(ltcw, primew)
+        self.assertNotEqual(peerw, primew)
+
     def test_fail_lt(self):
         self.assertRaises(TypeError, self.wallet.__lt__, self.wallet)
 
@@ -102,6 +123,31 @@ class TestAddressCreation(_TestWalletBase):
         direct = self.wallet.subkey(number).bitcoin_address()
         loaded = BitcoinWallet.create_address(self.pubkey, number)
         self.assertEqual(direct, loaded)
+
+    def test_incompatible_addresses(self):
+        btcw = BitcoinWallet.new_wallet(self.key)
+        dogew = DogecoinWallet.new_wallet(self.key)
+        self.assertEqual(
+            btcw.subkey(1).address(),
+            BitcoinWallet.create_address(btcw.get_public_key(), 1))
+        self.assertEqual(
+            dogew.subkey(1).address(),
+            DogecoinWallet.create_address(dogew.get_public_key(), 1))
+        self.assertNotEqual(
+            btcw.subkey(1).address(),
+            dogew.subkey(1).address())
+
+    def test_btc_address(self):
+        btcw = BitcoinWallet.new_wallet(self.key)
+        self.assertTrue(btcw.subkey(1).address().startswith('1'))
+
+    def test_ltc_address(self):
+        ltcw = LitecoinWallet.new_wallet(self.key)
+        self.assertTrue(ltcw.subkey(1).address().startswith('L'))
+
+    def test_doge_address(self):
+        dogew = DogecoinWallet.new_wallet(self.key)
+        self.assertTrue(dogew.subkey(1).address().startswith('D'))
 
 
 class TestRandomSecret(TestCase):
