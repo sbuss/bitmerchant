@@ -167,7 +167,7 @@ class _Wallet(wallet.Wallet):
                 return self.bitcoin_address(compressed)
 
     def __eq__(self, other):
-        eq = (isinstance(other, self.__class__) and
+        eq = (self.__class__ is other.__class__ and
               self.get_keys() == other.get_keys() and
               self.is_private == other.is_private and
               self.public_pair == other.public_pair and
