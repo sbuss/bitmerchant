@@ -1,6 +1,7 @@
 from base64 import b64decode
 import binascii
 from hashlib import sha256
+import re
 
 import base58
 
@@ -15,20 +16,55 @@ class BitcoinTestnetKeyConstants(object):
     PRIVATE_KEY_BYTE_PREFIX = 0xEF  # = int(239) --> "9"
 
 
-class Key(object):
-    def __init__(self, raw_key, constants):
-        """Construct a Key.
+class Base64Key(object):
+    def is_base64(self, key):
+        if len(key) == 88:
+            try:
+                return bool(b64decode(key))
+            except TypeError:
+                pass
+        return False
 
-        :param raw_key: The raw hex-encoded key
-        :type raw_key: Hex string
-        """
-        self.raw_key = raw_key.upper()
-        self.constants = constants
+    def b64_to_hex(self, key):
+        return b64decode(key)
 
-    def __eq__(self, other):
-        return (self.raw_key == other.raw_key and
-                self.constants == other.constants and
-                type(self) == type(other))
+
+class ExtendedBip32Key(object):
+    def is_extended_bip32_key(self, key):
+        try:
+            # See if we can unhexlify it
+            unhex_key = binascii.unhexlify(key)
+            return len(unhex_key) == 64
+        except Exception:
+            pass
+        return len(key) == 128
+
+    def is_hex(self, key):
+        return len(key) == 130
+
+    def is_compressed_hex(self, key):
+        return len(key) == 66
+
+
+class HexKey(object):
+    def is_hex_bytes(self, key):
+        if len(key) == 32 and re.match(r'[A-Fa-f0-9]+', key) is None:
+            try:
+                binascii.hexlify(key)
+                return True
+            except Exception:
+                pass
+        return False
+
+    def hex_bytes_to_hex(self, key):
+        return binascii.hexlify(key)
+
+    def is_hex(self, key):
+        return len(key) == 64
+
+    @classmethod
+    def decompress(self, key):
+        "TODO"
 
 
 class WIFKey(object):
@@ -56,7 +92,7 @@ class WIFKey(object):
         # First add the network byte, creating the "extended key"
         network_hex_chars = binascii.hexlify(
             chr(self.constants.PRIVATE_KEY_BYTE_PREFIX))
-        extended_key_hex = network_hex_chars + self.raw_key
+        extended_key_hex = network_hex_chars + self.key
         extended_key_bytes = binascii.unhexlify(extended_key_hex)
         # Get the checksum
         checksum_bytes = self._wif_checksum(extended_key_bytes)
@@ -104,7 +140,53 @@ class WIFKey(object):
         pass
 
 
-class PrivateKey(Key, Base64KeyParser, WIFKey):
+class MasterPasswordKey(object):
+    @classmethod
+    def from_master_password(self, password, constants):
+        """Generate a new key from a master password.
+
+        This password is hashed via 50,000 rounds of HMAC-SHA256.
+        """
+
+
+class Key(Base64Key, HexKey):
+    def __init__(self, raw_key, constants):
+        """Construct a Key.
+
+        :param raw_key: The raw hex-encoded key
+        :type raw_key: Hex string
+        """
+        self.key = raw_key
+        self.constants = constants
+
+    def get_key(self):
+        """Get the key, as a hex string.
+
+        The key is stored as a 'hexlified' string.
+        """
+        return self._key
+
+    def set_key(self, key):
+        self._key = self.parse_raw_key(key)
+
+    key = property(get_key, set_key)
+
+    def parse_raw_key(self, key):
+        if self.is_base64(key):
+            key = self.b64_to_hex(key)
+        if self.is_hex_bytes(key):
+            key = self.hex_bytes_to_hex(key)
+        if self.is_hex(key):
+            return key.upper()
+        raise ValueError("Invaid key")
+
+    def __eq__(self, other):
+        return (self._key == other._key and
+                self.constants == other.constants and
+                type(self) == type(other))
+
+
+class PrivateKey(Key, WIFKey):
     def __init__(self, raw_key, constants=BitcoinKeyConstants):
         super(PrivateKey, self).__init__(raw_key, constants)
 
