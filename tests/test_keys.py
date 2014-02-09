@@ -3,8 +3,9 @@ import binascii
 from mock import patch
 from unittest import TestCase
 
-from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import BitcoinTestnetKeyConstants
+from bitmerchant.wallet.keys import PrivateKey
+from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.keys import WIFKey
 
 
@@ -14,6 +15,18 @@ class _TestPrivateKeyBase(TestCase):
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.key = PrivateKey(
             "0C28FCA386C7A227600B2FE50B7CAE11EC86D3BF1FBE471BE89827E19D72AA1D")
+
+
+class _TestPublicKeyBase(TestCase):
+    def setUp(self):
+        # This private key chosen from the bitcoin docs:
+        # https://en.bitcoin.it/wiki/Wallet_import_format
+        self.private_key = PrivateKey(
+            "0C28FCA386C7A227600B2FE50B7CAE11EC86D3BF1FBE471BE89827E19D72AA1D")
+        self.public_key = PublicKey(
+            "04"
+            "50863AD64A87AE8A2FE83C1AF1A8403CB53F53E486D8511DAD8A04887E5B2352"
+            "2CD470243453A299FA9E77237716103ABC11A1DF38855ED6F2EE187E9C582BA6")
 
 
 class TestPrivateKey(_TestPrivateKeyBase):
@@ -63,5 +76,11 @@ class TestWIF(_TestPrivateKeyBase):
         with patch('bitmerchant.wallet.keys.WIFKey._wif_checksum',
                    return_value=binascii.unhexlify('FFFFFFFF')):
             wif = self.key.export_to_wif()
-
         self.assertRaises(WIFKey.ChecksumException, PrivateKey.from_wif, wif)
+
+
+class TestPublicKey(_TestPublicKeyBase):
+    def test_address(self):
+        expected_address = "16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM"
+        actual_address = self.public_key.to_address()
+        self.assertEqual(expected_address, actual_address)

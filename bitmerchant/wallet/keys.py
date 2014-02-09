@@ -1,5 +1,6 @@
 from base64 import b64decode
 import binascii
+import hashlib
 from hashlib import sha256
 import re
 
@@ -9,11 +10,13 @@ import base58
 class BitcoinKeyConstants(object):
     NAME = "Bitcoin Main Net"
     PRIVATE_KEY_BYTE_PREFIX = 0x80  # = int(128) --> "5"
+    ADDRESS_BYTE_PREFIX = 0x00  # = int(0) --> '1'
 
 
 class BitcoinTestnetKeyConstants(object):
     NAME = "Bitcoin Test Net"
     PRIVATE_KEY_BYTE_PREFIX = 0xEF  # = int(239) --> "9"
+    ADDRESS_BYTE_PREFIX = 0x6f  # = int(111) --> 'o'
 
 
 class Base64Key(object):
@@ -151,6 +154,32 @@ class MasterPasswordKey(object):
         """
 
 
+class AddressKey(object):
+    """Utilities to generate a valid bitcoin/altcoin address from a key."""
+    def hash160(self, data):
+        """Return ripemd160(sha256(data))"""
+        rh = hashlib.new('ripemd160', sha256(data).digest())
+        return rh.digest()
+
+    def address_checksum(self, address_bytes):
+        """Checksum the given address."""
+        return sha256(sha256(address_bytes).digest()).digest()[:4]
+
+    def to_address(self):
+        """Create a public address from this key."""
+        key = binascii.unhexlify(self.key)
+        # First get the hash160 of the key
+        hash160_bytes = self.hash160(key)
+        # Prepend the network address byte
+        network_hash160_bytes = \
+            chr(self.constants.ADDRESS_BYTE_PREFIX) + hash160_bytes
+        # Get the checksum
+        checksum_bytes = self.address_checksum(network_hash160_bytes)
+        # Append the checksum onto the end of the hash160
+        address = network_hash160_bytes + checksum_bytes
+        return base58.b58encode(address)
+
+
 class Key(Base64Key, HexKey):
     def __init__(self, raw_key, constants):
         """Construct a Key.
@@ -191,6 +220,24 @@ class Key(Base64Key, HexKey):
 class PrivateKey(Key, WIFKey):
     def __init__(self, raw_key, constants=BitcoinKeyConstants):
         super(PrivateKey, self).__init__(raw_key, constants)
+
+
+class PublicKey(Key, AddressKey):
+    def __init__(self, raw_key, constants=BitcoinKeyConstants):
+        """Create a public key.
+
+        :param raw_key: The 65-byte raw public key.
+        :type raw_key: Public key hex string consisting of 65 bytes:
+             * 1 byte 0x04
+             * 32 bytes corresponding to X coordinate
+             * 32 bytes corresponding to Y coordinate
+        TODO: Support compressed pubkeys
+        TODO: Use ECDSA Points?
+        """
+        super(PublicKey, self).__init__(raw_key, constants)
+
+    def parse_raw_key(self, key):
+        return key.upper()
 
 
 class KeyParseError(Exception):
