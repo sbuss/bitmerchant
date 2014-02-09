@@ -47,8 +47,9 @@ class ExtendedBip32Key(object):
 
 
 class HexKey(object):
+    """Utilities for dealing with hex-encoded strings."""
     def is_hex_bytes(self, key):
-        if len(key) == 32 and re.match(r'[A-Fa-f0-9]+', key) is None:
+        if len(key) == 32 and not self.is_hex(key):
             try:
                 binascii.hexlify(key)
                 return True
@@ -60,7 +61,8 @@ class HexKey(object):
         return binascii.hexlify(key)
 
     def is_hex(self, key):
-        return len(key) == 64
+        return (len(key) == 64 and
+                re.match(r'[A-Fa-f0-9]+', key) is not None)
 
     @classmethod
     def decompress(self, key):
