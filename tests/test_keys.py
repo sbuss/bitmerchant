@@ -22,7 +22,7 @@ class _TestPublicKeyBase(TestCase):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.private_key = PrivateKey(
-            "0C28FCA386C7A227600B2FE50B7CAE11EC86D3BF1FBE471BE89827E19D72AA1D")
+            "18E14A7B6A307F426A94F8114701E7C8E774E7F9A47E2C2035DB29A206321725")
         self.public_key = PublicKey(
             "04"
             "50863AD64A87AE8A2FE83C1AF1A8403CB53F53E486D8511DAD8A04887E5B2352"
@@ -84,3 +84,10 @@ class TestPublicKey(_TestPublicKeyBase):
         expected_address = "16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM"
         actual_address = self.public_key.to_address()
         self.assertEqual(expected_address, actual_address)
+
+    def test_private_to_public(self):
+        import ipdb
+        ipdb.set_trace()
+        self.assertEqual(
+            self.private_key.get_public_key(),
+            self.public_key)

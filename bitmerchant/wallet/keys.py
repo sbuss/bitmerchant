@@ -5,12 +5,16 @@ from hashlib import sha256
 import re
 
 import base58
+from ecdsa import SECP256k1
+from ecdsa.ecdsa import Public_key
+from ecdsa.ecdsa import Private_key
 
 
 class BitcoinKeyConstants(object):
     NAME = "Bitcoin Main Net"
     PRIVATE_KEY_BYTE_PREFIX = 0x80  # = int(128) --> "5"
-    ADDRESS_BYTE_PREFIX = 0x00  # = int(0) --> '1'
+    PUBLIC_KEY_BYTE_PREFIX = 0x04
+    ADDRESS_BYTE_PREFIX = 0x00  # = int(0) --> '\0'
 
 
 class BitcoinTestnetKeyConstants(object):
@@ -220,6 +224,17 @@ class Key(Base64Key, HexKey):
 class PrivateKey(Key, WIFKey):
     def __init__(self, raw_key, constants=BitcoinKeyConstants):
         super(PrivateKey, self).__init__(raw_key, constants)
+        g = SECP256k1.generator
+        pubkey = Public_key(g, g * long(self.key, 16))
+        self.point = Private_key(pubkey, long(self.key, 16))
+
+    def get_public_key(self):
+        g = SECP256k1.generator
+        point = Public_key(g, g * long(self.key, 16)).point
+        return PublicKey("%s%x%x" % (
+            binascii.hexlify(chr(self.constants.PUBLIC_KEY_BYTE_PREFIX)),
+            point.x(), point.y()),
+            self.constants)
 
 
 class PublicKey(Key, AddressKey):
