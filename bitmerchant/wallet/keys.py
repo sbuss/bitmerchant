@@ -6,8 +6,9 @@ import re
 
 import base58
 from ecdsa import SECP256k1
-from ecdsa.ecdsa import Public_key
-from ecdsa.ecdsa import Private_key
+from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
+from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
 
 class BitcoinKeyConstants(object):
@@ -186,8 +187,9 @@ class Key(Base64Key, HexKey):
         :param raw_key: The raw hex-encoded key
         :type raw_key: Hex string
         """
-        self.key = raw_key
+        # Set constants first because set_key needs it
         self.constants = constants
+        self.key = raw_key
 
     def get_key(self):
         """Get the key, as a hex string.
@@ -219,17 +221,13 @@ class Key(Base64Key, HexKey):
 class PrivateKey(Key, WIFKey):
     def __init__(self, raw_key, constants=BitcoinKeyConstants):
         super(PrivateKey, self).__init__(raw_key, constants)
-        g = SECP256k1.generator
-        pubkey = Public_key(g, g * long(self.key, 16))
-        self.point = Private_key(pubkey, long(self.key, 16))
+        pubkey = self.get_public_key()
+        self.point = _ECDSA_Private_key(pubkey.point, long(self.key, 16))
 
     def get_public_key(self):
         g = SECP256k1.generator
-        point = Public_key(g, g * long(self.key, 16)).point
-        return PublicKey("%s%x%x" % (
-            binascii.hexlify(chr(self.constants.PUBLIC_KEY_BYTE_PREFIX)),
-            point.x(), point.y()),
-            self.constants)
+        point = _ECDSA_Public_key(g, g * long(self.key, 16)).point
+        return PublicKey.from_point(point, self.constants)
 
 
 class PublicKey(Key, AddressKey):
@@ -245,9 +243,57 @@ class PublicKey(Key, AddressKey):
         TODO: Use ECDSA Points?
         """
         super(PublicKey, self).__init__(raw_key, constants)
+        self.point = self.point_from_key(self.key)
 
     def parse_raw_key(self, key):
+        """Return the key in hexlified nxy format.
+
+        nxy format is a name I made up. The key consists of
+          * 1 Byte network key
+          * 32 Bytes x coordinate
+          * 32 Bytes y cooddinate
+        """
+        if len(key) == 65:
+            # It might be a byte array
+            try:
+                key = binascii.hexlify(key)
+            except TypeError:
+                pass
+
+        if len(key) != 130:
+            raise KeyParseError("The given key is not in a known format.")
+
+        if len(key) == 130:
+            # 1B network key + 32B x coord + 32B y coord = 65
+            # ...and double 65 because two hex chars = 1 Byte
+            network_key, x, y = (
+                key[:2],
+                key[2:64+2],
+                key[64+2:])
+            # Verify the network key matches the given constants
+            network_key_bytes = binascii.unhexlify(network_key)
+            if ord(network_key_bytes) != self.constants.PUBLIC_KEY_BYTE_PREFIX:
+                raise incompatible_network_exception_factory(
+                    self.constants.NAME, self.constants.PUBLIC_KEY_BYTE_PREFIX,
+                    ord(network_key_bytes))
         return key.upper()
+
+    def point_from_key(self, key):
+        """Create an ECDSA Point from a key.
+
+        This assumes `key` has already gone through `parse_raw_key`
+        """
+        _, x, y = key[:2], key[2:2+64], key[2+64:]
+        return _ECDSA_Point(SECP256k1.curve, long(x, 16), long(y, 16))
+
+    @classmethod
+    def from_point(cls, point, constants=BitcoinKeyConstants):
+        """Create a PublicKey from an SECP256k1 point."""
+        # A raw key is the network byte, followed by the 32B X and 32B Y coords
+        raw_key = "%s%x%x" % (
+            binascii.hexlify(chr(constants.PUBLIC_KEY_BYTE_PREFIX)),
+            point.x(), point.y())
+        return cls(raw_key, constants)
 
 
 class KeyParseError(Exception):

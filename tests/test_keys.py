@@ -88,8 +88,15 @@ class TestPublicKey(_TestPublicKeyBase):
         self.assertEqual(expected_address, actual_address)
 
     def test_private_to_public(self):
-        import ipdb
-        ipdb.set_trace()
         self.assertEqual(
             self.private_key.get_public_key(),
             self.public_key)
+
+    def test_unhexlified_key(self):
+        key_bytes = binascii.unhexlify(self.public_key.key)
+        self.assertEqual(
+            PublicKey(key_bytes),
+            self.public_key)
+
+    def test_bad_key(self):
+        self.assertRaises(KeyParseError, PublicKey, 'badkey')
