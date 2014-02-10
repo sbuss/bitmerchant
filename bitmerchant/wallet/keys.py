@@ -119,12 +119,10 @@ class WIFKey(object):
         # Verify we're on the right network
         network_bytes = checksummed_extended_key_bytes[0]
         if (ord(network_bytes) != constants.PRIVATE_KEY_BYTE_PREFIX):
-            raise cls.IncompatibleNetworkException(
-                "Incorrect network. {net_name} expects a byte prefix of "
-                "{expected_prefix}, but you supplied {given_prefix}".format(
-                    net_name=constants.NAME,
-                    expected_prefix=constants.PRIVATE_KEY_BYTE_PREFIX,
-                    given_prefix=ord(network_bytes)))
+            raise incompatible_network_exception_factory(
+                network_name=constants.NAME,
+                expected_prefix=constants.PRIVATE_KEY_BYTE_PREFIX,
+                given_prefix=ord(network_bytes))
 
         # The checksum of the given wif-key is the last 4 bytes
         checksum_bytes, extended_key_bytes = (
@@ -141,9 +139,6 @@ class WIFKey(object):
         extended_key_bytes = extended_key_bytes[1:]
         # And we should finally have a valid key
         return cls(binascii.hexlify(extended_key_bytes), constants)
-
-    class IncompatibleNetworkException(Exception):
-        pass
 
     class ChecksumException(Exception):
         pass
@@ -256,4 +251,18 @@ class PublicKey(Key, AddressKey):
 
 
 class KeyParseError(Exception):
+    pass
+
+
+def incompatible_network_exception_factory(
+        network_name, expected_prefix, given_prefix):
+    return IncompatibleNetworkException(
+        "Incorrect network. {net_name} expects a byte prefix of "
+        "{expected_prefix}, but you supplied {given_prefix}".format(
+            net_name=network_name,
+            expected_prefix=expected_prefix,
+            given_prefix=given_prefix))
+
+
+class IncompatibleNetworkException(Exception):
     pass

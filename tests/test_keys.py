@@ -4,6 +4,8 @@ from mock import patch
 from unittest import TestCase
 
 from bitmerchant.wallet.keys import BitcoinTestnetKeyConstants
+from bitmerchant.wallet.keys import IncompatibleNetworkException
+from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.keys import WIFKey
@@ -61,7 +63,7 @@ class TestWIF(_TestPrivateKeyBase):
 
     def test_import_wif_invalid_network(self):
         self.assertRaises(
-            WIFKey.IncompatibleNetworkException, PrivateKey.from_wif,
+            IncompatibleNetworkException, PrivateKey.from_wif,
             self.key.export_to_wif(), BitcoinTestnetKeyConstants)
 
     def test_import_wif_network(self):
