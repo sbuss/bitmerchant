@@ -10,18 +10,7 @@ from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
-
-class BitcoinKeyConstants(object):
-    NAME = "Bitcoin Main Net"
-    PRIVATE_KEY_BYTE_PREFIX = 0x80  # = int(128) --> "5"
-    PUBLIC_KEY_BYTE_PREFIX = 0x04
-    ADDRESS_BYTE_PREFIX = 0x00  # = int(0) --> '\0'
-
-
-class BitcoinTestnetKeyConstants(object):
-    NAME = "Bitcoin Test Net"
-    PRIVATE_KEY_BYTE_PREFIX = 0xEF  # = int(239) --> "9"
-    ADDRESS_BYTE_PREFIX = 0x6f  # = int(111) --> 'o'
+from bitmerchant.wallet.network import BitcoinMainNet
 
 
 class Base64Key(object):
@@ -101,7 +90,7 @@ class WIFKey(object):
         """Export a key to WIF."""
         # First add the network byte, creating the "extended key"
         network_hex_chars = binascii.hexlify(
-            chr(self.constants.PRIVATE_KEY_BYTE_PREFIX))
+            chr(self.network.PRIVATE_KEY_BYTE_PREFIX))
         extended_key_hex = network_hex_chars + self.key
         extended_key_bytes = binascii.unhexlify(extended_key_hex)
         # Get the checksum
@@ -112,17 +101,17 @@ class WIFKey(object):
         return base58.b58encode(checksummed_extended_key_bytes)
 
     @classmethod
-    def from_wif(cls, wif, constants=BitcoinKeyConstants):
+    def from_wif(cls, wif, network=BitcoinMainNet):
         """Import a key in WIF format."""
         # Decode the base58 key into bytes
         checksummed_extended_key_bytes = base58.b58decode(wif)
 
         # Verify we're on the right network
         network_bytes = checksummed_extended_key_bytes[0]
-        if (ord(network_bytes) != constants.PRIVATE_KEY_BYTE_PREFIX):
+        if (ord(network_bytes) != network.PRIVATE_KEY_BYTE_PREFIX):
             raise incompatible_network_exception_factory(
-                network_name=constants.NAME,
-                expected_prefix=constants.PRIVATE_KEY_BYTE_PREFIX,
+                network_name=network.NAME,
+                expected_prefix=network.PRIVATE_KEY_BYTE_PREFIX,
                 given_prefix=ord(network_bytes))
 
         # The checksum of the given wif-key is the last 4 bytes
@@ -139,7 +128,7 @@ class WIFKey(object):
         # Drop the network bytes
         extended_key_bytes = extended_key_bytes[1:]
         # And we should finally have a valid key
-        return cls(binascii.hexlify(extended_key_bytes), constants)
+        return cls(binascii.hexlify(extended_key_bytes), network)
 
     class ChecksumException(Exception):
         pass
@@ -147,7 +136,7 @@ class WIFKey(object):
 
 class MasterPasswordKey(object):
     @classmethod
-    def from_master_password(self, password, constants):
+    def from_master_password(self, password, network):
         """Generate a new key from a master password.
 
         This password is hashed via 50,000 rounds of HMAC-SHA256.
@@ -166,13 +155,16 @@ class AddressKey(object):
         return sha256(sha256(address_bytes).digest()).digest()[:4]
 
     def to_address(self):
-        """Create a public address from this key."""
+        """Create a public address from this key.
+
+        https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
+        """
         key = binascii.unhexlify(self.key)
         # First get the hash160 of the key
         hash160_bytes = self.hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
-            chr(self.constants.ADDRESS_BYTE_PREFIX) + hash160_bytes
+            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
         # Get the checksum
         checksum_bytes = self.address_checksum(network_hash160_bytes)
         # Append the checksum onto the end of the hash160
@@ -181,14 +173,14 @@ class AddressKey(object):
 
 
 class Key(Base64Key, HexKey):
-    def __init__(self, raw_key, constants):
+    def __init__(self, raw_key, network):
         """Construct a Key.
 
         :param raw_key: The raw hex-encoded key
         :type raw_key: Hex string
         """
-        # Set constants first because set_key needs it
-        self.constants = constants
+        # Set network first because set_key needs it
+        self.network = network
         self.key = raw_key
 
     def get_key(self):
@@ -210,28 +202,28 @@ class Key(Base64Key, HexKey):
             key = self.hex_bytes_to_hex(key)
         if self.is_hex(key):
             return key.upper()
-        raise ValueError("Invaid key")
+        raise KeyParseError("Invaid key")
 
     def __eq__(self, other):
         return (self._key == other._key and
-                self.constants == other.constants and
+                self.network == other.network and
                 type(self) == type(other))
 
 
 class PrivateKey(Key, WIFKey):
-    def __init__(self, raw_key, constants=BitcoinKeyConstants):
-        super(PrivateKey, self).__init__(raw_key, constants)
+    def __init__(self, raw_key, network=BitcoinMainNet):
+        super(PrivateKey, self).__init__(raw_key, network)
         pubkey = self.get_public_key()
         self.point = _ECDSA_Private_key(pubkey.point, long(self.key, 16))
 
     def get_public_key(self):
         g = SECP256k1.generator
         point = _ECDSA_Public_key(g, g * long(self.key, 16)).point
-        return PublicKey.from_point(point, self.constants)
+        return PublicKey.from_point(point, self.network)
 
 
 class PublicKey(Key, AddressKey):
-    def __init__(self, raw_key, constants=BitcoinKeyConstants):
+    def __init__(self, raw_key, network=BitcoinMainNet):
         """Create a public key.
 
         :param raw_key: The 65-byte raw public key.
@@ -242,7 +234,7 @@ class PublicKey(Key, AddressKey):
         TODO: Support compressed pubkeys
         TODO: Use ECDSA Points?
         """
-        super(PublicKey, self).__init__(raw_key, constants)
+        super(PublicKey, self).__init__(raw_key, network)
         self.point = self.point_from_key(self.key)
 
     def parse_raw_key(self, key):
@@ -270,11 +262,11 @@ class PublicKey(Key, AddressKey):
                 key[:2],
                 key[2:64+2],
                 key[64+2:])
-            # Verify the network key matches the given constants
+            # Verify the network key matches the given network
             network_key_bytes = binascii.unhexlify(network_key)
-            if ord(network_key_bytes) != self.constants.PUBLIC_KEY_BYTE_PREFIX:
+            if ord(network_key_bytes) != self.network.PUBLIC_KEY_BYTE_PREFIX:
                 raise incompatible_network_exception_factory(
-                    self.constants.NAME, self.constants.PUBLIC_KEY_BYTE_PREFIX,
+                    self.network.NAME, self.network.PUBLIC_KEY_BYTE_PREFIX,
                     ord(network_key_bytes))
         return key.upper()
 
@@ -287,13 +279,13 @@ class PublicKey(Key, AddressKey):
         return _ECDSA_Point(SECP256k1.curve, long(x, 16), long(y, 16))
 
     @classmethod
-    def from_point(cls, point, constants=BitcoinKeyConstants):
+    def from_point(cls, point, network=BitcoinMainNet):
         """Create a PublicKey from an SECP256k1 point."""
         # A raw key is the network byte, followed by the 32B X and 32B Y coords
         raw_key = "%s%x%x" % (
-            binascii.hexlify(chr(constants.PUBLIC_KEY_BYTE_PREFIX)),
+            binascii.hexlify(chr(network.PUBLIC_KEY_BYTE_PREFIX)),
             point.x(), point.y())
-        return cls(raw_key, constants)
+        return cls(raw_key, network)
 
 
 class KeyParseError(Exception):

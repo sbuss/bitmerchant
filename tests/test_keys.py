@@ -3,7 +3,7 @@ import binascii
 from mock import patch
 from unittest import TestCase
 
-from bitmerchant.wallet.keys import BitcoinTestnetKeyConstants
+from bitmerchant.wallet.network import BitcoinTestNet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
@@ -64,14 +64,15 @@ class TestWIF(_TestPrivateKeyBase):
     def test_import_wif_invalid_network(self):
         self.assertRaises(
             IncompatibleNetworkException, PrivateKey.from_wif,
-            self.key.export_to_wif(), BitcoinTestnetKeyConstants)
+            self.key.export_to_wif(), BitcoinTestNet)
 
     def test_import_wif_network(self):
         # Make a wif for bitcoin testnet:
         testnet_key = PrivateKey(
-            raw_key=self.key.key, constants=BitcoinTestnetKeyConstants)
+            raw_key=self.key.key, network=BitcoinTestNet)
         testnet_wif = testnet_key.export_to_wif()
-        key = PrivateKey.from_wif(testnet_wif, BitcoinTestnetKeyConstants)
+        # We should be able to load it properly
+        key = PrivateKey.from_wif(testnet_wif, BitcoinTestNet)
         self.assertEqual(testnet_key, key)
 
     def test_bad_checksum(self):
@@ -100,3 +101,9 @@ class TestPublicKey(_TestPublicKeyBase):
 
     def test_bad_key(self):
         self.assertRaises(KeyParseError, PublicKey, 'badkey')
+
+    def test_bad_network_key(self):
+        key = self.public_key.key
+        # Change the network constant
+        key = "00" + key[2:]
+        self.assertRaises(IncompatibleNetworkException, PublicKey, key)
