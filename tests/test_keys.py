@@ -1,7 +1,8 @@
 import base64
 import binascii
-from mock import patch
 from unittest import TestCase
+
+import base58
 
 from bitmerchant.wallet.network import BitcoinTestNet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
@@ -76,9 +77,9 @@ class TestWIF(_TestPrivateKeyBase):
         self.assertEqual(testnet_key, key)
 
     def test_bad_checksum(self):
-        with patch('bitmerchant.wallet.keys.WIFKey._wif_checksum',
-                   return_value=binascii.unhexlify('FFFFFFFF')):
-            wif = self.key.export_to_wif()
+        wif = self.key.export_to_wif()
+        bad_checksum = base58.b58encode(binascii.unhexlify('FFFFFFFF'))
+        wif = wif[:-8] + bad_checksum
         self.assertRaises(WIFKey.ChecksumException, PrivateKey.from_wif, wif)
 
 

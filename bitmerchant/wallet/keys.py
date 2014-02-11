@@ -72,20 +72,6 @@ class WIFKey(object):
     WIF is Wallet Import Format. It is a base58 encoded checksummed key.
     See https://en.bitcoin.it/wiki/Wallet_import_format for a full description.
     """
-    @classmethod
-    def _wif_checksum(cls, key_bytes):
-        """Checksum an extended key.
-
-        :param key_bytes: A byte array of an extended key
-        :type key_bytes: A byte array, eg binascii.unhexlify('DEADBEEF')
-        """
-        # Double SHA256 the key
-        hashed_extended_key_bytes = \
-            sha256(sha256(key_bytes).digest()).digest()
-        # The first four bytes of the hash is the checksum
-        checksum_bytes = hashed_extended_key_bytes[:4]
-        return checksum_bytes
-
     def export_to_wif(self):
         """Export a key to WIF."""
         # First add the network byte, creating the "extended key"
@@ -93,37 +79,26 @@ class WIFKey(object):
             chr(self.network.PRIVATE_KEY_BYTE_PREFIX))
         extended_key_hex = network_hex_chars + self.key
         extended_key_bytes = binascii.unhexlify(extended_key_hex)
-        # Get the checksum
-        checksum_bytes = self._wif_checksum(extended_key_bytes)
-        # Append the checksum to the extended key
-        checksummed_extended_key_bytes = extended_key_bytes + checksum_bytes
-        # And return the base58-encoded result
-        return base58.b58encode(checksummed_extended_key_bytes)
+        # And return the base58-encoded result with a checksum
+        return base58.b58encode_check(extended_key_bytes)
 
     @classmethod
     def from_wif(cls, wif, network=BitcoinMainNet):
         """Import a key in WIF format."""
-        # Decode the base58 key into bytes
-        checksummed_extended_key_bytes = base58.b58decode(wif)
+        # Decode the base58 string and ensure the checksum is valid
+        try:
+            extended_key_bytes = base58.b58decode_check(wif)
+        except ValueError as e:
+            # Invalid checksum!
+            raise cls.ChecksumException(e)
 
         # Verify we're on the right network
-        network_bytes = checksummed_extended_key_bytes[0]
+        network_bytes = extended_key_bytes[0]
         if (ord(network_bytes) != network.PRIVATE_KEY_BYTE_PREFIX):
             raise incompatible_network_exception_factory(
                 network_name=network.NAME,
                 expected_prefix=network.PRIVATE_KEY_BYTE_PREFIX,
                 given_prefix=ord(network_bytes))
-
-        # The checksum of the given wif-key is the last 4 bytes
-        checksum_bytes, extended_key_bytes = (
-            checksummed_extended_key_bytes[-4:],
-            checksummed_extended_key_bytes[:-4])
-        # Verify the checksum
-        calc_checksum_bytes = cls._wif_checksum(extended_key_bytes)
-        if checksum_bytes != calc_checksum_bytes:
-            raise cls.ChecksumException("%s != %s" % (
-                binascii.hexlify(checksum_bytes),
-                binascii.hexlify(calc_checksum_bytes)))
 
         # Drop the network bytes
         extended_key_bytes = extended_key_bytes[1:]
@@ -150,10 +125,6 @@ class AddressKey(object):
         rh = hashlib.new('ripemd160', sha256(data).digest())
         return rh.digest()
 
-    def address_checksum(self, address_bytes):
-        """Checksum the given address."""
-        return sha256(sha256(address_bytes).digest()).digest()[:4]
-
     def to_address(self):
         """Create a public address from this key.
 
@@ -165,11 +136,8 @@ class AddressKey(object):
         # Prepend the network address byte
         network_hash160_bytes = \
             chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
-        # Get the checksum
-        checksum_bytes = self.address_checksum(network_hash160_bytes)
-        # Append the checksum onto the end of the hash160
-        address = network_hash160_bytes + checksum_bytes
-        return base58.b58encode(address)
+        # Return a base58 encoded address with a checksum
+        return base58.b58encode_check(network_hash160_bytes)
 
 
 class Key(Base64Key, HexKey):
