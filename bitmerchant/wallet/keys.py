@@ -1,4 +1,3 @@
-from base64 import b64decode
 import binascii
 import hashlib
 from hashlib import sha256
@@ -11,19 +10,6 @@ from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
 from bitmerchant.wallet.network import BitcoinMainNet
-
-
-class Base64Key(object):
-    def is_base64(self, key):
-        if len(key) == 88:
-            try:
-                return bool(b64decode(key))
-            except TypeError:
-                pass
-        return False
-
-    def b64_to_hex(self, key):
-        return b64decode(key)
 
 
 class ExtendedBip32Key(object):
@@ -140,7 +126,7 @@ class AddressKey(object):
         return base58.b58encode_check(network_hash160_bytes)
 
 
-class Key(Base64Key, HexKey):
+class Key(HexKey):
     def __init__(self, raw_key, network):
         """Construct a Key.
 
@@ -164,8 +150,6 @@ class Key(Base64Key, HexKey):
     key = property(get_key, set_key)
 
     def parse_raw_key(self, key):
-        if self.is_base64(key):
-            key = self.b64_to_hex(key)
         if self.is_hex_bytes(key):
             key = self.hex_bytes_to_hex(key)
         if self.is_hex(key):

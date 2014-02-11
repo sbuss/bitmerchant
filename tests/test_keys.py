@@ -1,4 +1,3 @@
-import base64
 import binascii
 from unittest import TestCase
 
@@ -33,11 +32,6 @@ class _TestPublicKeyBase(TestCase):
 
 
 class TestPrivateKey(_TestPrivateKeyBase):
-    def test_raw_key_b64(self):
-        key = self.key.key
-        b64_key = base64.b64encode(key)
-        self.assertEqual(PrivateKey(b64_key), self.key)
-
     def test_raw_key_hex(self):
         key = self.key.key
         self.assertEqual(PrivateKey(key), self.key)
