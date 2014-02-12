@@ -1,6 +1,4 @@
 import binascii
-import hashlib
-from hashlib import sha256
 import re
 
 import base58
@@ -10,15 +8,9 @@ from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
 from bitmerchant.wallet.network import BitcoinMainNet
-
-
-def is_hex_string(string):
-    return re.match(r'[A-Fa-f0-9]+', string) is not None
-
-
-def long_to_hex(l, size):
-    f_str = "{0:0%sx}" % size
-    return f_str.format(l).upper()
+from bitmerchant.wallet.utils import hash160
+from bitmerchant.wallet.utils import is_hex_string
+from bitmerchant.wallet.utils import long_to_hex
 
 
 class ExtendedBip32Key(object):
@@ -250,11 +242,6 @@ class PublicKey(Key):
         # A raw key is the network byte, followed by the 32B X and 32B Y coords
         return cls(point.x(), point.y(), network)
 
-    def hash160(self, data):
-        """Return ripemd160(sha256(data))"""
-        rh = hashlib.new('ripemd160', sha256(data).digest())
-        return rh.digest()
-
     def to_address(self):
         """Create a public address from this key.
 
@@ -262,7 +249,7 @@ class PublicKey(Key):
         """
         key = binascii.unhexlify(self.key)
         # First get the hash160 of the key
-        hash160_bytes = self.hash160(key)
+        hash160_bytes = hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
             chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
