@@ -16,6 +16,11 @@ def is_hex_string(string):
     return re.match(r'[A-Fa-f0-9]+', string) is not None
 
 
+def long_to_hex(l, size):
+    f_str = "{0:0%sx}" % size
+    return f_str.format(l).upper()
+
+
 class ExtendedBip32Key(object):
     def is_extended_bip32_key(self, key):
         try:
@@ -107,7 +112,7 @@ class PrivateKey(Key):
 
     @property
     def key(self):
-        return "{0:064x}".format(self.private_exponent)
+        return long_to_hex(self.private_exponent, 64)
 
     def get_public_key(self):
         g = SECP256k1.generator
@@ -208,9 +213,11 @@ class PublicKey(Key, AddressKey):
 
     @property
     def key(self):
-        return "%s%x%x" % (
-            binascii.hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
-            self.x, self.y)
+        key = "{network}{x}{y}".format(
+            network=binascii.hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
+            x=long_to_hex(self.x, 64),
+            y=long_to_hex(self.y, 64))
+        return key.upper()
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):
