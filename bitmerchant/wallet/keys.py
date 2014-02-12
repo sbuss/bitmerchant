@@ -47,28 +47,6 @@ class MasterPasswordKey(object):
         """
 
 
-class AddressKey(object):
-    """Utilities to generate a valid bitcoin/altcoin address from a key."""
-    def hash160(self, data):
-        """Return ripemd160(sha256(data))"""
-        rh = hashlib.new('ripemd160', sha256(data).digest())
-        return rh.digest()
-
-    def to_address(self):
-        """Create a public address from this key.
-
-        https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
-        """
-        key = binascii.unhexlify(self.key)
-        # First get the hash160 of the key
-        hash160_bytes = self.hash160(key)
-        # Prepend the network address byte
-        network_hash160_bytes = \
-            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
-        # Return a base58 encoded address with a checksum
-        return base58.b58encode_check(network_hash160_bytes)
-
-
 class Key(object):
     def __init__(self, network):
         """Construct a Key."""
@@ -195,7 +173,7 @@ class ExtendedPrivateKey(PrivateKey, ExtendedBip32Key):
         pass
 
 
-class PublicKey(Key, AddressKey):
+class PublicKey(Key):
     def __init__(self, x, y, network=BitcoinMainNet):
         """Create a public key.
 
@@ -271,6 +249,25 @@ class PublicKey(Key, AddressKey):
         """Create a PublicKey from an SECP256k1 point."""
         # A raw key is the network byte, followed by the 32B X and 32B Y coords
         return cls(point.x(), point.y(), network)
+
+    def hash160(self, data):
+        """Return ripemd160(sha256(data))"""
+        rh = hashlib.new('ripemd160', sha256(data).digest())
+        return rh.digest()
+
+    def to_address(self):
+        """Create a public address from this key.
+
+        https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
+        """
+        key = binascii.unhexlify(self.key)
+        # First get the hash160 of the key
+        hash160_bytes = self.hash160(key)
+        # Prepend the network address byte
+        network_hash160_bytes = \
+            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
+        # Return a base58 encoded address with a checksum
+        return base58.b58encode_check(network_hash160_bytes)
 
 
 class KeyParseError(Exception):
