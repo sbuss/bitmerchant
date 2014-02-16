@@ -1,4 +1,5 @@
 import binascii
+from hashlib import sha256
 import re
 
 import base58
@@ -28,15 +29,6 @@ class ExtendedBip32Key(object):
 
     def is_compressed_hex(self, key):
         return len(key) == 66
-
-
-class MasterPasswordKey(object):
-    @classmethod
-    def from_master_password(self, password, network):
-        """Generate a new key from a master password.
-
-        This password is hashed via 50,000 rounds of HMAC-SHA256.
-        """
 
 
 class Key(object):
@@ -147,6 +139,16 @@ class PrivateKey(Key):
         if not is_hex_string(key) or len(key) != 64:
             raise ValueError("Invalid hex key")
         return cls(long(key, 16), network)
+
+    @classmethod
+    def from_master_password(cls, password, network=BitcoinMainNet):
+        """Generate a new key from a master password.
+
+        This password is hashed via a single round of sha256 and is highly
+        breakable, but it's the standard brainwallet approach.
+        """
+        key = sha256(password).hexdigest()
+        return cls.from_hex_key(key, network)
 
     def __eq__(self, other):
         return (super(PrivateKey, self).__eq__(other) and

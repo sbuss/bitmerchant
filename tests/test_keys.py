@@ -42,6 +42,16 @@ class TestPrivateKey(_TestPrivateKeyBase):
         key = binascii.unhexlify(self.key.key)
         self.assertEqual(PrivateKey.from_hex_key(key), self.key)
 
+    def test_from_master_password(self):
+        password = "correct horse battery staple"
+        expected_wif = "5KJvsngHeMpm884wtkJNzQGaCErckhHJBGFsvd3VyK5qMZXj3hS"
+        expected_pub_address = "1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T"
+
+        key = PrivateKey.from_master_password(password)
+        self.assertEqual(key.export_to_wif(), expected_wif)
+        self.assertEqual(
+            key.get_public_key().to_address(), expected_pub_address)
+
 
 class TestWIF(_TestPrivateKeyBase):
     def setUp(self):
