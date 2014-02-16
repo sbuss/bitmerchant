@@ -74,9 +74,11 @@ class PrivateKey(Key):
 
     @property
     def key(self):
+        """Get the key - a hex formatted private exponent for the curve."""
         return long_to_hex(self.private_exponent, 64)
 
     def get_public_key(self):
+        """Get the PublicKey for this PrivateKey."""
         g = SECP256k1.generator
         point = _ECDSA_Public_key(g, g * self.private_exponent).point
         return PublicKey.from_point(point, self.network)
@@ -175,8 +177,10 @@ class PublicKey(Key):
         :type x: long
         :param y: The y coordinate on the curve
         :type y: long
+        :param network: The network you want (Networks just define certain
+            constants, like byte-prefixes on public addresses).
+        :type network: See `bitmerchant.wallet.network`
         TODO: Support compressed pubkeys
-        TODO: Use ECDSA Points?
         """
         super(PublicKey, self).__init__(network)
         self.x = x
@@ -185,6 +189,11 @@ class PublicKey(Key):
 
     @property
     def key(self):
+        """Get the hex-encoded key.
+
+        PublicKeys consist of a network byte, the x, and the y coordinates
+        on the elliptic curve.
+        """
         key = "{network}{x}{y}".format(
             network=binascii.hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
             x=long_to_hex(self.x, 64),
@@ -195,7 +204,8 @@ class PublicKey(Key):
     def from_hex_key(cls, key, network=BitcoinMainNet):
         """Return the key in hexlified nxy format.
 
-        nxy format is a name I made up. The key consists of
+        nxy format is a name I made up, it's the same as PublicKey.key.
+        The key consists of
           * 1 Byte network key
           * 32 Bytes x coordinate
           * 32 Bytes y cooddinate
@@ -228,20 +238,31 @@ class PublicKey(Key):
     def point_from_key(self, key):
         """Create an ECDSA Point from a key.
 
-        This assumes `key` has already gone through `parse_raw_key`
+        :param key: The public key
+        :type key: A hex-encoded public key. See PublicKey.key
         """
         _, x, y = key[:2], key[2:2+64], key[2+64:]
         return self.create_point(long(x, 16), long(y, 16))
 
     def create_point(self, x, y):
+        """Create an ECDSA point on the SECP256k1 curve with the given coords.
+
+        :param x: The x coordinate on the curve
+        :type x: long
+        :param y: The y coodinate on the curve
+        :type y: long
+        """
         if not isinstance(x, long) or not isinstance(y, long):
             raise ValueError("The coordinates must be longs.")
         return _ECDSA_Point(SECP256k1.curve, x, y)
 
     @classmethod
     def from_point(cls, point, network=BitcoinMainNet):
-        """Create a PublicKey from an SECP256k1 point."""
-        # A raw key is the network byte, followed by the 32B X and 32B Y coords
+        """Create a PublicKey from a point on the SECP256k1 curve.
+
+        :param point: A point on the SECP256k1 curve.
+        :type point: SECP256k1.point
+        """
         return cls(point.x(), point.y(), network)
 
     def to_address(self):
