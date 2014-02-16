@@ -1,5 +1,6 @@
 import binascii
 from hashlib import sha256
+import hmac
 import re
 
 import base58
@@ -148,8 +149,27 @@ class PrivateKey(Key):
 
         This password is hashed via a single round of sha256 and is highly
         breakable, but it's the standard brainwallet approach.
+
+        See `PrivateKey.from_master_password_slow` for a slightly more
+        secure generation method (which will still be subject to a rainbow
+        table attack :\)
         """
         key = sha256(password).hexdigest()
+        return cls.from_hex_key(key, network)
+
+    @classmethod
+    def from_master_password_slow(cls, password, network=BitcoinMainNet):
+        """
+        Generate a new key from a password using 50,000 rounds of HMAC-SHA256.
+
+        This should generate the same result as bip32.org.
+
+        WARNING: This is not yet tested.
+        """
+        # Make sure the password string is bytes
+        key = password.encode('utf-8')
+        for i in xrange(50000):
+            key = hmac.new(key, digestmod=sha256).digest()
         return cls.from_hex_key(key, network)
 
     def __eq__(self, other):
