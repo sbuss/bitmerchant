@@ -8,6 +8,7 @@ from bitmerchant.wallet.keys import ChecksumException
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
+from bitmerchant.wallet.keys import ExtendedPrivateKey
 from bitmerchant.wallet.keys import PublicKey
 
 
@@ -132,3 +133,67 @@ class TestPublicKey(_TestPublicKeyBase):
         key = "00" + key[2:]
         self.assertRaises(IncompatibleNetworkException,
                           PublicKey.from_hex_key, key)
+
+
+class TestExtendedPrivateKey(TestCase):
+    def setUp(self):
+        self.expected_key = (
+            "0488ADE4"  # BitcoinMainNet version
+            "00"  # depth
+            "00000000"  # parent fingerprint
+            "00000000"  # child_number
+            # chain_code
+            "873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508"
+            "00"  # key identifier
+            # private exponent
+            "E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35")
+        self.master_key = ExtendedPrivateKey.from_hex_key(self.expected_key)
+
+    def test_serialize_master_key(self):
+        self.assertEqual(self.expected_key, self.master_key.serialize())
+
+    def test_m_0p(self):
+        key = (
+            "0488ADE4013442193E80000000"
+            "47FDACBD0F1097043B78C63C20C34EF4ED9A111D980047AD16282C7AE6236141"
+            "00"
+            "EDB2E14F9EE77D26DD93B4ECEDE8D16ED408CE149B6CD80B0715A2D911A0AFEA")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.parent_fingerprint, self.master_key.fingerprint)
+        self.assertEqual(pk.child_number, 0x80000000)
+
+    def test_m_0p_1(self):
+        key = (
+            "0488ADE4025C1BD64800000001"
+            "2A7857631386BA23DACAC34180DD1983734E444FDBF774041578E9B6ADB37C19"
+            "00"
+            "3C6CB8D0F6A264C91EA8B5030FADAA8E538B020F0A387421A12DE9319DC93368")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.child_number, 1)
+
+    def test_m_0p_1_2p(self):
+        key = (
+            "0488ADE403BEF5A2F980000002"
+            "04466B9CC8E161E966409CA52986C584F07E9DC81F735DB683C3FF6EC7B1503F"
+            "00"
+            "CBCE0D719ECF7431D88E6A89FA1483E02E35092AF60C042B1DF2FF59FA424DCA")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.child_number, 0x80000000 + 2)
+
+    def test_invalid_network_prefix(self):
+        pass
+
+    def test_invalid_key_data_prefix(self):
+        pass
+
+    def test_invalid_fingerprint(self):
+        pass
+
+    def test_identifier(self):
+        pass
+
+    def test_fingerprint(self):
+        pass

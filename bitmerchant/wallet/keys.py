@@ -15,23 +15,6 @@ from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
 
 
-class ExtendedBip32Key(object):
-    def is_extended_bip32_key(self, key):
-        try:
-            # See if we can unhexlify it
-            unhex_key = binascii.unhexlify(key)
-            return len(unhex_key) == 64
-        except Exception:
-            pass
-        return len(key) == 128
-
-    def is_hex(self, key):
-        return len(key) == 130
-
-    def is_compressed_hex(self, key):
-        return len(key) == 66
-
-
 class Key(object):
     def __init__(self, network):
         """Construct a Key."""
@@ -64,11 +47,125 @@ class Key(object):
         "TODO"
 
 
+class ExtendedBip32Key(Key):
+    def __init__(self, depth, chain_code,
+                 parent_fingerprint=b'\0\0\0\0',
+                 child_number=b'\0\0\0\0',
+                 network=BitcoinMainNet,
+                 *args, **kwargs):
+        super(ExtendedBip32Key, self).__init__(
+            network=network, *args, **kwargs)
+        self.depth = depth
+        self.parent_fingerprint = parent_fingerprint
+        self.child_number = child_number
+        self.chain_code = chain_code
+
+    def is_extended_bip32_key(self, key):
+        try:
+            # See if we can unhexlify it
+            unhex_key = binascii.unhexlify(key)
+            return len(unhex_key) == 64
+        except Exception:
+            pass
+        return len(key) == 128
+
+    def is_hex(self, key):
+        return len(key) == 130
+
+    def is_compressed_hex(self, key):
+        return len(key) == 66
+
+    def get_network_version(self):
+        raise NotImplementedError()
+
+    @property
+    def identifier(self):
+        """Get the identifier for the key.
+
+        Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256)
+        of the serialized public key, ignoring the chain code. This corresponds
+        exactly to the data used in traditional Bitcoin addresses. It is not
+        advised to represent this data in base58 format though, as it may be
+        interpreted as an address that way (and wallet software is not required
+        to accept payment to the chain key itself).
+
+        """
+        pubkey = self.get_public_key()
+        key = pubkey.serialize()
+        return hash160(key)
+
+    @property
+    def fingerprint(self):
+        """The first 32 bits of the identifier are called the fingerprint."""
+        # 32 bits == 4 Bytes == 8 hex characters
+        return self.identifier[:8]
+
+    def _serialize_header(self):
+        network_version = long_to_hex(self.get_network_version(), 8)
+        depth = long_to_hex(self.depth, 2)
+        parent_fingerprint = long_to_hex(self.parent_fingerprint, 8)
+        child_number = long_to_hex(self.child_number, 8)
+        chain_code = long_to_hex(self.chain_code, 64)
+        return (network_version + depth + parent_fingerprint + child_number +
+                chain_code)
+
+    def serialize(self):
+        """Serialize this key.
+
+        See the spec in `from_hex_key` for details."""
+        # Private and public serializations are slightly different, but the
+        # header will be the same.
+        header = self._serialize_header()  # NOQA
+        raise NotImplementedError()
+
+    @classmethod
+    def _parse_raw_key(cls, key, network=BitcoinMainNet):
+        """See `from_hex_key`
+        TODO
+        """
+        if len(key) == 78:
+            # we have bytes
+            key = binascii.hexlify(key)
+        if not is_hex_string(key) or len(key) != 78 * 2:
+            raise ValueError("Invalid hex key")
+        # Now that we double checkd the values, convert back to bytes because
+        # they're easier to slice
+        key = binascii.unhexlify(key)
+        version, depth, parent_fingerprint, child, chain_code, key_data = (
+            key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
+        return (version, depth, parent_fingerprint, child, chain_code,
+                key_data)
+
+    @classmethod
+    def from_hex_key(cls, key, network=BitcoinMainNet):
+        """Load the ExtendedBip32Key from a hex key.
+
+        The key consists of
+
+            * 4 byte version bytes (network key)
+            * 1 byte depth:
+                - 0x00 for master nodes,
+                - 0x01 for level-1 descendants, ....
+            * 4 byte fingerprint of the parent's key (0x00000000 if master key)
+            * 4 byte child number. This is the number i in x_i = x_{par}/i,
+              with x_i the key being serialized. This is encoded in MSB order.
+              (0x00000000 if master key)
+            * 32 bytes: the chain code
+            * 33 bytes: the public key or private key data
+              (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
+        """
+        # You'll want to start with this line probably
+        version, depth, parent_fingerprint, child, chain_code, key_data = (
+            cls._parse_raw_key(key, network))
+        raise NotImplementedError()
+
+
 class PrivateKey(Key):
-    def __init__(self, private_exponent, network=BitcoinMainNet):
+    def __init__(self, private_exponent, network=BitcoinMainNet,
+                 *args, **kwargs):
         if not isinstance(private_exponent, long):
             raise ValueError("private_exponent must be a long")
-        super(PrivateKey, self).__init__(network)
+        super(PrivateKey, self).__init__(network=network, *args, **kwargs)
         self.private_exponent = private_exponent
         pubkey = self.get_public_key()
         self.point = _ECDSA_Private_key(pubkey.point, long(self.key, 16))
@@ -177,16 +274,46 @@ class PrivateKey(Key):
                 self.private_exponent == other.private_exponent)
 
 
-class ExtendedPrivateKey(PrivateKey, ExtendedBip32Key):
-    def __init__(self, raw_key, network=BitcoinMainNet):
-        self.depth = None
-        self.fingerprint = None
-        self.child_number = None
-        self.chain_code = None
-        super(ExtendedPrivateKey, self).__init__(raw_key, network)
+class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
+    def __init__(self, private_exponent, network=BitcoinMainNet,
+                 *args, **kwargs):
+        super(ExtendedPrivateKey, self).__init__(
+            private_exponent=private_exponent,
+            network=network, *args, **kwargs)
 
-    def parse_raw_key(self):
-        pass
+    def get_network_version(self):
+        return self.network.EXTENDED_PRIVATE_BYTE_PREFIX
+
+    @classmethod
+    def from_hex_key(cls, key, network=BitcoinMainNet):
+        version, depth, parent_fingerprint, child, chain_code, key_data = (
+            cls._parse_raw_key(key, network))
+
+        if ord(key_data[0]) != 0:
+            raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
+                             "got %s" % ord(key_data[0]))
+
+        def l(byte_seq):
+            return long(binascii.hexlify(byte_seq), 16)
+
+        ret_val = cls(depth=l(depth),
+                      parent_fingerprint=l(parent_fingerprint),
+                      child_number=l(child),
+                      chain_code=l(chain_code),
+                      private_exponent=l(key_data[1:]),
+                      network=network)
+
+        if l(version) != ret_val.get_network_version():
+            raise incompatible_network_exception_factory(
+                network_name=network.NAME,
+                expected_prefix=ret_val.get_network_version(),
+                given_prefix=ord(version))
+        return ret_val
+
+    def serialize(self):
+        header = self._serialize_header()
+        header += '00' + self.key
+        return header.upper()
 
 
 class PublicKey(Key):
@@ -202,7 +329,7 @@ class PublicKey(Key):
         :type network: See `bitmerchant.wallet.network`
         TODO: Support compressed pubkeys
         """
-        super(PublicKey, self).__init__(network)
+        super(PublicKey, self).__init__(network=network)
         self.x = x
         self.y = y
         self.point = self.create_point(x, y)
