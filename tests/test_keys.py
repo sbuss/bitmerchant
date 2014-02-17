@@ -152,6 +152,11 @@ class TestExtendedPrivateKey(TestCase):
     def test_serialize_master_key(self):
         self.assertEqual(self.expected_key, self.master_key.serialize())
 
+    def test_from_master_secret(self):
+        secret = binascii.unhexlify('000102030405060708090a0b0c0d0e0f')
+        self.assertEqual(ExtendedPrivateKey.from_master_secret(secret),
+                         self.master_key)
+
     def test_m_0p(self):
         key = (
             "0488ADE4013442193E80000000"

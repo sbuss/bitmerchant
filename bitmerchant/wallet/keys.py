@@ -1,6 +1,7 @@
 from binascii import hexlify
 from binascii import unhexlify
 from hashlib import sha256
+from hashlib import sha512
 import hmac
 import re
 
@@ -276,14 +277,26 @@ class PrivateKey(Key):
 
 
 class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
-    def __init__(self, private_exponent, network=BitcoinMainNet,
-                 *args, **kwargs):
-        super(ExtendedPrivateKey, self).__init__(
-            private_exponent=private_exponent,
-            network=network, *args, **kwargs)
-
     def get_network_version(self):
         return self.network.EXTENDED_PRIVATE_BYTE_PREFIX
+
+    @classmethod
+    def from_master_secret(cls, seed, network=BitcoinMainNet):
+        """Generate a new PrivateKey from a secret key.
+
+        See https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#Serialization_format  # nopep8
+        """
+        # Given a seed S of at least 128 bits, but 256 is advised
+        # Calculate I = HMAC-SHA512(key="Bitcoin seed", msg=S)
+        import ipdb
+        ipdb.set_trace()
+        I = hmac.new(b"Bitcoin seed", msg=seed, digestmod=sha512).digest()
+        # Split I into two 32-byte sequences, IL and IR.
+        I_L, I_R = I[:32], I[32:]
+        # Use IL as master secret key, and IR as master chain code.
+        return cls(private_exponent=long(hexlify(I_L), 16),
+                   chain_code=long(hexlify(I_R), 16),
+                   network=network)
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):
