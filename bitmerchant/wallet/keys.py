@@ -1,4 +1,5 @@
-import binascii
+from binascii import hexlify
+from binascii import unhexlify
 from hashlib import sha256
 import hmac
 import re
@@ -29,14 +30,14 @@ class Key(object):
     def is_hex_bytes(self, key):
         if len(key) == 32 and not self.is_hex(key):
             try:
-                binascii.hexlify(key)
+                hexlify(key)
                 return True
             except Exception:
                 pass
         return False
 
     def hex_bytes_to_hex(self, key):
-        return binascii.hexlify(key)
+        return hexlify(key)
 
     def is_hex(self, key):
         return (len(key) == 64 and
@@ -63,7 +64,7 @@ class ExtendedBip32Key(Key):
     def is_extended_bip32_key(self, key):
         try:
             # See if we can unhexlify it
-            unhex_key = binascii.unhexlify(key)
+            unhex_key = unhexlify(key)
             return len(unhex_key) == 64
         except Exception:
             pass
@@ -125,12 +126,12 @@ class ExtendedBip32Key(Key):
         """
         if len(key) == 78:
             # we have bytes
-            key = binascii.hexlify(key)
+            key = hexlify(key)
         if not is_hex_string(key) or len(key) != 78 * 2:
             raise ValueError("Invalid hex key")
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
-        key = binascii.unhexlify(key)
+        key = unhexlify(key)
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
         return (version, depth, parent_fingerprint, child, chain_code,
@@ -187,7 +188,7 @@ class PrivateKey(Key):
         Extended keys contain the network bytes and the public or private
         key.
         """
-        network_hex_chars = binascii.hexlify(
+        network_hex_chars = hexlify(
             chr(self.network.PRIVATE_KEY_BYTE_PREFIX))
         return network_hex_chars + self.key
 
@@ -199,7 +200,7 @@ class PrivateKey(Key):
         """
         # Add the network byte, creating the "extended key"
         extended_key_hex = self.get_extended_key()
-        extended_key_bytes = binascii.unhexlify(extended_key_hex)
+        extended_key_bytes = unhexlify(extended_key_hex)
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
@@ -229,13 +230,13 @@ class PrivateKey(Key):
         # Drop the network bytes
         extended_key_bytes = extended_key_bytes[1:]
         # And we should finally have a valid key
-        return cls(long(binascii.hexlify(extended_key_bytes), 16), network)
+        return cls(long(hexlify(extended_key_bytes), 16), network)
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):
         if len(key) == 32:
             # Oh! we have bytes instead of a hex string
-            key = binascii.hexlify(key)
+            key = hexlify(key)
         if not is_hex_string(key) or len(key) != 64:
             raise ValueError("Invalid hex key")
         return cls(long(key, 16), network)
@@ -294,7 +295,7 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
                              "got %s" % ord(key_data[0]))
 
         def l(byte_seq):
-            return long(binascii.hexlify(byte_seq), 16)
+            return long(hexlify(byte_seq), 16)
 
         ret_val = cls(depth=l(depth),
                       parent_fingerprint=l(parent_fingerprint),
@@ -342,7 +343,7 @@ class PublicKey(Key):
         on the elliptic curve.
         """
         key = "{network}{x}{y}".format(
-            network=binascii.hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
+            network=hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
             x=long_to_hex(self.x, 64),
             y=long_to_hex(self.y, 64))
         return key.upper()
@@ -360,7 +361,7 @@ class PublicKey(Key):
         if len(key) == 65:
             # It might be a byte array
             try:
-                key = binascii.hexlify(key)
+                key = hexlify(key)
             except TypeError:
                 pass
 
@@ -375,7 +376,7 @@ class PublicKey(Key):
                 key[2:64+2],
                 key[64+2:])
             # Verify the network key matches the given network
-            network_key_bytes = binascii.unhexlify(network_key)
+            network_key_bytes = unhexlify(network_key)
             if ord(network_key_bytes) != network.PUBLIC_KEY_BYTE_PREFIX:
                 raise incompatible_network_exception_factory(
                     network.NAME, network.PUBLIC_KEY_BYTE_PREFIX,
@@ -417,7 +418,7 @@ class PublicKey(Key):
 
         https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
         """
-        key = binascii.unhexlify(self.key)
+        key = unhexlify(self.key)
         # First get the hash160 of the key
         hash160_bytes = hash160(key)
         # Prepend the network address byte
