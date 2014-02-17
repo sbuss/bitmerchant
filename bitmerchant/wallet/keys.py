@@ -57,12 +57,22 @@ class ExtendedBip32Key(Key):
                  child_number=0L,
                  network=BitcoinMainNet,
                  *args, **kwargs):
+        def h(val, hex_len):
+            if isinstance(val, long) or isinstance(val, int):
+                return long_to_hex(val, hex_len)
+            elif isinstance(val, basestring) and is_hex_string(val):
+                if len(val) != hex_len:
+                    raise ValueError("Invalid parameter length")
+                return val
+            else:
+                raise ValueError("Invalid parameter type")
+
+        self.depth = h(depth, 2)
+        self.parent_fingerprint = h(parent_fingerprint, 8)
+        self.child_number = h(child_number, 8)
+        self.chain_code = h(chain_code, 64)
         super(ExtendedBip32Key, self).__init__(
             network=network, *args, **kwargs)
-        self.depth = depth
-        self.parent_fingerprint = parent_fingerprint
-        self.child_number = child_number
-        self.chain_code = chain_code
 
     def is_extended_bip32_key(self, key):
         try:
@@ -87,40 +97,44 @@ class ExtendedBip32Key(Key):
         """Get the identifier for the key.
 
         Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256)
-        of the serialized public key, ignoring the chain code. This corresponds
-        exactly to the data used in traditional Bitcoin addresses. It is not
-        advised to represent this data in base58 format though, as it may be
-        interpreted as an address that way (and wallet software is not required
-        to accept payment to the chain key itself).
-
+        of the public key's `key`. This corresponds exactly to the data used in
+        traditional Bitcoin addresses. It is not advised to represent this data
+        in base58 format though, as it may be interpreted as an address that
+        way (and wallet software is not required to accept payment to the chain
+        key itself).
         """
-        pubkey = self.get_public_key()
-        key = pubkey.serialize()
-        return hash160(key)
+        key = self.get_public_key().key
+        return hexlify(hash160(unhexlify(key)))
 
     @property
     def fingerprint(self):
         """The first 32 bits of the identifier are called the fingerprint."""
         # 32 bits == 4 Bytes == 8 hex characters
-        return self.identifier[:8]
+        return hex(int(self.identifier[:8], 16))
 
-    def _serialize_header(self):
+    def _serialize_header(self, with_chain_code=True):
         network_version = long_to_hex(self.get_network_version(), 8)
-        depth = long_to_hex(self.depth, 2)
-        parent_fingerprint = long_to_hex(self.parent_fingerprint, 8)
-        child_number = long_to_hex(self.child_number, 8)
-        chain_code = long_to_hex(self.chain_code, 64)
+        depth = self.depth
+        parent_fingerprint = self.parent_fingerprint
+        child_number = self.child_number
+        if with_chain_code:
+            chain_code = self.chain_code
+        else:
+            chain_code = ""
         return (network_version + depth + parent_fingerprint + child_number +
                 chain_code)
 
-    def serialize(self):
+    def serialize(self, with_chain_code=True):
         """Serialize this key.
 
         See the spec in `from_hex_key` for details."""
         # Private and public serializations are slightly different, but the
         # header will be the same.
-        header = self._serialize_header()  # NOQA
+        header = self._serialize_header(with_chain_code)  # NOQA
         raise NotImplementedError()
+
+    def serialize_b58(self):
+        return base58.b58encode_check(unhexlify(self.serialize()))
 
     @classmethod
     def _parse_raw_key(cls, key, network=BitcoinMainNet):
@@ -282,6 +296,25 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
     def get_network_version(self):
         return self.network.EXTENDED_PRIVATE_BYTE_PREFIX
 
+    def get_public_key(self):
+        """Get the PublicKey for this PrivateKey."""
+        g = SECP256k1.generator
+        point = _ECDSA_Public_key(g, g * self.private_exponent).point
+        return ExtendedPublicKey.from_point(
+            point, self.network, chain_code=self.chain_code)
+
+    def export_to_wif(self):
+        """Export a key to WIF.
+
+        See https://en.bitcoin.it/wiki/Wallet_import_format for a full
+        description.
+        """
+        # Add the network byte, creating the "extended key"
+        extended_key_hex = self.get_extended_key()
+        extended_key_bytes = unhexlify(extended_key_hex) + b'\01'
+        # And return the base58-encoded result with a checksum
+        return base58.b58encode_check(extended_key_bytes)
+
     @classmethod
     def from_master_secret(cls, seed, network=BitcoinMainNet):
         """Generate a new PrivateKey from a secret key.
@@ -324,8 +357,8 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
                 given_prefix=ord(version))
         return ret_val
 
-    def serialize(self):
-        header = self._serialize_header()
+    def serialize(self, with_chain_code=True):
+        header = self._serialize_header(with_chain_code)
         header += '00' + self.key
         return header.lower()
 
@@ -394,7 +427,7 @@ class PublicKey(Key):
                 raise incompatible_network_exception_factory(
                     network.NAME, network.PUBLIC_KEY_BYTE_PREFIX,
                     ord(network_key_bytes))
-        return cls(long(x, 16), long(y, 16), network)
+        return cls(x=long(x, 16), y=long(y, 16), network=network)
 
     def point_from_key(self, key):
         """Create an ECDSA Point from a key.
@@ -418,13 +451,13 @@ class PublicKey(Key):
         return _ECDSA_Point(SECP256k1.curve, x, y)
 
     @classmethod
-    def from_point(cls, point, network=BitcoinMainNet):
+    def from_point(cls, point, network=BitcoinMainNet, **kwargs):
         """Create a PublicKey from a point on the SECP256k1 curve.
 
         :param point: A point on the SECP256k1 curve.
         :type point: SECP256k1.point
         """
-        return cls(point.x(), point.y(), network)
+        return cls(x=point.x(), y=point.y(), network=network, **kwargs)
 
     def to_address(self):
         """Create a public address from this key.
@@ -439,6 +472,24 @@ class PublicKey(Key):
             chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
         # Return a base58 encoded address with a checksum
         return base58.b58encode_check(network_hash160_bytes)
+
+
+class ExtendedPublicKey(ExtendedBip32Key, PublicKey):
+    def get_network_version(self):
+        return self.network.EXTENDED_PUBLIC_BYTE_PREFIX
+
+    def get_public_key(self):
+        return self
+
+    @property
+    def key(self):
+        # 0x03 for non-compressed points
+        return '03' + long_to_hex(self.x, 32)
+
+    def serialize(self, with_chain_code=True):
+        header = self._serialize_header(with_chain_code)
+        header += self.key
+        return header.lower()
 
 
 class KeyParseError(Exception):

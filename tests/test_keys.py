@@ -10,6 +10,7 @@ from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import ExtendedPrivateKey
 from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.utils import long_to_hex
 
 
 class _TestPrivateKeyBase(TestCase):
@@ -157,37 +158,6 @@ class TestExtendedPrivateKey(TestCase):
         self.assertEqual(ExtendedPrivateKey.from_master_secret(secret),
                          self.master_key)
 
-    def test_m_0p(self):
-        key = (
-            "0488ade4013442193e80000000"
-            "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
-            "00"
-            "edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea")
-        pk = ExtendedPrivateKey.from_hex_key(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.parent_fingerprint, self.master_key.fingerprint)
-        self.assertEqual(pk.child_number, 0x80000000)
-
-    def test_m_0p_1(self):
-        key = (
-            "0488ade4025c1bd64800000001"
-            "2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19"
-            "00"
-            "3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368")
-        pk = ExtendedPrivateKey.from_hex_key(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.child_number, 1)
-
-    def test_m_0p_1_2p(self):
-        key = (
-            "0488ade403bef5a2f980000002"
-            "04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f"
-            "00"
-            "cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca")
-        pk = ExtendedPrivateKey.from_hex_key(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.child_number, 0x80000000 + 2)
-
     def test_invalid_network_prefix(self):
         pass
 
@@ -202,3 +172,90 @@ class TestExtendedPrivateKey(TestCase):
 
     def test_fingerprint(self):
         pass
+
+
+class TestExtendedPrivateKeyVectors(TestCase):
+    def setUp(self):
+        self.master_key = ExtendedPrivateKey.from_master_secret(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+
+    def test_m(self):
+        """[Chain m]"""
+        id_hex = '3442193e1bb70916e914552172cd4e2dbc9df811'
+        fingerprint = '0x3442193e'
+        address = '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'
+        self.assertEqual(self.master_key.identifier, id_hex)
+        self.assertEqual(self.master_key.fingerprint, fingerprint)
+        self.assertEqual(self.master_key.get_public_key().to_address(),
+                         address)
+
+        secret_key_hex = \
+            'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35'
+        secret_key_wif = 'L52XzL2cMkHxqxBXRyEpnPQZGUs3uKiL3R11XbAdHigRzDozKZeW'
+        self.assertEqual(self.master_key.key, secret_key_hex)
+        self.assertEqual(self.master_key.export_to_wif(), secret_key_wif)
+
+        pubkey_hex = (
+            '03'
+            '39a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2')
+        self.assertEqual(self.master_key.get_public_key().key, pubkey_hex)
+
+        chaincode_hex = \
+            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
+        self.assertEqual(self.master_key.chain_code, chaincode_hex)
+
+        pubkey_serialized_hex = (
+            '0488b21e000000000000000000'
+            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
+            '03'
+            '39a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2')
+        pubkey_base58 = (
+            'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29E'
+            'SFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8')
+        private_serialized_hex = (
+            '0488ade4000000000000000000'
+            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
+            '00'
+            'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35')
+        private_base58 = (
+            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVv'
+            'vNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
+        self.assertEqual(
+            self.master_key.get_public_key().serialize(),
+            pubkey_serialized_hex)
+        self.assertEqual(
+            self.master_key.get_public_key().serialize_b58(), pubkey_base58)
+        self.assertEqual(self.master_key.serialize(), private_serialized_hex)
+        self.assertEqual(self.master_key.serialize_b58(), private_base58)
+
+    def test_m_0p(self):
+        key = (
+            "0488ade4013442193e80000000"
+            "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
+            "00"
+            "edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.parent_fingerprint,
+                         self.master_key.fingerprint.replace("0x", ""))
+        self.assertEqual(pk.child_number, long_to_hex(long(0x80000000), 8))
+
+    def test_m_0p_1(self):
+        key = (
+            "0488ade4025c1bd64800000001"
+            "2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19"
+            "00"
+            "3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.child_number, long_to_hex(1, 8))
+
+    def test_m_0p_1_2p(self):
+        key = (
+            "0488ade403bef5a2f980000002"
+            "04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f"
+            "00"
+            "cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca")
+        pk = ExtendedPrivateKey.from_hex_key(key)
+        self.assertEqual(pk.serialize(), key)
+        self.assertEqual(pk.child_number, long_to_hex(long(0x80000000 + 2), 8))
