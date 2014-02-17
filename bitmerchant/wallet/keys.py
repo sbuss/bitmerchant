@@ -50,9 +50,11 @@ class Key(object):
 
 
 class ExtendedBip32Key(Key):
-    def __init__(self, depth, chain_code,
-                 parent_fingerprint=b'\0\0\0\0',
-                 child_number=b'\0\0\0\0',
+    def __init__(self,
+                 chain_code,
+                 depth=0,
+                 parent_fingerprint=0L,
+                 child_number=0L,
                  network=BitcoinMainNet,
                  *args, **kwargs):
         super(ExtendedBip32Key, self).__init__(
@@ -288,8 +290,6 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
         """
         # Given a seed S of at least 128 bits, but 256 is advised
         # Calculate I = HMAC-SHA512(key="Bitcoin seed", msg=S)
-        import ipdb
-        ipdb.set_trace()
         I = hmac.new(b"Bitcoin seed", msg=seed, digestmod=sha512).digest()
         # Split I into two 32-byte sequences, IL and IR.
         I_L, I_R = I[:32], I[32:]
