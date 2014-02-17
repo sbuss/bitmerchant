@@ -327,7 +327,7 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
     def serialize(self):
         header = self._serialize_header()
         header += '00' + self.key
-        return header.upper()
+        return header.lower()
 
 
 class PublicKey(Key):
@@ -359,7 +359,7 @@ class PublicKey(Key):
             network=hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
             x=long_to_hex(self.x, 64),
             y=long_to_hex(self.y, 64))
-        return key.upper()
+        return key.lower()
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):

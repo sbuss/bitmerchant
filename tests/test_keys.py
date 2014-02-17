@@ -17,7 +17,7 @@ class _TestPrivateKeyBase(TestCase):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_key = \
-            "0C28FCA386C7A227600B2FE50B7CAE11EC86D3BF1FBE471BE89827E19D72AA1D"
+            "0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d"
         self.key = PrivateKey(long(self.expected_key, 16))
 
 
@@ -26,12 +26,12 @@ class _TestPublicKeyBase(TestCase):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_private_key = \
-            "18E14A7B6A307F426A94F8114701E7C8E774E7F9A47E2C2035DB29A206321725"
+            "18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725"
         self.private_key = PrivateKey(long(self.expected_private_key, 16))
         self.public_key = PublicKey.from_hex_key(
             "04"
-            "50863AD64A87AE8A2FE83C1AF1A8403CB53F53E486D8511DAD8A04887E5B2352"
-            "2CD470243453A299FA9E77237716103ABC11A1DF38855ED6F2EE187E9C582BA6")
+            "50863ad64a87ae8a2fe83c1af1a8403cb53f53e486d8511dad8a04887e5b2352"
+            "2cd470243453a299fa9e77237716103abc11a1df38855ed6f2ee187e9c582ba6")
 
 
 class TestPrivateKey(_TestPrivateKeyBase):
@@ -103,8 +103,8 @@ class TestPublicKey(_TestPublicKeyBase):
         #     break
         expected_key = (
             "04"
-            "02CBFD5410FD04973C096A4275BF75070955EBD689F316A6FBD449980BA7B756"
-            "C559764E5C367C03E002751AAF4EF8EC40FE97CDA9B2D3F14FDD4CD244E8FCD2")
+            "02cbfd5410fd04973c096a4275bf75070955ebd689f316a6fbd449980ba7b756"
+            "c559764e5c367c03e002751aaf4ef8ec40fe97cda9b2d3f14fdd4cd244e8fcd2")
         public_key = PublicKey.from_hex_key(expected_key)
         self.assertEqual(public_key.key, expected_key)
 
@@ -138,15 +138,15 @@ class TestPublicKey(_TestPublicKeyBase):
 class TestExtendedPrivateKey(TestCase):
     def setUp(self):
         self.expected_key = (
-            "0488ADE4"  # BitcoinMainNet version
+            "0488ade4"  # BitcoinMainNet version
             "00"  # depth
             "00000000"  # parent fingerprint
             "00000000"  # child_number
             # chain_code
-            "873DFF81C02F525623FD1FE5167EAC3A55A049DE3D314BB42EE227FFED37D508"
+            "873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508"
             "00"  # key identifier
             # private exponent
-            "E8F32E723DECF4051AEFAC8E2C93C9C5B214313817CDB01A1494B917C8436B35")
+            "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35")
         self.master_key = ExtendedPrivateKey.from_hex_key(self.expected_key)
 
     def test_serialize_master_key(self):
@@ -159,10 +159,10 @@ class TestExtendedPrivateKey(TestCase):
 
     def test_m_0p(self):
         key = (
-            "0488ADE4013442193E80000000"
-            "47FDACBD0F1097043B78C63C20C34EF4ED9A111D980047AD16282C7AE6236141"
+            "0488ade4013442193e80000000"
+            "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
             "00"
-            "EDB2E14F9EE77D26DD93B4ECEDE8D16ED408CE149B6CD80B0715A2D911A0AFEA")
+            "edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea")
         pk = ExtendedPrivateKey.from_hex_key(key)
         self.assertEqual(pk.serialize(), key)
         self.assertEqual(pk.parent_fingerprint, self.master_key.fingerprint)
@@ -170,20 +170,20 @@ class TestExtendedPrivateKey(TestCase):
 
     def test_m_0p_1(self):
         key = (
-            "0488ADE4025C1BD64800000001"
-            "2A7857631386BA23DACAC34180DD1983734E444FDBF774041578E9B6ADB37C19"
+            "0488ade4025c1bd64800000001"
+            "2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19"
             "00"
-            "3C6CB8D0F6A264C91EA8B5030FADAA8E538B020F0A387421A12DE9319DC93368")
+            "3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368")
         pk = ExtendedPrivateKey.from_hex_key(key)
         self.assertEqual(pk.serialize(), key)
         self.assertEqual(pk.child_number, 1)
 
     def test_m_0p_1_2p(self):
         key = (
-            "0488ADE403BEF5A2F980000002"
-            "04466B9CC8E161E966409CA52986C584F07E9DC81F735DB683C3FF6EC7B1503F"
+            "0488ade403bef5a2f980000002"
+            "04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f"
             "00"
-            "CBCE0D719ECF7431D88E6A89FA1483E02E35092AF60C042B1DF2FF59FA424DCA")
+            "cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca")
         pk = ExtendedPrivateKey.from_hex_key(key)
         self.assertEqual(pk.serialize(), key)
         self.assertEqual(pk.child_number, 0x80000000 + 2)

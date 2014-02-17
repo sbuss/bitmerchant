@@ -21,4 +21,4 @@ def long_to_hex(l, size):
     Note that size is the size of the resulting hex string. So, for a 32Byte
     long size should be 64 (two hex characters per byte"."""
     f_str = "{0:0%sx}" % size
-    return f_str.format(l).upper()
+    return f_str.format(l).lower()
