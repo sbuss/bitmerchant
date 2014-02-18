@@ -67,7 +67,12 @@ class ExtendedBip32Key(Key):
             else:
                 raise ValueError("Invalid parameter type")
 
-        self.depth = h(depth, 2)
+        if not isinstance(depth, int) and not isinstance(depth, long):
+            raise ValueError("depth must be an int or long")
+        self.depth = depth
+        if (isinstance(parent_fingerprint, basestring) and
+                parent_fingerprint.startswith("0x")):
+            parent_fingerprint = parent_fingerprint[2:]
         self.parent_fingerprint = h(parent_fingerprint, 8)
         self.child_number = h(child_number, 8)
         self.chain_code = h(chain_code, 64)
@@ -114,7 +119,7 @@ class ExtendedBip32Key(Key):
 
     def _serialize_header(self, with_chain_code=True):
         network_version = long_to_hex(self.get_network_version(), 8)
-        depth = self.depth
+        depth = long_to_hex(self.depth, 2)
         parent_fingerprint = self.parent_fingerprint
         child_number = self.child_number
         if with_chain_code:
@@ -135,6 +140,59 @@ class ExtendedBip32Key(Key):
 
     def serialize_b58(self):
         return base58.b58encode_check(unhexlify(self.serialize()))
+
+    def get_child(self, child_number, is_prime=None):
+        """Derive a child key.
+
+        :param child_number: The number of the child key to compute
+        :type child_number: int
+        :param is_prime: If set, determines if the resulting child is prime
+        :type is_prime: bool, defaults to None
+
+        Positive child_numbers (less than 2,147,483,648) produce public
+        children. Public children can only create other public children, and
+        cannot spend any funds.
+
+        Negative numbers (or numbers between 2,147,483,648 & 4,294,967,295)
+        produce private children. Private children can create more private
+        keys, spend the funds in its associated public key, and spend all funds
+        from subsequent children, so should be kept safe.
+
+        NOTE: Python can't do -0, so if you want the private 0th child you
+        need to manually set is_prime=True.
+
+        NOTE: negative numbered children are provided as a convenience
+        because nobody wants to remember the above numbers. Negative numbers
+        are considered 'prime children', which is described in the BIP32 spec
+        as a leading 1 in a 32 bit unsigned int.
+        """
+        boundary = 0x80000000
+        max_child = 0xFFFFFFFF
+
+        if is_prime is None:
+            if child_number > max_child or child_number < -1 * boundary:
+                raise ValueError("Invalid child number")
+            if child_number < 0:
+                child_number = abs(child_number)
+                is_prime = True
+            elif child_number >= boundary:
+                child_number -= boundary
+                is_prime = True
+            else:
+                is_prime = False
+        else:
+            if child_number < 0 or child_number > boundary:
+                raise ValueError("Invalid child number")
+        if is_prime:
+            return self._private_child(child_number)
+        else:
+            return self._public_child(child_number)
+
+    def _private_child(child_number):
+        raise NotImplementedError()
+
+    def _public_child(child_number):
+        raise NotImplementedError()
 
     @classmethod
     def _parse_raw_key(cls, key, network=BitcoinMainNet):
@@ -221,6 +279,9 @@ class PrivateKey(Key):
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
+    def _public_child(child_number):
+        raise NotImplementedError()
+
     @classmethod
     def from_wif(cls, wif, network=BitcoinMainNet):
         """Import a key in WIF format.
@@ -301,7 +362,9 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
         g = SECP256k1.generator
         point = _ECDSA_Public_key(g, g * self.private_exponent).point
         return ExtendedPublicKey.from_point(
-            point, self.network, chain_code=self.chain_code)
+            point, network=self.network, chain_code=self.chain_code,
+            depth=self.depth, parent_fingerprint=self.parent_fingerprint,
+            child_number=self.child_number)
 
     def export_to_wif(self):
         """Export a key to WIF.
@@ -314,6 +377,22 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
         extended_key_bytes = unhexlify(extended_key_hex) + b'\01'
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
+
+    def _private_child(self, child_number):
+        child_number_hex = long_to_hex(child_number + 0x80000000, 8)
+        data = '00' + self.key + child_number_hex
+        I = hmac.new(
+            unhexlify(self.chain_code),
+            msg=unhexlify(data),
+            digestmod=sha512).digest()
+        I_L, I_R = I[:32], I[32:]
+        k_i = (long(hexlify(I_L), 16) + long(self.key, 16)) % SECP256k1.order
+        c_i = hexlify(I_R)
+        return self.__class__(
+            chain_code=c_i, depth=self.depth + 1,
+            parent_fingerprint=self.fingerprint,
+            child_number=child_number_hex,
+            private_exponent=k_i)
 
     @classmethod
     def from_master_secret(cls, seed, network=BitcoinMainNet):
