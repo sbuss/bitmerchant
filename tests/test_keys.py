@@ -179,30 +179,47 @@ class TestExtendedPrivateKeyVectors(TestCase):
         self.master_key = ExtendedPrivateKey.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
+    def _test_vector(self, key, id_hex, fingerprint, address,
+                     secret_key_hex, secret_key_wif,
+                     pubkey_hex, chaincode_hex,
+                     pubkey_serialized_hex, pubkey_base58,
+                     private_serialized_hex, private_base58,
+                     ):
+        self.assertEqual(key.identifier, id_hex)
+        self.assertEqual(key.fingerprint, fingerprint)
+        self.assertEqual(key.get_public_key().to_address(),
+                         address)
+
+        self.assertEqual(key.key, secret_key_hex)
+        self.assertEqual(key.export_to_wif(), secret_key_wif)
+
+        self.assertEqual(key.get_public_key().key, pubkey_hex)
+        self.assertEqual(key.chain_code, chaincode_hex)
+
+        self.assertEqual(
+            key.get_public_key().serialize(),
+            pubkey_serialized_hex)
+        self.assertEqual(
+            key.get_public_key().serialize_b58(), pubkey_base58)
+        self.assertEqual(key.serialize(), private_serialized_hex)
+        self.assertEqual(key.serialize_b58(), private_base58)
+
     def test_m(self):
         """[Chain m]"""
         id_hex = '3442193e1bb70916e914552172cd4e2dbc9df811'
         fingerprint = '0x3442193e'
         address = '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'
-        self.assertEqual(self.master_key.identifier, id_hex)
-        self.assertEqual(self.master_key.fingerprint, fingerprint)
-        self.assertEqual(self.master_key.get_public_key().to_address(),
-                         address)
 
         secret_key_hex = \
             'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35'
         secret_key_wif = 'L52XzL2cMkHxqxBXRyEpnPQZGUs3uKiL3R11XbAdHigRzDozKZeW'
-        self.assertEqual(self.master_key.key, secret_key_hex)
-        self.assertEqual(self.master_key.export_to_wif(), secret_key_wif)
 
         pubkey_hex = (
             '03'
             '39a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2')
-        self.assertEqual(self.master_key.get_public_key().key, pubkey_hex)
 
         chaincode_hex = \
             '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
-        self.assertEqual(self.master_key.chain_code, chaincode_hex)
 
         pubkey_serialized_hex = (
             '0488b21e000000000000000000'
@@ -220,13 +237,12 @@ class TestExtendedPrivateKeyVectors(TestCase):
         private_base58 = (
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVv'
             'vNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
-        self.assertEqual(
-            self.master_key.get_public_key().serialize(),
-            pubkey_serialized_hex)
-        self.assertEqual(
-            self.master_key.get_public_key().serialize_b58(), pubkey_base58)
-        self.assertEqual(self.master_key.serialize(), private_serialized_hex)
-        self.assertEqual(self.master_key.serialize_b58(), private_base58)
+        self._test_vector(
+            self.master_key, id_hex, fingerprint, address,
+            secret_key_hex, secret_key_wif,
+            pubkey_hex, chaincode_hex,
+            pubkey_serialized_hex, pubkey_base58,
+            private_serialized_hex, private_base58)
 
     def test_m_0p(self):
         key = (
