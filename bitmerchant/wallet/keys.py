@@ -192,10 +192,10 @@ class ExtendedBip32Key(Key):
         else:
             return self._public_child(child_number)
 
-    def _private_child(child_number):
+    def _private_child(self, child_number):
         raise NotImplementedError()
 
-    def _public_child(child_number):
+    def _public_child(self, child_number):
         raise NotImplementedError()
 
     @classmethod
