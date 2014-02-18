@@ -182,8 +182,8 @@ class TestExtendedPrivateKeyVectors(TestCase):
     def _test_vector(self, key, id_hex, fingerprint, address,
                      secret_key_hex, secret_key_wif,
                      pubkey_hex, chaincode_hex,
-                     pubkey_serialized_hex, pubkey_base58,
-                     private_serialized_hex, private_base58,
+                     pubkey_serialized_hex, private_serialized_hex,
+                     pubkey_base58, private_base58,
                      ):
         self.assertEqual(key.identifier, id_hex)
         self.assertEqual(key.fingerprint, fingerprint)
@@ -196,65 +196,45 @@ class TestExtendedPrivateKeyVectors(TestCase):
         self.assertEqual(key.get_public_key().key, pubkey_hex)
         self.assertEqual(key.chain_code, chaincode_hex)
 
-        self.assertEqual(
-            key.get_public_key().serialize(),
-            pubkey_serialized_hex)
-        self.assertEqual(
-            key.get_public_key().serialize_b58(), pubkey_base58)
+        self.assertEqual(key.get_public_key().serialize(),
+                         pubkey_serialized_hex)
         self.assertEqual(key.serialize(), private_serialized_hex)
+        self.assertEqual(key.get_public_key().serialize_b58(), pubkey_base58)
         self.assertEqual(key.serialize_b58(), private_base58)
 
     def test_m(self):
         """[Chain m]"""
-        id_hex = '3442193e1bb70916e914552172cd4e2dbc9df811'
-        fingerprint = '0x3442193e'
-        address = '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma'
-
-        secret_key_hex = \
-            'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35'
-        secret_key_wif = 'L52XzL2cMkHxqxBXRyEpnPQZGUs3uKiL3R11XbAdHigRzDozKZeW'
-
-        pubkey_hex = (
-            '03'
-            '39a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2')
-
-        chaincode_hex = \
-            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
-
-        pubkey_serialized_hex = (
-            '0488b21e000000000000000000'
-            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
-            '03'
-            '39a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2')
-        pubkey_base58 = (
-            'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29E'
-            'SFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8')
-        private_serialized_hex = (
-            '0488ade4000000000000000000'
-            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'
-            '00'
-            'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35')
-        private_base58 = (
-            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVv'
-            'vNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi')
-        self._test_vector(
-            self.master_key, id_hex, fingerprint, address,
-            secret_key_hex, secret_key_wif,
-            pubkey_hex, chaincode_hex,
-            pubkey_serialized_hex, pubkey_base58,
-            private_serialized_hex, private_base58)
+        vector = [
+            '3442193e1bb70916e914552172cd4e2dbc9df811',
+            '0x3442193e',
+            '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma',
+            'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35',
+            'L52XzL2cMkHxqxBXRyEpnPQZGUs3uKiL3R11XbAdHigRzDozKZeW',
+            '0339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2',  # nopep8
+            '873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508',
+            '0488b21e000000000000000000873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d5080339a36013301597daef41fbe593a02cc513d0b55527ec2df1050e2e8ff49c85c2',  # nopep8
+            '0488ade4000000000000000000873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d50800e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35',  # nopep8
+            'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',  # nopep8
+            'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi',  # nopep8
+        ]
+        self._test_vector(self.master_key, *vector)
 
     def test_m_0p(self):
-        key = (
-            "0488ade4013442193e80000000"
-            "47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141"
-            "00"
-            "edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea")
-        pk = ExtendedPrivateKey.from_hex_key(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.parent_fingerprint,
-                         self.master_key.fingerprint.replace("0x", ""))
-        self.assertEqual(pk.child_number, long_to_hex(long(0x80000000), 8))
+        vector = [
+            '5c1bd648ed23aa5fd50ba52b2457c11e9e80a6a7',
+            '0x5c1bd648',
+            '19Q2WoS5hSS6T8GjhK8KZLMgmWaq4neXrh',
+            'edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea',
+            'L5BmPijJjrKbiUfG4zbiFKNqkvuJ8usooJmzuD7Z8dkRoTThYnAT',
+            '035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56',  # nopep8
+            '47fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141',
+            '0488b21e013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae6236141035a784662a4a20a65bf6aab9ae98a6c068a81c52e4b032c0fb5400c706cfccc56',  # nopep8
+            '0488ade4013442193e8000000047fdacbd0f1097043b78c63c20c34ef4ed9a111d980047ad16282c7ae623614100edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea',  # nopep8
+            'xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw',  # nopep8
+            'xprv9uHRZZhk6KAJC1avXpDAp4MDc3sQKNxDiPvvkX8Br5ngLNv1TxvUxt4cV1rGL5hj6KCesnDYUhd7oWgT11eZG7XnxHrnYeSvkzY7d2bhkJ7',  # nopep8
+        ]
+        key = self.master_key.get_child(0, is_prime=True)
+        self._test_vector(key, *vector)
 
     def test_m_0p_1(self):
         key = (
