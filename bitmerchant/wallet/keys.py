@@ -169,9 +169,11 @@ class ExtendedBip32Key(Key):
         boundary = 0x80000000
         max_child = 0xFFFFFFFF
 
+        # If is_prime isn't set, then we can infer it from the child_number
         if is_prime is None:
             if child_number > max_child or child_number < -1 * boundary:
                 raise ValueError("Invalid child number")
+            # Prime children are either < 0 or > 0x80000000
             if child_number < 0:
                 child_number = abs(child_number)
                 is_prime = True
@@ -181,6 +183,8 @@ class ExtendedBip32Key(Key):
             else:
                 is_prime = False
         else:
+            # Otherwise is_prime is set so the child_number should be between
+            # 0 and 0x80000000
             if child_number < 0 or child_number > boundary:
                 raise ValueError("Invalid child number")
         if is_prime:
@@ -379,17 +383,37 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
         return base58.b58encode_check(extended_key_bytes)
 
     def _private_child(self, child_number):
-        child_number_hex = long_to_hex(child_number + 0x80000000, 8)
+        """Derive a private child for this key.
+
+        This derivation is described at
+        https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#private-child-key-derivation  # nopep8
+        """
+        boundary = 0x80000000
+        if child_number < 0 or child_number >= boundary:
+            raise ValueError("Invalid child number")
+
+        # Even though we take child_number as an int < boundary, the internal
+        # derivation needs it to be the larger number.
+        child_number = child_number + boundary
+        child_number_hex = long_to_hex(child_number, 8)
+        # Let data = concat(0x00, self.key, child_number)
         data = '00' + self.key + child_number_hex
+        # Compute a 64 Byte I that is the HMAC-SHA512, using self.chain_code
+        # as the seed, and data as the message.
         I = hmac.new(
             unhexlify(self.chain_code),
             msg=unhexlify(data),
             digestmod=sha512).digest()
+        # Split I into its 32 Byte components.
         I_L, I_R = I[:32], I[32:]
+        # I_L is added to the current key's secret exponent (mod n), where
+        # n is the order of the ECDSA curve in use.
         k_i = (long(hexlify(I_L), 16) + long(self.key, 16)) % SECP256k1.order
+        # I_R is the child's chain code
         c_i = hexlify(I_R)
         return self.__class__(
-            chain_code=c_i, depth=self.depth + 1,
+            chain_code=c_i,
+            depth=self.depth + 1,  # we have to go deeper...
             parent_fingerprint=self.fingerprint,
             child_number=child_number_hex,
             private_exponent=k_i)
