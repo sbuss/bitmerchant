@@ -184,23 +184,23 @@ class TestExtendedPrivateKeyVectors(TestCase):
                      pubkey_hex, chaincode_hex,
                      pubkey_serialized_hex, private_serialized_hex,
                      pubkey_base58, private_base58,
+                     include_private=True
                      ):
-        self.assertEqual(key.identifier, id_hex)
-        self.assertEqual(key.fingerprint, fingerprint)
+        if include_private:
+            self.assertEqual(key.identifier, id_hex)
+            self.assertEqual(key.fingerprint, fingerprint)
+            self.assertEqual(key.key, secret_key_hex)
+            self.assertEqual(key.export_to_wif(), secret_key_wif)
+            self.assertEqual(key.serialize(), private_serialized_hex)
+            self.assertEqual(key.serialize_b58(), private_base58)
+
         self.assertEqual(key.get_public_key().to_address(),
                          address)
-
-        self.assertEqual(key.key, secret_key_hex)
-        self.assertEqual(key.export_to_wif(), secret_key_wif)
-
         self.assertEqual(key.get_public_key().key, pubkey_hex)
         self.assertEqual(key.chain_code, chaincode_hex)
-
         self.assertEqual(key.get_public_key().serialize(),
                          pubkey_serialized_hex)
-        self.assertEqual(key.serialize(), private_serialized_hex)
         self.assertEqual(key.get_public_key().serialize_b58(), pubkey_base58)
-        self.assertEqual(key.serialize_b58(), private_base58)
 
     def test_m(self):
         """[Chain m]"""
@@ -235,16 +235,30 @@ class TestExtendedPrivateKeyVectors(TestCase):
         ]
         key = self.master_key.get_child(0, is_prime=True)
         self._test_vector(key, *vector)
+        self._test_vector(key.get_public_key(), include_private=False, *vector)
+        key = self.master_key.get_child(0, is_prime=False)
+        self._test_vector(key, include_private=False, *vector)
 
     def test_m_0p_1(self):
-        key = (
-            "0488ade4025c1bd64800000001"
-            "2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19"
-            "00"
-            "3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368")
-        pk = ExtendedPrivateKey.from_hex_key(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.child_number, long_to_hex(1, 8))
+        vector = [
+            'bef5a2f9a56a94aab12459f72ad9cf8cf19c7bbe',
+            '0xbef5a2f9',
+            '1JQheacLPdM5ySCkrZkV66G2ApAXe1mqLj',
+            '3c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368',
+            'KyFAjQ5rgrKvhXvNMtFB5PCSKUYD1yyPEe3xr3T34TZSUHycXtMM',
+            '03501e454bf00751f24b1b489aa925215d66af2234e3891c3b21a52bedb3cd711c',  # nopep8
+            '2a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19',
+            '0488b21e025c1bd648000000012a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c1903501e454bf00751f24b1b489aa925215d66af2234e3891c3b21a52bedb3cd711c',  # nopep8
+            '0488ade4025c1bd648000000012a7857631386ba23dacac34180dd1983734e444fdbf774041578e9b6adb37c19003c6cb8d0f6a264c91ea8b5030fadaa8e538b020f0a387421a12de9319dc93368',  # nopep8
+            'xpub6ASuArnXKPbfEwhqN6e3mwBcDTgzisQN1wXN9BJcM47sSikHjJf3UFHKkNAWbWMiGj7Wf5uMash7SyYq527Hqck2AxYysAA7xmALppuCkwQ',  # nopep8
+            'xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLnvSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs',  # nopep8
+        ]
+        m0 = self.master_key.get_child(0, is_prime=True)
+        key = m0.get_child(1)
+        self._test_vector(key, *vector)
+        self._test_vector(key.get_public_key(), include_private=False, *vector)
+        key = m0.get_child(1, is_prime=False)
+        self._test_vector(key, include_private=False, *vector)
 
     def test_m_0p_1_2p(self):
         key = (

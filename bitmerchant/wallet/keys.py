@@ -418,6 +418,39 @@ class ExtendedPrivateKey(ExtendedBip32Key, PrivateKey):
             child_number=child_number_hex,
             private_exponent=k_i)
 
+    def _public_child(self, child_number):
+        """Derive a public child for this key.
+
+        This derivation is described at
+        https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#private-child-key-derivation  # nopep8
+        """
+        boundary = 0x80000000
+        if child_number < 0 or child_number >= boundary:
+            raise ValueError("Invalid child number")
+
+        child_number_hex = long_to_hex(child_number, 8)
+        # Let data = the public key's compressed format + child_number
+        data = self.get_public_key().key + child_number_hex
+        # Compute a 64 Byte I that is the HMAC-SHA512, using self.chain_code
+        # as the seed, and data as the message.
+        I = hmac.new(
+            unhexlify(self.chain_code),
+            msg=unhexlify(data),
+            digestmod=sha512).digest()
+        # Split I into its 32 Byte components.
+        I_L, I_R = I[:32], I[32:]
+        # I_L is added to the current key's secret exponent (mod n), where
+        # n is the order of the ECDSA curve in use.
+        k_i = (long(hexlify(I_L), 16) + long(self.key, 16)) % SECP256k1.order
+        # I_R is the child's chain code
+        c_i = hexlify(I_R)
+        return self.__class__(
+            chain_code=c_i,
+            depth=self.depth + 1,  # we have to go deeper...
+            parent_fingerprint=self.fingerprint,
+            child_number=child_number_hex,
+            private_exponent=k_i)
+
     @classmethod
     def from_master_secret(cls, seed, network=BitcoinMainNet):
         """Generate a new PrivateKey from a secret key.
@@ -584,6 +617,38 @@ class ExtendedPublicKey(ExtendedBip32Key, PublicKey):
     def get_public_key(self):
         return self
 
+    def _private_child(self, child_number):
+        raise InvalidChildException()
+
+    def _public_child(self, child_number):
+        boundary = 0x80000000
+        if child_number < 0 or child_number >= boundary:
+            raise ValueError("Invalid child number")
+
+        child_number_hex = long_to_hex(child_number, 8)
+        # Let data = the public key's compressed format + child_number
+        data = self.key + child_number_hex
+        # Compute a 64 Byte I that is the HMAC-SHA512, using self.chain_code
+        # as the seed, and data as the message.
+        I = hmac.new(
+            unhexlify(self.chain_code),
+            msg=unhexlify(data),
+            digestmod=sha512).digest()
+        # Split I into its 32 Byte components.
+        I_L, I_R = I[:32], I[32:]
+        # K_i = (I_L + k_par)*G = I_L*G + K_par
+        g = SECP256k1.generator
+        I_L_long = long(hexlify(I_L), 16)
+        point = _ECDSA_Public_key(g, g * I_L_long).point + self.point
+        # I_R is the child's chain code
+        c_i = hexlify(I_R)
+        return self.from_point(
+            point=point,
+            chain_code=c_i,
+            depth=self.depth + 1,  # we have to go deeper...
+            parent_fingerprint=self.fingerprint,
+            child_number=child_number_hex)
+
     @property
     def key(self):
         # 0x03 for non-compressed points
@@ -614,4 +679,8 @@ class ChecksumException(Exception):
 
 
 class IncompatibleNetworkException(Exception):
+    pass
+
+
+class InvalidChildException(Exception):
     pass
