@@ -1,0 +1,334 @@
+from binascii import hexlify
+from binascii import unhexlify
+from collections import namedtuple
+from hashlib import sha512
+import hmac
+
+import base58
+from ecdsa import SECP256k1
+from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+
+from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.wallet.keys import PrivateKey
+from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.utils import hash160
+from bitmerchant.wallet.utils import is_hex_string
+from bitmerchant.wallet.utils import long_to_hex
+
+
+PublicPair = namedtuple("PublicPair", ["x", "y"])
+
+
+class Node(object):
+    """A BIP32 wallet is made up of Nodes.
+
+    A Private node contains both a public and private key, while a public
+    node contains only a public key.
+    """
+    def __init__(self,
+                 chain_code,
+                 depth=0,
+                 parent_fingerprint=0L,
+                 child_number=0L,
+                 private_exponent=None,
+                 public_pair=None,
+                 network=BitcoinMainNet):
+        if not private_exponent and not public_pair:
+            raise ValueError(
+                "You must supply one of private_exponent or public_pair")
+
+        self.private_key = None
+        self.public_key = None
+        if private_exponent:
+            self.private_key = PrivateKey(
+                private_exponent, network=network)
+        if public_pair:
+            self.public_key = PublicKey(
+                long(public_pair.x),
+                long(public_pair.y),
+                network=network)
+            if (self.private_key and self.private_key.get_public_key() !=
+                    self.public_key):
+                raise ValueError(
+                    "Provided private and public values do not match")
+        else:
+            self.public_key = self.private_key.get_public_key()
+
+        def h(val, hex_len):
+            if isinstance(val, long) or isinstance(val, int):
+                return long_to_hex(val, hex_len)
+            elif isinstance(val, basestring) and is_hex_string(val):
+                if len(val) != hex_len:
+                    raise ValueError("Invalid parameter length")
+                return val
+            else:
+                raise ValueError("Invalid parameter type")
+
+        self.network = network
+        if not isinstance(depth, int) and not isinstance(depth, long):
+            raise ValueError("depth must be an int or long")
+        self.depth = depth
+        if (isinstance(parent_fingerprint, basestring) and
+                parent_fingerprint.startswith("0x")):
+            parent_fingerprint = parent_fingerprint[2:]
+        self.parent_fingerprint = h(parent_fingerprint, 8)
+        self.child_number = h(child_number, 8)
+        self.chain_code = h(chain_code, 64)
+
+    def get_private_key_hex(self):
+        return self.private_key.key
+
+    def get_public_key_hex(self):
+        return '03' + long_to_hex(self.public_key.x, 32)
+
+    @property
+    def identifier(self):
+        """Get the identifier for this node.
+
+        Extended keys can be identified by the Hash160 (RIPEMD160 after SHA256)
+        of the public key's `key`. This corresponds exactly to the data used in
+        traditional Bitcoin addresses. It is not advised to represent this data
+        in base58 format though, as it may be interpreted as an address that
+        way (and wallet software is not required to accept payment to the chain
+        key itself).
+        """
+        key = self.get_public_key_hex()
+        return hexlify(hash160(unhexlify(key)))
+
+    @property
+    def fingerprint(self):
+        """The first 32 bits of the identifier are called the fingerprint."""
+        # 32 bits == 4 Bytes == 8 hex characters
+        return hex(int(self.identifier[:8], 16))
+
+    def get_child(self, child_number, is_prime=None, as_private=True):
+        """Derive a child key.
+
+        :param child_number: The number of the child key to compute
+        :type child_number: int
+        :param is_prime: If set, determines if the resulting child is prime
+        :type is_prime: bool, defaults to None
+        :param as_private: If True, include private key in result. Defaults
+            to True. If there is no private key present, this is ignored.
+        :type as_private: bool
+
+        Positive child_numbers (less than 2,147,483,648) produce public
+        children. Public children can only create other public children, and
+        cannot spend any funds.
+
+        Negative numbers (or numbers between 2,147,483,648 & 4,294,967,295)
+        produce private children. Private children can create more private
+        keys, spend the funds in its associated public key, and spend all funds
+        from subsequent children, so should be kept safe.
+
+        NOTE: Python can't do -0, so if you want the private 0th child you
+        need to manually set is_prime=True.
+
+        NOTE: negative numbered children are provided as a convenience
+        because nobody wants to remember the above numbers. Negative numbers
+        are considered 'prime children', which is described in the BIP32 spec
+        as a leading 1 in a 32 bit unsigned int.
+
+        This derivation is fully described at
+        https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-functions  # nopep8
+        """
+        boundary = 0x80000000
+        max_child = 0xFFFFFFFF
+
+        # If is_prime isn't set, then we can infer it from the child_number
+        if is_prime is None:
+            if child_number > max_child or child_number < -1 * boundary:
+                raise ValueError("Invalid child number")
+            # Prime children are either < 0 or > 0x80000000
+            if child_number < 0:
+                child_number = abs(child_number)
+                is_prime = True
+            elif child_number >= boundary:
+                child_number -= boundary
+                is_prime = True
+            else:
+                is_prime = False
+        else:
+            # Otherwise is_prime is set so the child_number should be between
+            # 0 and 0x80000000
+            if child_number < 0 or child_number > boundary:
+                raise ValueError("Invalid child number")
+
+        if not self.private_key and is_prime:
+            raise ValueError(
+                "Cannot compute a prime child without a private key")
+
+        if is_prime:
+            # Even though we take child_number as an int < boundary, the
+            # internal derivation needs it to be the larger number.
+            child_number = child_number + boundary
+        child_number_hex = long_to_hex(child_number, 8)
+
+        if is_prime:
+            # Let data = concat(0x00, self.key, child_number)
+            data = '00' + self.private_key.key
+        else:
+            data = self.get_public_key_hex()
+        data += child_number_hex
+
+        # Compute a 64 Byte I that is the HMAC-SHA512, using self.chain_code
+        # as the seed, and data as the message.
+        I = hmac.new(
+            unhexlify(self.chain_code),
+            msg=unhexlify(data),
+            digestmod=sha512).digest()
+        # Split I into its 32 Byte components.
+        I_L, I_R = I[:32], I[32:]
+
+        c_i = hexlify(I_R)
+        private_exponent = None
+        public_pair = None
+        if as_private and self.private_key:
+            # Use private information for derivation
+            # I_L is added to the current key's secret exponent (mod n), where
+            # n is the order of the ECDSA curve in use.
+            private_exponent = (
+                (long(hexlify(I_L), 16) + long(self.private_key.key, 16))
+                % SECP256k1.order)
+            # I_R is the child's chain code
+        else:
+            # Only use public information for this derivation
+            g = SECP256k1.generator
+            I_L_long = long(hexlify(I_L), 16)
+            point = (_ECDSA_Public_key(g, g * I_L_long).point +
+                     self.public_key.point)
+            # I_R is the child's chain code
+            public_pair = PublicPair(point.x(), point.y())
+
+        return self.__class__(
+            chain_code=c_i,
+            depth=self.depth + 1,  # we have to go deeper...
+            parent_fingerprint=self.fingerprint,
+            child_number=child_number_hex,
+            private_exponent=private_exponent,
+            public_pair=public_pair)
+
+    def export_to_wif(self):
+        """Export a key to WIF.
+
+        See https://en.bitcoin.it/wiki/Wallet_import_format for a full
+        description.
+        """
+        # Add the network byte, creating the "extended key"
+        extended_key_hex = self.private_key.get_extended_key()
+        # BIP32 wallets have a trailing \01 byte
+        extended_key_bytes = unhexlify(extended_key_hex) + b'\01'
+        # And return the base58-encoded result with a checksum
+        return base58.b58encode_check(extended_key_bytes)
+
+    def serialize(self, private=True):
+        """Serialize this key.
+
+        See the spec in `deserialize` for details."""
+        # Private and public serializations are slightly different, but the
+        # header will be the same.
+        if private:
+            network_version = long_to_hex(
+                self.network.EXTENDED_PRIVATE_BYTE_PREFIX, 8)
+        else:
+            network_version = long_to_hex(
+                self.network.EXTENDED_PUBLIC_BYTE_PREFIX, 8)
+        depth = long_to_hex(self.depth, 2)
+        parent_fingerprint = self.parent_fingerprint
+        child_number = self.child_number
+        chain_code = self.chain_code
+        ret = (network_version + depth + parent_fingerprint + child_number +
+               chain_code)
+        # Private and public serializations are slightly different
+        if private:
+            ret += '00' + self.private_key.key
+        else:
+            ret += self.get_public_key_hex()
+        return ret.lower()
+
+    def serialize_b58(self, private=True):
+        return base58.b58encode_check(unhexlify(self.serialize(private)))
+
+    def to_address(self):
+        """Create a public address from this Node.
+
+        https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
+        """
+        key = unhexlify(self.get_public_key_hex())
+        # First get the hash160 of the key
+        hash160_bytes = hash160(key)
+        # Prepend the network address byte
+        network_hash160_bytes = \
+            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
+        # Return a base58 encoded address with a checksum
+        return base58.b58encode_check(network_hash160_bytes)
+
+    @classmethod
+    def deserialize(cls, key, network=BitcoinMainNet):
+        """Load the ExtendedBip32Key from a hex key.
+
+        The key consists of
+
+            * 4 byte version bytes (network key)
+            * 1 byte depth:
+                - 0x00 for master nodes,
+                - 0x01 for level-1 descendants, ....
+            * 4 byte fingerprint of the parent's key (0x00000000 if master key)
+            * 4 byte child number. This is the number i in x_i = x_{par}/i,
+              with x_i the key being serialized. This is encoded in MSB order.
+              (0x00000000 if master key)
+            * 32 bytes: the chain code
+            * 33 bytes: the public key or private key data
+              (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
+        """
+        if len(key) == 78:
+            # we have bytes
+            key = hexlify(key)
+        if not is_hex_string(key) or len(key) != 78 * 2:
+            raise ValueError("Invalid hex key")
+        # Now that we double checkd the values, convert back to bytes because
+        # they're easier to slice
+        key = unhexlify(key)
+        version, depth, parent_fingerprint, child, chain_code, key_data = (
+            key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
+        # You'll want to start with this line probably
+
+        exponent = None
+        public_pair = None
+        if ord(key_data[0]) == 0:
+            exponent = key_data[1:]
+        elif ord(key_data[0]) in [2, 3]:
+            public_pair = None
+            raise Exception("TODO")
+        else:
+            raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
+                             "got %s" % ord(key_data[0]))
+
+        def l(byte_seq):
+            if byte_seq is None:
+                return byte_seq
+            return long(hexlify(byte_seq), 16)
+
+        return cls(depth=l(depth),
+                   parent_fingerprint=l(parent_fingerprint),
+                   child_number=l(child),
+                   chain_code=l(chain_code),
+                   private_exponent=l(exponent),
+                   public_pair=public_pair,
+                   network=network)
+
+    @classmethod
+    def from_master_secret(cls, seed, network=BitcoinMainNet):
+        """Generate a new PrivateKey from a secret key.
+
+        See https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#Serialization_format  # nopep8
+        """
+        # Given a seed S of at least 128 bits, but 256 is advised
+        # Calculate I = HMAC-SHA512(key="Bitcoin seed", msg=S)
+        I = hmac.new(b"Bitcoin seed", msg=seed, digestmod=sha512).digest()
+        # Split I into two 32-byte sequences, IL and IR.
+        I_L, I_R = I[:32], I[32:]
+        # Use IL as master secret key, and IR as master chain code.
+        return cls(private_exponent=long(hexlify(I_L), 16),
+                   chain_code=long(hexlify(I_R), 16),
+                   network=network)

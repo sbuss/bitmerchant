@@ -8,8 +8,8 @@ from bitmerchant.wallet.keys import ChecksumException
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
-from bitmerchant.wallet.keys import ExtendedPrivateKey
 from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.node import Node
 from bitmerchant.wallet.utils import long_to_hex
 
 
@@ -148,14 +148,14 @@ class TestExtendedPrivateKey(TestCase):
             "00"  # key identifier
             # private exponent
             "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35")
-        self.master_key = ExtendedPrivateKey.from_hex_key(self.expected_key)
+        self.master_key = Node.deserialize(self.expected_key)
 
     def test_serialize_master_key(self):
         self.assertEqual(self.expected_key, self.master_key.serialize())
 
     def test_from_master_secret(self):
         secret = binascii.unhexlify('000102030405060708090a0b0c0d0e0f')
-        self.assertEqual(ExtendedPrivateKey.from_master_secret(secret),
+        self.assertEqual(Node.from_master_secret(secret),
                          self.master_key)
 
     def test_invalid_network_prefix(self):
@@ -176,7 +176,7 @@ class TestExtendedPrivateKey(TestCase):
 
 class TestExtendedPrivateKeyVectors(TestCase):
     def setUp(self):
-        self.master_key = ExtendedPrivateKey.from_master_secret(
+        self.master_key = Node.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
     def _test_vector(self, key, id_hex, fingerprint, address,
@@ -189,18 +189,17 @@ class TestExtendedPrivateKeyVectors(TestCase):
         if include_private:
             self.assertEqual(key.identifier, id_hex)
             self.assertEqual(key.fingerprint, fingerprint)
-            self.assertEqual(key.key, secret_key_hex)
+            self.assertEqual(key.get_private_key_hex(), secret_key_hex)
             self.assertEqual(key.export_to_wif(), secret_key_wif)
             self.assertEqual(key.serialize(), private_serialized_hex)
             self.assertEqual(key.serialize_b58(), private_base58)
 
-        self.assertEqual(key.get_public_key().to_address(),
-                         address)
-        self.assertEqual(key.get_public_key().key, pubkey_hex)
+        self.assertEqual(key.to_address(), address)
+        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
         self.assertEqual(key.chain_code, chaincode_hex)
-        self.assertEqual(key.get_public_key().serialize(),
+        self.assertEqual(key.serialize(private=False),
                          pubkey_serialized_hex)
-        self.assertEqual(key.get_public_key().serialize_b58(), pubkey_base58)
+        self.assertEqual(key.serialize_b58(private=False), pubkey_base58)
 
     def test_m(self):
         """[Chain m]"""
@@ -235,9 +234,6 @@ class TestExtendedPrivateKeyVectors(TestCase):
         ]
         key = self.master_key.get_child(0, is_prime=True)
         self._test_vector(key, *vector)
-        self._test_vector(key.get_public_key(), include_private=False, *vector)
-        key = self.master_key.get_child(0, is_prime=False)
-        self._test_vector(key, include_private=False, *vector)
 
     def test_m_0p_1(self):
         vector = [
@@ -254,11 +250,8 @@ class TestExtendedPrivateKeyVectors(TestCase):
             'xprv9wTYmMFdV23N2TdNG573QoEsfRrWKQgWeibmLntzniatZvR9BmLnvSxqu53Kw1UmYPxLgboyZQaXwTCg8MSY3H2EU4pWcQDnRnrVA1xe8fs',  # nopep8
         ]
         m0 = self.master_key.get_child(0, is_prime=True)
-        key = m0.get_child(1)
-        self._test_vector(key, *vector)
-        self._test_vector(key.get_public_key(), include_private=False, *vector)
         key = m0.get_child(1, is_prime=False)
-        self._test_vector(key, include_private=False, *vector)
+        self._test_vector(key, *vector)
 
     def test_m_0p_1_2p(self):
         key = (
@@ -266,6 +259,6 @@ class TestExtendedPrivateKeyVectors(TestCase):
             "04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f"
             "00"
             "cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca")
-        pk = ExtendedPrivateKey.from_hex_key(key)
+        pk = Node.deserialize(key)
         self.assertEqual(pk.serialize(), key)
         self.assertEqual(pk.child_number, long_to_hex(long(0x80000000 + 2), 8))
