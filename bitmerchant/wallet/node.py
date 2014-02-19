@@ -79,7 +79,11 @@ class Node(object):
         return self.private_key.key
 
     def get_public_key_hex(self):
-        return '03' + long_to_hex(self.public_key.x, 32)
+        # I can't figure out where this first byte nonsense is documented,
+        # but I pieced it together from the pycoin source.
+        # TODO Find the docs for this!
+        first_byte = 2 + (self.public_key.y & 1)
+        return long_to_hex(first_byte, 2) + long_to_hex(self.public_key.x, 32)
 
     @property
     def identifier(self):
