@@ -9,7 +9,7 @@ from pycoin import wallet
 
 class _Wallet(wallet.Wallet):
     @classmethod
-    def new_wallet(cls, key):
+    def new_wallet(cls, key=None):
         """Create a new BIP32 compliant Wallet.
 
         Args:
