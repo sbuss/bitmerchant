@@ -336,3 +336,16 @@ class Node(object):
         return cls(private_exponent=long(hexlify(I_L), 16),
                    chain_code=long(hexlify(I_R), 16),
                    network=network)
+
+    def __eq__(self, other):
+        attrs = [
+            'chain_code',
+            'depth',
+            'parent_fingerprint',
+            'child_number',
+            'private_key',
+            'public_key',
+            'network',
+        ]
+        return all(
+            getattr(self, attr) == getattr(other, attr) for attr in attrs)
