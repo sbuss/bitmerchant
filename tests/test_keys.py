@@ -10,7 +10,6 @@ from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.node import Node
-from bitmerchant.wallet.utils import long_to_hex
 
 
 class _TestPrivateKeyBase(TestCase):
@@ -186,6 +185,13 @@ class TestExtendedPrivateKeyVectors(TestCase):
                      pubkey_base58, private_base58,
                      include_private=True
                      ):
+        self.assertEqual(key.to_address(), address)
+        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
+        self.assertEqual(key.chain_code, chaincode_hex)
+        self.assertEqual(key.serialize(private=False),
+                         pubkey_serialized_hex)
+        self.assertEqual(key.serialize_b58(private=False), pubkey_base58)
+
         if include_private:
             self.assertEqual(key.identifier, id_hex)
             self.assertEqual(key.fingerprint, fingerprint)
@@ -193,13 +199,6 @@ class TestExtendedPrivateKeyVectors(TestCase):
             self.assertEqual(key.export_to_wif(), secret_key_wif)
             self.assertEqual(key.serialize(), private_serialized_hex)
             self.assertEqual(key.serialize_b58(), private_base58)
-
-        self.assertEqual(key.to_address(), address)
-        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
-        self.assertEqual(key.chain_code, chaincode_hex)
-        self.assertEqual(key.serialize(private=False),
-                         pubkey_serialized_hex)
-        self.assertEqual(key.serialize_b58(private=False), pubkey_base58)
 
     def test_m(self):
         """[Chain m]"""
@@ -254,11 +253,56 @@ class TestExtendedPrivateKeyVectors(TestCase):
         self._test_vector(key, *vector)
 
     def test_m_0p_1_2p(self):
-        key = (
-            "0488ade403bef5a2f980000002"
-            "04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f"
-            "00"
-            "cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca")
-        pk = Node.deserialize(key)
-        self.assertEqual(pk.serialize(), key)
-        self.assertEqual(pk.child_number, long_to_hex(long(0x80000000 + 2), 8))
+        vector = [
+            'ee7ab90cde56a8c0e2bb086ac49748b8db9dce72',
+            '0xee7ab90c',
+            '1NjxqbA9aZWnh17q1UW3rB4EPu79wDXj7x',
+            'cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca',
+            'L43t3od1Gh7Lj55Bzjj1xDAgJDcL7YFo2nEcNaMGiyRZS1CidBVU',
+            '0357bfe1e341d01c69fe5654309956cbea516822fba8a601743a012a7896ee8dc2',  # nopep8
+            '04466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f',
+            '0488b21e03bef5a2f98000000204466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f0357bfe1e341d01c69fe5654309956cbea516822fba8a601743a012a7896ee8dc2',  # nopep8
+            '0488ade403bef5a2f98000000204466b9cc8e161e966409ca52986c584f07e9dc81f735db683c3ff6ec7b1503f00cbce0d719ecf7431d88e6a89fa1483e02e35092af60c042b1df2ff59fa424dca',  # nopep8
+            'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5',  # nopep8
+            'xprv9z4pot5VBttmtdRTWfWQmoH1taj2axGVzFqSb8C9xaxKymcFzXBDptWmT7FwuEzG3ryjH4ktypQSAewRiNMjANTtpgP4mLTj34bhnZX7UiM',  # nopep8
+        ]
+        self._test_vector(
+            self.master_key.get_child(0, True).get_child(1).get_child(-2),
+            *vector)
+
+    def test_m_0p_1_2p_2(self):
+        vector = [
+            'd880d7d893848509a62d8fb74e32148dac68412f',
+            '0xd880d7d8',
+            '1LjmJcdPnDHhNTUgrWyhLGnRDKxQjoxAgt',
+            '0f479245fb19a38a1954c5c7c0ebab2f9bdfd96a17563ef28a6a4b1a2a764ef4',
+            'KwjQsVuMjbCP2Zmr3VaFaStav7NvevwjvvkqrWd5Qmh1XVnCteBR',
+            '02e8445082a72f29b75ca48748a914df60622a609cacfce8ed0e35804560741d29',  # nopep8
+            'cfb71883f01676f587d023cc53a35bc7f88f724b1f8c2892ac1275ac822a3edd',
+            '0488b21e04ee7ab90c00000002cfb71883f01676f587d023cc53a35bc7f88f724b1f8c2892ac1275ac822a3edd02e8445082a72f29b75ca48748a914df60622a609cacfce8ed0e35804560741d29',  # nopep8
+            '0488ade404ee7ab90c00000002cfb71883f01676f587d023cc53a35bc7f88f724b1f8c2892ac1275ac822a3edd000f479245fb19a38a1954c5c7c0ebab2f9bdfd96a17563ef28a6a4b1a2a764ef4',  # nopep8
+            'xpub6FHa3pjLCk84BayeJxFW2SP4XRrFd1JYnxeLeU8EqN3vDfZmbqBqaGJAyiLjTAwm6ZLRQUMv1ZACTj37sR62cfN7fe5JnJ7dh8zL4fiyLHV',  # nopep8
+            'xprvA2JDeKCSNNZky6uBCviVfJSKyQ1mDYahRjijr5idH2WwLsEd4Hsb2Tyh8RfQMuPh7f7RtyzTtdrbdqqsunu5Mm3wDvUAKRHSC34sJ7in334',  # nopep8
+        ]
+        node = self.master_key.get_child(0, True).get_child(1).get_child(-2)
+        node = node.get_child(2)
+        self._test_vector(node, *vector)
+
+    def test_m_0p_1_2p_2_1000000000(self):
+        vector = [
+            'd69aa102255fed74378278c7812701ea641fdf32',
+            '0xd69aa102',
+            '1LZiqrop2HGR4qrH1ULZPyBpU6AUP49Uam',
+            '471b76e389e528d6de6d816857e012c5455051cad6660850e58372a6c3e6e7c8',
+            'Kybw8izYevo5xMh1TK7aUr7jHFCxXS1zv8p3oqFz3o2zFbhRXHYs',
+            '022a471424da5e657499d1ff51cb43c47481a03b1e77f951fe64cec9f5a48f7011',  # nopep8
+            'c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e',
+            '0488b21e05d880d7d83b9aca00c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e022a471424da5e657499d1ff51cb43c47481a03b1e77f951fe64cec9f5a48f7011',  # nopep8
+            '0488ade405d880d7d83b9aca00c783e67b921d2beb8f6b389cc646d7263b4145701dadd2161548a8b078e65e9e00471b76e389e528d6de6d816857e012c5455051cad6660850e58372a6c3e6e7c8',  # nopep8
+            'xpub6H1LXWLaKsWFhvm6RVpEL9P4KfRZSW7abD2ttkWP3SSQvnyA8FSVqNTEcYFgJS2UaFcxupHiYkro49S8yGasTvXEYBVPamhGW6cFJodrTHy',  # nopep8
+            'xprvA41z7zogVVwxVSgdKUHDy1SKmdb533PjDz7J6N6mV6uS3ze1ai8FHa8kmHScGpWmj4WggLyQjgPie1rFSruoUihUZREPSL39UNdE3BBDu76',  # nopep8
+        ]
+        node = (self.master_key.get_child(0, True)
+                .get_child(1).get_child(-2).get_child(2)
+                .get_child(1000000000))
+        self._test_vector(node, *vector)
