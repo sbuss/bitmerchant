@@ -42,11 +42,7 @@ class TestNode(TestCase):
         pass
 
 
-class TestNodeVectors(TestCase):
-    def setUp(self):
-        self.master_key = Node.from_master_secret(
-            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
-
+class _TestNodeVectors(TestCase):
     def _test_vector(self, key, id_hex, fingerprint, address,
                      secret_key_hex, secret_key_wif,
                      pubkey_hex, chaincode_hex,
@@ -68,6 +64,12 @@ class TestNodeVectors(TestCase):
             self.assertEqual(key.export_to_wif(), secret_key_wif)
             self.assertEqual(key.serialize(), private_serialized_hex)
             self.assertEqual(key.serialize_b58(), private_base58)
+
+
+class TestNodeVectors1(_TestNodeVectors):
+    def setUp(self):
+        self.master_key = Node.from_master_secret(
+            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
     def test_m(self):
         """[Chain m]"""
@@ -175,3 +177,124 @@ class TestNodeVectors(TestCase):
                 .get_child(1).get_child(-2).get_child(2)
                 .get_child(1000000000))
         self._test_vector(node, *vector)
+
+
+class TestNodeVectors2(_TestNodeVectors):
+    def setUp(self):
+        self.master_key = Node.from_master_secret(binascii.unhexlify(
+            'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
+            '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
+        ))
+
+    def test_m(self):
+        vector = [
+            'bd16bee53961a47d6ad888e29545434a89bdfe95',
+            '0xbd16bee5',
+            '1JEoxevbLLG8cVqeoGKQiAwoWbNYSUyYjg',
+            '4b03d6fc340455b363f51020ad3ecca4f0850280cf436c70c727923f6db46c3e',
+            'KyjXhyHF9wTphBkfpxjL8hkDXDUSbE3tKANT94kXSyh6vn6nKaoy',
+            '03cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a7',  # nopep8
+            '60499f801b896d83179a4374aeb7822aaeaceaa0db1f85ee3e904c4defbd9689',
+            '0488b21e00000000000000000060499f801b896d83179a4374aeb7822aaeaceaa0db1f85ee3e904c4defbd968903cbcaa9c98c877a26977d00825c956a238e8dddfbd322cce4f74b0b5bd6ace4a7',  # nopep8
+            '0488ade400000000000000000060499f801b896d83179a4374aeb7822aaeaceaa0db1f85ee3e904c4defbd9689004b03d6fc340455b363f51020ad3ecca4f0850280cf436c70c727923f6db46c3e',  # nopep8
+            'xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB',  # nopep8
+            'xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U',  # nopep8
+        ]
+        self._test_vector(self.master_key, *vector)
+
+    def test_m_0(self):
+        vector = [
+            '5a61ff8eb7aaca3010db97ebda76121610b78096',
+            '0x5a61ff8e',
+            '19EuDJdgfRkwCmRzbzVBHZWQG9QNWhftbZ',
+            'abe74a98f6c7eabee0428f53798f0ab8aa1bd37873999041703c742f15ac7e1e',
+            'L2ysLrR6KMSAtx7uPqmYpoTeiRzydXBattRXjXz5GDFPrdfPzKbj',
+            '02fc9e5af0ac8d9b3cecfe2a888e2117ba3d089d8585886c9c826b6b22a98d12ea',  # nopep8
+            'f0909affaa7ee7abe5dd4e100598d4dc53cd709d5a5c2cac40e7412f232f7c9c',
+            '0488b21e01bd16bee500000000f0909affaa7ee7abe5dd4e100598d4dc53cd709d5a5c2cac40e7412f232f7c9c02fc9e5af0ac8d9b3cecfe2a888e2117ba3d089d8585886c9c826b6b22a98d12ea',  # nopep8
+            '0488ade401bd16bee500000000f0909affaa7ee7abe5dd4e100598d4dc53cd709d5a5c2cac40e7412f232f7c9c00abe74a98f6c7eabee0428f53798f0ab8aa1bd37873999041703c742f15ac7e1e',  # nopep8
+            'xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH',  # nopep8
+            'xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt',  # nopep8
+        ]
+        self._test_vector(self.master_key.get_child(0), *vector)
+
+    def test_m_0_2147483647p(self):
+        vector = [
+            'd8ab493736da02f11ed682f88339e720fb0379d1',
+            '0xd8ab4937',
+            '1Lke9bXGhn5VPrBuXgN12uGUphrttUErmk',
+            '877c779ad9687164e9c2f4f0f4ff0340814392330693ce95a58fe18fd52e6e93',
+            'L1m5VpbXmMp57P3knskwhoMTLdhAAaXiHvnGLMribbfwzVRpz2Sr',
+            '03c01e7425647bdefa82b12d9bad5e3e6865bee0502694b94ca58b666abc0a5c3b',  # nopep8
+            'be17a268474a6bb9c61e1d720cf6215e2a88c5406c4aee7b38547f585c9a37d9',
+            '0488b21e025a61ff8effffffffbe17a268474a6bb9c61e1d720cf6215e2a88c5406c4aee7b38547f585c9a37d903c01e7425647bdefa82b12d9bad5e3e6865bee0502694b94ca58b666abc0a5c3b',  # nopep8
+            '0488ade4025a61ff8effffffffbe17a268474a6bb9c61e1d720cf6215e2a88c5406c4aee7b38547f585c9a37d900877c779ad9687164e9c2f4f0f4ff0340814392330693ce95a58fe18fd52e6e93',  # nopep8
+            'xpub6ASAVgeehLbnwdqV6UKMHVzgqAG8Gr6riv3Fxxpj8ksbH9ebxaEyBLZ85ySDhKiLDBrQSARLq1uNRts8RuJiHjaDMBU4Zn9h8LZNnBC5y4a',  # nopep8
+            'xprv9wSp6B7kry3Vj9m1zSnLvN3xH8RdsPP1Mh7fAaR7aRLcQMKTR2vidYEeEg2mUCTAwCd6vnxVrcjfy2kRgVsFawNzmjuHc2YmYRmagcEPdU9',  # nopep8
+        ]
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(2147483647, True), *vector)
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(-2147483647), *vector)
+
+    def test_m_0_2147483647p_1(self):
+        vector = [
+            '78412e3a2296a40de124307b6485bd19833e2e34',
+            '0x78412e3a',
+            '1BxrAr2pHpeBheusmd6fHDP2tSLAUa3qsW',
+            '704addf544a06e5ee4bea37098463c23613da32020d604506da8c0518e1da4b7',
+            'KzyzXnznxSv249b4KuNkBwowaN3akiNeEHy5FWoPCJpStZbEKXN2',
+            '03a7d1d856deb74c508e05031f9895dab54626251b3806e16b4bd12e781a7df5b9',  # nopep8
+            'f366f48f1ea9f2d1d3fe958c95ca84ea18e4c4ddb9366c336c927eb246fb38cb',
+            '0488b21e03d8ab493700000001f366f48f1ea9f2d1d3fe958c95ca84ea18e4c4ddb9366c336c927eb246fb38cb03a7d1d856deb74c508e05031f9895dab54626251b3806e16b4bd12e781a7df5b9',  # nopep8
+            '0488ade403d8ab493700000001f366f48f1ea9f2d1d3fe958c95ca84ea18e4c4ddb9366c336c927eb246fb38cb00704addf544a06e5ee4bea37098463c23613da32020d604506da8c0518e1da4b7',  # nopep8
+            'xpub6DF8uhdarytz3FWdA8TvFSvvAh8dP3283MY7p2V4SeE2wyWmG5mg5EwVvmdMVCQcoNJxGoWaU9DCWh89LojfZ537wTfunKau47EL2dhHKon',  # nopep8
+            'xprv9zFnWC6h2cLgpmSA46vutJzBcfJ8yaJGg8cX1e5StJh45BBciYTRXSd25UEPVuesF9yog62tGAQtHjXajPPdbRCHuWS6T8XA2ECKADdw4Ef',  # nopep8
+        ]
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(2147483647, True)
+                          .get_child(1), *vector)
+
+    def test_m_0_2147483647p_1_2147483646p(self):
+        vector = [
+            '31a507b815593dfc51ffc7245ae7e5aee304246e',
+            '0x31a507b8',
+            '15XVotxCAV7sRx1PSCkQNsGw3W9jT9A94R',
+            'f1c7c871a54a804afe328b4c83a1c33b8e5ff48f5087273f04efa83b247d6a2d',
+            'L5KhaMvPYRW1ZoFmRjUtxxPypQ94m6BcDrPhqArhggdaTbbAFJEF',
+            '02d2b36900396c9282fa14628566582f206a5dd0bcc8d5e892611806cafb0301f0',  # nopep8
+            '637807030d55d01f9a0cb3a7839515d796bd07706386a6eddf06cc29a65a0e29',
+            '0488b21e0478412e3afffffffe637807030d55d01f9a0cb3a7839515d796bd07706386a6eddf06cc29a65a0e2902d2b36900396c9282fa14628566582f206a5dd0bcc8d5e892611806cafb0301f0',  # nopep8
+            '0488ade40478412e3afffffffe637807030d55d01f9a0cb3a7839515d796bd07706386a6eddf06cc29a65a0e2900f1c7c871a54a804afe328b4c83a1c33b8e5ff48f5087273f04efa83b247d6a2d',  # nopep8
+            'xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL',  # nopep8
+            'xprvA1RpRA33e1JQ7ifknakTFpgNXPmW2YvmhqLQYMmrj4xJXXWYpDPS3xz7iAxn8L39njGVyuoseXzU6rcxFLJ8HFsTjSyQbLYnMpCqE2VbFWc',  # nopep8
+        ]
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(2147483647, True)
+                          .get_child(1)
+                          .get_child(2147483646, True), *vector)
+
+    def test_m_0_2147483647p_1_2147483646p_2(self):
+        vector = [
+            '26132fdbe7bf89cbc64cf8dafa3f9f88b8666220',
+            '0x26132fdb',
+            '14UKfRV9ZPUp6ZC9PLhqbRtxdihW9em3xt',
+            'bb7d39bdb83ecf58f2fd82b6d918341cbef428661ef01ab97c28a4842125ac23',
+            'L3WAYNAZPxx1fr7KCz7GN9nD5qMBnNiqEJNJMU1z9MMaannAt4aK',
+            '024d902e1a2fc7a8755ab5b694c575fce742c48d9ff192e63df5193e4c7afe1f9c',  # nopep8
+            '9452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed271',
+            '0488b21e0531a507b8000000029452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed271024d902e1a2fc7a8755ab5b694c575fce742c48d9ff192e63df5193e4c7afe1f9c',  # nopep8
+            '0488ade40531a507b8000000029452b549be8cea3ecb7a84bec10dcfd94afe4d129ebfd3b3cb58eedf394ed27100bb7d39bdb83ecf58f2fd82b6d918341cbef428661ef01ab97c28a4842125ac23',  # nopep8
+            'xpub6FnCn6nSzZAw5Tw7cgR9bi15UV96gLZhjDstkXXxvCLsUXBGXPdSnLFbdpq8p9HmGsApME5hQTZ3emM2rnY5agb9rXpVGyy3bdW6EEgAtqt',  # nopep8
+            'xprvA2nrNbFZABcdryreWet9Ea4LvTJcGsqrMzxHx98MMrotbir7yrKCEXw7nadnHM8Dq38EGfSh6dqA9QWTyefMLEcBYJUuekgW4BYPJcr9E7j',  # nopep8
+        ]
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(2147483647, True)
+                          .get_child(1)
+                          .get_child(2147483646, True)
+                          .get_child(2), *vector)
+        self._test_vector(self.master_key.get_child(0)
+                          .get_child(-2147483647)
+                          .get_child(1)
+                          .get_child(-2147483646)
+                          .get_child(2), *vector)
