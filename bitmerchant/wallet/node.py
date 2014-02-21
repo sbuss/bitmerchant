@@ -277,8 +277,10 @@ class Node(object):
             ret += self.get_public_key_hex(compressed)
         return ret.lower()
 
-    def serialize_b58(self, private=True):
-        return base58.b58encode_check(unhexlify(self.serialize(private)))
+    def serialize_b58(self, private=True, compressed=True):
+        """Encode the serialized node in base58."""
+        return base58.b58encode_check(
+            unhexlify(self.serialize(private, compressed)))
 
     def to_address(self):
         """Create a public address from this Node.
@@ -317,7 +319,7 @@ class Node(object):
             # we have bytes
             key = hexlify(key)
         if not is_hex_string(key) or len(key) not in [78 * 2, (78 + 32) * 2]:
-            raise ValueError("Invalid hex key")
+            raise ValueError("Invalid hex key. Might be base58? TODO")
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
         key = unhexlify(key)
