@@ -7,8 +7,10 @@ import hmac
 import base58
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+from ecdsa.numbertheory import square_root_mod_prime
 
 from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.utils import hash160
@@ -78,12 +80,25 @@ class Node(object):
     def get_private_key_hex(self):
         return self.private_key.key
 
-    def get_public_key_hex(self):
-        # I can't figure out where this first byte nonsense is documented,
-        # but I pieced it together from the pycoin source.
-        # TODO Find the docs for this!
-        first_byte = 2 + (self.public_key.y & 1)
-        return long_to_hex(first_byte, 2) + long_to_hex(self.public_key.x, 32)
+    def get_public_key_hex(self, compressed=True):
+        """Get the sec1 representation of the public key.
+
+        Note that I pieced this algorithm together from the pycoin source.
+
+        This is documented in http://www.secg.org/collateral/sec1_final.pdf
+        but, honestly, it's pretty confusing.
+
+        I guess this is a pretty big warning that I'm not *positive* this
+        will do the right thing in all cases. The tests pass, and this does
+        exactly what pycoin does, but I'm not positive pycoin works either!
+        """
+        if compressed:
+            parity = 2 + (self.public_key.y & 1)  # 0x02 even, 0x03 odd
+            return (long_to_hex(parity, 2) +
+                    long_to_hex(self.public_key.x, 32))
+        else:
+            return ('04' + long_to_hex(self.public_key.x, 32) +
+                    long_to_hex(self.public_key.y, 32))
 
     @property
     def identifier(self):
@@ -225,12 +240,24 @@ class Node(object):
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
-    def serialize(self, private=True):
+    def serialize(self, private=True, compressed=True):
         """Serialize this key.
 
-        See the spec in `deserialize` for details."""
-        # Private and public serializations are slightly different, but the
-        # header will be the same.
+        :param private: Whether or not the serialized key should contain
+            private information. Set to False for a public-only representation
+            that cannot spend funds but can create children.
+        :type private: bool, defaults to True
+        :param compressed: True if you want the public key compressed. False
+            if note. Note that uncompressed keys are non-standard and might
+            not be supported by other tools. You should pretty much always
+            use compressed=True
+        :type compressed: bool, defaults to True
+
+        See the spec in `deserialize` for more details.
+        """
+        if private and not self.private_key:
+            raise ValueError("Cannot serialize a public key as private")
+
         if private:
             network_version = long_to_hex(
                 self.network.EXTENDED_PRIVATE_BYTE_PREFIX, 8)
@@ -247,11 +274,13 @@ class Node(object):
         if private:
             ret += '00' + self.private_key.key
         else:
-            ret += self.get_public_key_hex()
+            ret += self.get_public_key_hex(compressed)
         return ret.lower()
 
-    def serialize_b58(self, private=True):
-        return base58.b58encode_check(unhexlify(self.serialize(private)))
+    def serialize_b58(self, private=True, compressed=True):
+        """Encode the serialized node in base58."""
+        return base58.b58encode_check(
+            unhexlify(self.serialize(private, compressed)))
 
     def to_address(self):
         """Create a public address from this Node.
@@ -284,26 +313,54 @@ class Node(object):
             * 32 bytes: the chain code
             * 33 bytes: the public key or private key data
               (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
+              (Note that this also supports 0x04 + X + Y uncompressed points)
         """
         if len(key) == 78:
             # we have bytes
             key = hexlify(key)
-        if not is_hex_string(key) or len(key) != 78 * 2:
-            raise ValueError("Invalid hex key")
+        if not is_hex_string(key) or len(key) not in [78 * 2, (78 + 32) * 2]:
+            raise ValueError("Invalid hex key. Might be base58? TODO")
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
         key = unhexlify(key)
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
-        # You'll want to start with this line probably
 
+        version_long = long(hexlify(version), 16)
         exponent = None
         public_pair = None
         if ord(key_data[0]) == 0:
+            # Private key
+            if version_long != network.EXTENDED_PRIVATE_BYTE_PREFIX:
+                raise incompatible_network_exception_factory(
+                    network.NAME, network.EXTENDED_PRIVATE_BYTE_PREFIX,
+                    version)
             exponent = key_data[1:]
-        elif ord(key_data[0]) in [2, 3]:
-            public_pair = None
-            raise Exception("TODO")
+        elif ord(key_data[0]) in [2, 3, 4]:
+            # Compressed public coordinates
+            if version_long != network.EXTENDED_PUBLIC_BYTE_PREFIX:
+                raise incompatible_network_exception_factory(
+                    network.NAME, network.EXTENDED_PUBLIC_BYTE_PREFIX,
+                    version)
+            if ord(key_data[0]) == 4:
+                # Uncompressed public point
+                public_pair = PublicPair(
+                    long(hexlify(key_data[1:33]), 16),
+                    long(hexlify(key_data[33:]), 16))
+            else:
+                # Compressed public point!
+                y_odd = bool(ord(key_data[0]) & 0x01)  # 0 even, 1 odd
+                x = long(hexlify(key_data[1:]), 16)
+                # The following x-to-pair algorithm was lifted from pycoin
+                # I still need to sit down an understand it
+                curve = SECP256k1.curve
+                p = curve.p()
+                alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
+                beta = square_root_mod_prime(alpha, p)
+                if y_odd:
+                    public_pair = PublicPair(x, beta)
+                else:
+                    public_pair = PublicPair(x, p - beta)
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))
