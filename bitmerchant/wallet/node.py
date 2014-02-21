@@ -243,9 +243,18 @@ class Node(object):
     def serialize(self, private=True, compressed=True):
         """Serialize this key.
 
-        See the spec in `deserialize` for details."""
-        # Private and public serializations are slightly different, but the
-        # header will be the same.
+        :param private: Whether or not the serialized key should contain
+            private information. Set to False for a public-only representation
+            that cannot spend funds but can create children.
+        :type private: bool, defaults to True
+        :param compressed: True if you want the public key compressed. False
+            if note. Note that uncompressed keys are non-standard and might
+            not be supported by other tools. You should pretty much always
+            use compressed=True
+        :type compressed: bool, defaults to True
+
+        See the spec in `deserialize` for more details.
+        """
         if private and not self.private_key:
             raise ValueError("Cannot serialize a public key as private")
 
@@ -302,6 +311,7 @@ class Node(object):
             * 32 bytes: the chain code
             * 33 bytes: the public key or private key data
               (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
+              (Note that this also supports 0x04 + X + Y uncompressed points)
         """
         if len(key) == 78:
             # we have bytes
