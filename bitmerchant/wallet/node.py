@@ -7,6 +7,7 @@ import hmac
 import base58
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+from ecdsa.numbertheory import square_root_mod_prime
 
 from bitmerchant.wallet.network import BitcoinMainNet
 from bitmerchant.wallet.keys import incompatible_network_exception_factory
@@ -323,9 +324,31 @@ class Node(object):
                     network.NAME, network.EXTENDED_PRIVATE_BYTE_PREFIX,
                     version)
             exponent = key_data[1:]
-        elif ord(key_data[0]) in [2, 3]:
-            public_pair = None
-            raise Exception("TODO")
+        elif ord(key_data[0]) in [2, 3, 4]:
+            # Compressed public coordinates
+            if version_long != network.EXTENDED_PUBLIC_BYTE_PREFIX:
+                raise incompatible_network_exception_factory(
+                    network.NAME, network.EXTENDED_PUBLIC_BYTE_PREFIX,
+                    version)
+            if ord(key_data[0]) == 4:
+                # Uncompressed public point
+                public_pair = PublicPair(
+                    long(hexlify(key_data[1:33]), 16),
+                    long(hexlify(key_data[33:]), 16))
+            else:
+                # Compressed public point!
+                y_odd = bool(ord(key_data[0]) & 0x01)  # 0 even, 1 odd
+                x = long(hexlify(key_data[1:]), 16)
+                # The following x-to-pair algorithm was lifted from pycoin
+                # I still need to sit down an understand it
+                curve = SECP256k1.curve
+                p = curve.p()
+                alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
+                beta = square_root_mod_prime(alpha, p)
+                if y_odd:
+                    public_pair = PublicPair(x, beta)
+                else:
+                    public_pair = PublicPair(x, p - beta)
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))
