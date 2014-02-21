@@ -55,6 +55,16 @@ class TestNode(TestCase):
         with self.assertRaises(ValueError):
             child.serialize()
 
+    def test_public_export_uncompressed(self):
+        child = self.master_key.get_child(0, as_private=False)
+        key = child.serialize(private=False, compressed=False)
+        # 220 = (78 + 32) * 2
+        # where 78 is the compressed length
+        # 32 is the length of the uncompressed y coordinate
+        # and 2 is because hexlifying doubles the length
+        self.assertEqual(len(key), 220)
+        self.assertEqual(child, Node.deserialize(key))
+
 
 class _TestNodeVectors(TestCase):
     def _test_vector(self, key, id_hex, fingerprint, address,

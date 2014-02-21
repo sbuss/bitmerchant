@@ -240,7 +240,7 @@ class Node(object):
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
-    def serialize(self, private=True):
+    def serialize(self, private=True, compressed=True):
         """Serialize this key.
 
         See the spec in `deserialize` for details."""
@@ -265,7 +265,7 @@ class Node(object):
         if private:
             ret += '00' + self.private_key.key
         else:
-            ret += self.get_public_key_hex()
+            ret += self.get_public_key_hex(compressed)
         return ret.lower()
 
     def serialize_b58(self, private=True):
@@ -306,7 +306,7 @@ class Node(object):
         if len(key) == 78:
             # we have bytes
             key = hexlify(key)
-        if not is_hex_string(key) or len(key) != 78 * 2:
+        if not is_hex_string(key) or len(key) not in [78 * 2, (78 + 32) * 2]:
             raise ValueError("Invalid hex key")
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
