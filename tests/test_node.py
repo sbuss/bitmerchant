@@ -1,7 +1,11 @@
 import binascii
 from unittest import TestCase
 
+from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.node import Node
+from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.wallet.network import BitcoinTestNet
+from bitmerchant.wallet.utils import long_to_hex
 
 
 class TestNode(TestCase):
@@ -27,16 +31,27 @@ class TestNode(TestCase):
                          self.master_key)
 
     def test_invalid_network_prefix(self):
-        pass
+        key = self.expected_key
+        key = (long_to_hex(BitcoinTestNet.EXTENDED_PRIVATE_BYTE_PREFIX, 8) +
+               self.expected_key[8:])
+        with self.assertRaises(IncompatibleNetworkException):
+            Node.deserialize(key, BitcoinMainNet)
+        self.assertTrue(Node.deserialize(key, BitcoinTestNet))
 
-    def test_invalid_key_data_prefix(self):
-        pass
+    def test_public_export(self):
+        child = self.master_key.get_child(0, as_private=False)
+        self.assertEqual(child.private_key, None)
+        key = child.serialize(False)
+        self.assertIn(
+            long_to_hex(BitcoinMainNet.EXTENDED_PUBLIC_BYTE_PREFIX, 8),
+            key)
+        self.assertEqual(Node.deserialize(key), child)
 
-    def test_invalid_fingerprint(self):
-        pass
-
-    def test_identifier(self):
-        pass
+    def test_public_export_mismatch(self):
+        child = self.master_key.get_child(0, as_private=False)
+        self.assertEqual(child.private_key, None)
+        with self.assertRaises(ValueError):
+            child.serialize()
 
     def test_fingerprint(self):
         pass
