@@ -39,6 +39,7 @@ class TestNode(TestCase):
         self.assertTrue(Node.deserialize(key, BitcoinTestNet))
 
     def test_public_export(self):
+        """Export a node as public."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
         key = child.serialize(False)
@@ -48,13 +49,11 @@ class TestNode(TestCase):
         self.assertEqual(Node.deserialize(key), child)
 
     def test_public_export_mismatch(self):
+        """Can't export a public node as private."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
         with self.assertRaises(ValueError):
             child.serialize()
-
-    def test_fingerprint(self):
-        pass
 
 
 class _TestNodeVectors(TestCase):
