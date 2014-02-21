@@ -78,12 +78,25 @@ class Node(object):
     def get_private_key_hex(self):
         return self.private_key.key
 
-    def get_public_key_hex(self):
-        # I can't figure out where this first byte nonsense is documented,
-        # but I pieced it together from the pycoin source.
-        # TODO Find the docs for this!
-        first_byte = 2 + (self.public_key.y & 1)
-        return long_to_hex(first_byte, 2) + long_to_hex(self.public_key.x, 32)
+    def get_public_key_hex(self, compressed=True):
+        """Get the sec1 representation of the public key.
+
+        Note that I pieced this algorithm together from the pycoin source.
+
+        This is documented in http://www.secg.org/collateral/sec1_final.pdf
+        but, honestly, it's pretty confusing.
+
+        I guess this is a pretty big warning that I'm not *positive* this
+        will do the right thing in all cases. The tests pass, and this does
+        exactly what pycoin does, but I'm not positive pycoin works either!
+        """
+        if compressed:
+            parity = 2 + (self.public_key.y & 1)  # 0x02 even, 0x03 odd
+            return (long_to_hex(parity, 2) +
+                    long_to_hex(self.public_key.x, 32))
+        else:
+            return ('04' + long_to_hex(self.public_key.x, 32) +
+                    long_to_hex(self.public_key.y, 32))
 
     @property
     def identifier(self):
