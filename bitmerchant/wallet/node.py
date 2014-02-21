@@ -9,6 +9,7 @@ from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 
 from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.utils import hash160
@@ -244,6 +245,9 @@ class Node(object):
         See the spec in `deserialize` for details."""
         # Private and public serializations are slightly different, but the
         # header will be the same.
+        if private and not self.private_key:
+            raise ValueError("Cannot serialize a public key as private")
+
         if private:
             network_version = long_to_hex(
                 self.network.EXTENDED_PRIVATE_BYTE_PREFIX, 8)
@@ -308,11 +312,16 @@ class Node(object):
         key = unhexlify(key)
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
-        # You'll want to start with this line probably
 
+        version_long = long(hexlify(version), 16)
         exponent = None
         public_pair = None
         if ord(key_data[0]) == 0:
+            # Private key
+            if version_long != network.EXTENDED_PRIVATE_BYTE_PREFIX:
+                raise incompatible_network_exception_factory(
+                    network.NAME, network.EXTENDED_PRIVATE_BYTE_PREFIX,
+                    version)
             exponent = key_data[1:]
         elif ord(key_data[0]) in [2, 3]:
             public_pair = None
