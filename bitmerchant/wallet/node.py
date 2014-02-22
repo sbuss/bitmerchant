@@ -22,11 +22,28 @@ from bitmerchant.wallet.utils import long_to_hex
 PublicPair = namedtuple("PublicPair", ["x", "y"])
 
 
-class Node(object):
-    """A BIP32 wallet is made up of Nodes.
+class Wallet(object):
+    """A BIP32 wallet is made up of Wallet nodes.
 
     A Private node contains both a public and private key, while a public
     node contains only a public key.
+
+    **WARNING**:
+
+    When creating a NEW wallet you MUST back up the private key. If
+    you don't then any coins sent to your address will be LOST FOREVER.
+
+    You need to save the private key somewhere. It is OK to just write
+    it down on a piece of paper! Don't share this key with anyone!
+
+    >>> my_wallet = Wallet.from_master_secret(
+    ...     key='correct horse battery staple')
+    >>> private = my_wallet.serialize(private=True)
+    >>> private  # doctest: +ELLIPSIS
+    u'xprv9s21ZrQH143K2mDJW8vDeFwbyDbFv868mM2Zr87rJSTj8q16Unkaq1pryiV...'
+
+    If you want to use this wallet on your website to accept bitcoin or
+    altcoin payments, you should first create a primary child.
     """
     def __init__(self,
                  chain_code,

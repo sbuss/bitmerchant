@@ -2,7 +2,7 @@ import binascii
 from unittest import TestCase
 
 from bitmerchant.wallet.keys import IncompatibleNetworkException
-from bitmerchant.wallet.node import Node
+from bitmerchant.wallet.node import Wallet
 from bitmerchant.wallet.network import BitcoinMainNet
 from bitmerchant.wallet.network import BitcoinTestNet
 from bitmerchant.wallet.utils import long_to_hex
@@ -20,14 +20,14 @@ class TestNode(TestCase):
             "00"  # key identifier
             # private exponent
             "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35")
-        self.master_key = Node.deserialize(self.expected_key)
+        self.master_key = Wallet.deserialize(self.expected_key)
 
     def test_serialize_master_key(self):
         self.assertEqual(self.expected_key, self.master_key.serialize())
 
     def test_from_master_secret(self):
         secret = binascii.unhexlify('000102030405060708090a0b0c0d0e0f')
-        self.assertEqual(Node.from_master_secret(secret),
+        self.assertEqual(Wallet.from_master_secret(secret),
                          self.master_key)
 
     def test_invalid_network_prefix(self):
@@ -35,8 +35,8 @@ class TestNode(TestCase):
         key = (long_to_hex(BitcoinTestNet.EXTENDED_PRIVATE_BYTE_PREFIX, 8) +
                self.expected_key[8:])
         with self.assertRaises(IncompatibleNetworkException):
-            Node.deserialize(key, BitcoinMainNet)
-        self.assertTrue(Node.deserialize(key, BitcoinTestNet))
+            Wallet.deserialize(key, BitcoinMainNet)
+        self.assertTrue(Wallet.deserialize(key, BitcoinTestNet))
 
     def test_public_export(self):
         """Export a node as public."""
@@ -46,7 +46,7 @@ class TestNode(TestCase):
         self.assertIn(
             long_to_hex(BitcoinMainNet.EXTENDED_PUBLIC_BYTE_PREFIX, 8),
             key)
-        self.assertEqual(Node.deserialize(key), child)
+        self.assertEqual(Wallet.deserialize(key), child)
 
     def test_public_export_mismatch(self):
         """Can't export a public node as private."""
@@ -63,7 +63,7 @@ class TestNode(TestCase):
         # 32 is the length of the uncompressed y coordinate
         # and 2 is because hexlifying doubles the length
         self.assertEqual(len(key), 220)
-        self.assertEqual(child, Node.deserialize(key))
+        self.assertEqual(child, Wallet.deserialize(key))
 
 
 class _TestNodeVectors(TestCase):
@@ -92,7 +92,7 @@ class _TestNodeVectors(TestCase):
 
 class TestNodeVectors1(_TestNodeVectors):
     def setUp(self):
-        self.master_key = Node.from_master_secret(
+        self.master_key = Wallet.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
     def test_m(self):
@@ -205,7 +205,7 @@ class TestNodeVectors1(_TestNodeVectors):
 
 class TestNodeVectors2(_TestNodeVectors):
     def setUp(self):
-        self.master_key = Node.from_master_secret(binascii.unhexlify(
+        self.master_key = Wallet.from_master_secret(binascii.unhexlify(
             'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
             '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
         ))
