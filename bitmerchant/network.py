@@ -1,6 +1,6 @@
 class BitcoinMainNet(object):
     NAME = "Bitcoin Main Net"
-    PUBLIC_KEY_BYTE_PREFIX = 0x04
+    SCRIPT_ADDRESS = 0x04
     PUBKEY_ADDRESS = 0x00  # = int(0) --> '\0'
     SECRET_KEY = 0x80  # = int(128) --> "5"
     EXT_PUBLIC_KEY = 0x0488B21E
@@ -9,7 +9,7 @@ class BitcoinMainNet(object):
 
 class BitcoinTestNet(object):
     NAME = "Bitcoin Test Net"
-    # PUBLIC_KEY_BYTE_PREFIX = 0x04  TODO Verify this constant
+    # SCRIPT_ADDRESS = 0x04  TODO Verify this constant
     PUBKEY_ADDRESS = 0x6f  # = int(111) --> 'o'
     SECRET_KEY = 0xEF  # = int(239) --> "9"
     EXT_PUBLIC_KEY = 0x043587CF
@@ -17,9 +17,9 @@ class BitcoinTestNet(object):
 
 
 class DogecoinMainNet(object):
-    PUBLIC_KEY_BYTE_PREFIX = 0x16  # int(0x16) --> 22
+    SCRIPT_ADDRESS = 0x16  # int(0x16) --> 22
     PUBKEY_ADDRESS = 0x1e  # int(0x1e) --> 30 --> "D"
-    SECRET_KEY = PUBLIC_KEY_BYTE_PREFIX + 128  # 30 + 128 = 158
+    SECRET_KEY = SCRIPT_ADDRESS + 128  # 30 + 128 = 158
 
     # Unofficial extended version bytes taken from
     # https://bitcointalk.org/index.php?topic=409731
@@ -28,9 +28,9 @@ class DogecoinMainNet(object):
 
 
 class DogecoinTestNet(object):
-    PUBLIC_KEY_BYTE_PREFIX = 0xc4  # int(0xc4) --> 196
+    SCRIPT_ADDRESS = 0xc4  # int(0xc4) --> 196
     PUBKEY_ADDRESS = 0x71  # int(0x71) --> 113
-    SECRET_KEY = PUBLIC_KEY_BYTE_PREFIX + 128  # 30 + 128 = 158
+    SECRET_KEY = SCRIPT_ADDRESS + 128  # 30 + 128 = 158
 
     # Unofficial extended version bytes taken from
     # https://bitcointalk.org/index.php?topic=409731
