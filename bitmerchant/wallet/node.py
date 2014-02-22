@@ -3,6 +3,7 @@ from binascii import unhexlify
 from collections import namedtuple
 from hashlib import sha512
 import hmac
+import random
 
 import base58
 from ecdsa import SECP256k1
@@ -406,3 +407,10 @@ class Node(object):
         ]
         return all(
             getattr(self, attr) == getattr(other, attr) for attr in attrs)
+
+    @classmethod
+    def new_random_wallet(cls, seed, network=BitcoinMainNet):
+        """Generate a new wallet using a randomly generated 512 bit seed."""
+        random_seed = random.randint(0, 2**512)
+        random_hex_bytes = long_to_hex(random_seed, 512)
+        return cls.from_master_secret(random_hex_bytes)
