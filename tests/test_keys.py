@@ -130,7 +130,7 @@ class TestPublicKey(_TestPublicKeyBase):
         key = self.public_key.get_key()
         # Change the network constant
         key = "00" + key[2:]
-        self.assertRaises(IncompatibleNetworkException,
+        self.assertRaises(KeyParseError,
                           PublicKey.from_hex_key, key)
 
 
