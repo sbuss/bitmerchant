@@ -32,7 +32,7 @@ class TestNode(TestCase):
 
     def test_invalid_network_prefix(self):
         key = self.expected_key
-        key = (long_to_hex(BitcoinTestNet.EXT_PRIVATE_KEY, 8) +
+        key = (long_to_hex(BitcoinTestNet.EXT_SECRET_KEY, 8) +
                self.expected_key[8:])
         with self.assertRaises(IncompatibleNetworkException):
             Wallet.deserialize(key, BitcoinMainNet)
