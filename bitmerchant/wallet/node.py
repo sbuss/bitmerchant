@@ -148,6 +148,19 @@ class Wallet(object):
         # 32 bits == 4 Bytes == 8 hex characters
         return hex(int(self.identifier[:8], 16))
 
+    def create_new_address_for_user(self, user_id):
+        """Create a new bitcoin address to accept payments for a User.
+
+        This is a convenience wrapper around `get_child` that helps you do
+        the right thing. This method always creates a public, non-prime
+        address that can be generated from a BIP32 public key on an
+        insecure server."""
+        max_id = 0x80000000
+        if user_id < 0 or user_id > max_id:
+            raise ValueError(
+                "Invalid UserID. Must be between 0 and %s" % max_id)
+        return self.get_child(user_id, is_prime=False, as_private=False)
+
     def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
 
