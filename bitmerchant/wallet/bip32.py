@@ -338,7 +338,7 @@ class Wallet(object):
         hash160_bytes = hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
-            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
+            chr(self.network.PUBKEY_ADDRESS) + hash160_bytes
         # Return a base58 encoded address with a checksum
         return base58.b58encode_check(network_hash160_bytes)
 
