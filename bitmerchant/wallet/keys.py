@@ -76,7 +76,7 @@ class PrivateKey(Key):
         key.
         """
         network_hex_chars = hexlify(
-            chr(self.network.PRIVATE_KEY_BYTE_PREFIX))
+            chr(self.network.SECRET_KEY))
         return network_hex_chars + self.key
 
     def export_to_wif(self):
@@ -111,10 +111,10 @@ class PrivateKey(Key):
 
         # Verify we're on the right network
         network_bytes = extended_key_bytes[0]
-        if (ord(network_bytes) != network.PRIVATE_KEY_BYTE_PREFIX):
+        if (ord(network_bytes) != network.SECRET_KEY):
             raise incompatible_network_exception_factory(
                 network_name=network.NAME,
-                expected_prefix=network.PRIVATE_KEY_BYTE_PREFIX,
+                expected_prefix=network.SECRET_KEY,
                 given_prefix=ord(network_bytes))
 
         # Drop the network bytes
