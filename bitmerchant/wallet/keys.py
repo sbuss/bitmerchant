@@ -10,7 +10,7 @@ from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
-from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
@@ -76,7 +76,7 @@ class PrivateKey(Key):
         key.
         """
         network_hex_chars = hexlify(
-            chr(self.network.PRIVATE_KEY_BYTE_PREFIX))
+            chr(self.network.SECRET_KEY))
         return network_hex_chars + self.key
 
     def export_to_wif(self):
@@ -111,10 +111,10 @@ class PrivateKey(Key):
 
         # Verify we're on the right network
         network_bytes = extended_key_bytes[0]
-        if (ord(network_bytes) != network.PRIVATE_KEY_BYTE_PREFIX):
+        if (ord(network_bytes) != network.SECRET_KEY):
             raise incompatible_network_exception_factory(
                 network_name=network.NAME,
-                expected_prefix=network.PRIVATE_KEY_BYTE_PREFIX,
+                expected_prefix=network.SECRET_KEY,
                 given_prefix=ord(network_bytes))
 
         # Drop the network bytes
@@ -193,7 +193,7 @@ class PublicKey(Key):
         on the elliptic curve.
         """
         key = "{network}{x}{y}".format(
-            network=hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
+            network=hexlify(chr(self.network.SCRIPT_ADDRESS)),
             x=long_to_hex(self.x, 64),
             y=long_to_hex(self.y, 64))
         return key.lower()
@@ -227,9 +227,9 @@ class PublicKey(Key):
                 key[64+2:])
             # Verify the network key matches the given network
             network_key_bytes = unhexlify(network_key)
-            if ord(network_key_bytes) != network.PUBLIC_KEY_BYTE_PREFIX:
+            if ord(network_key_bytes) != network.SCRIPT_ADDRESS:
                 raise incompatible_network_exception_factory(
-                    network.NAME, network.PUBLIC_KEY_BYTE_PREFIX,
+                    network.NAME, network.SCRIPT_ADDRESS,
                     ord(network_key_bytes))
         return cls(x=long(x, 16), y=long(y, 16), network=network)
 
@@ -273,7 +273,7 @@ class PublicKey(Key):
         hash160_bytes = hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
-            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
+            chr(self.network.PUBKEY_ADDRESS) + hash160_bytes
         # Return a base58 encoded address with a checksum
         return base58.b58encode_check(network_hash160_bytes)
 

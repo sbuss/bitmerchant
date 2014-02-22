@@ -1,10 +1,10 @@
 import binascii
 from unittest import TestCase
 
+from bitmerchant.network import BitcoinMainNet
+from bitmerchant.network import BitcoinTestNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
-from bitmerchant.wallet.network import BitcoinMainNet
-from bitmerchant.wallet.network import BitcoinTestNet
 from bitmerchant.wallet.utils import long_to_hex
 
 
@@ -32,7 +32,7 @@ class TestNode(TestCase):
 
     def test_invalid_network_prefix(self):
         key = self.expected_key
-        key = (long_to_hex(BitcoinTestNet.EXTENDED_PRIVATE_BYTE_PREFIX, 8) +
+        key = (long_to_hex(BitcoinTestNet.EXT_PRIVATE_KEY, 8) +
                self.expected_key[8:])
         with self.assertRaises(IncompatibleNetworkException):
             Wallet.deserialize(key, BitcoinMainNet)
@@ -44,7 +44,7 @@ class TestNode(TestCase):
         self.assertEqual(child.private_key, None)
         key = child.serialize(False)
         self.assertIn(
-            long_to_hex(BitcoinMainNet.EXTENDED_PUBLIC_BYTE_PREFIX, 8),
+            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
             key)
         self.assertEqual(Wallet.deserialize(key), child)
 
