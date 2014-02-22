@@ -53,6 +53,11 @@ class Wallet(object):
                  private_exponent=None,
                  public_pair=None,
                  network=BitcoinMainNet):
+        """Construct a new BIP32 compliant wallet.
+
+        You probably don't want to use this init methd. Instead use one
+        of the 'from_master_secret' or 'deserialize' cosntructors.
+        """
         if not private_exponent and not public_pair:
             raise ValueError(
                 "You must supply one of private_exponent or public_pair")
@@ -96,6 +101,11 @@ class Wallet(object):
         self.chain_code = h(chain_code, 64)
 
     def get_private_key_hex(self):
+        """
+        Get the hex-encoded (I guess SEC1?) representation of the private key.
+
+        DO NOT share this private key with anyone.
+        """
         return self.private_key.key
 
     def get_public_key_hex(self, compressed=True):
@@ -263,12 +273,15 @@ class Wallet(object):
 
         :param private: Whether or not the serialized key should contain
             private information. Set to False for a public-only representation
-            that cannot spend funds but can create children.
+            that cannot spend funds but can create children. You want
+            private=False if you are, for example, running an e-commerce
+            website and want to accept bitcoin payments. See the README
+            for more information.
         :type private: bool, defaults to True
         :param compressed: True if you want the public key compressed. False
-            if note. Note that uncompressed keys are non-standard and might
+            if not. Note that uncompressed keys are non-standard and might
             not be supported by other tools. You should pretty much always
-            use compressed=True
+            use compressed=True.
         :type compressed: bool, defaults to True
 
         See the spec in `deserialize` for more details.
@@ -302,6 +315,8 @@ class Wallet(object):
 
     def to_address(self):
         """Create a public address from this Node.
+
+        Public addresses can accept payments.
 
         https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
         """
@@ -399,6 +414,11 @@ class Wallet(object):
     @classmethod
     def from_master_secret(cls, seed, network=BitcoinMainNet):
         """Generate a new PrivateKey from a secret key.
+
+        :param seed: The key to use to generate this wallet. It may be a long
+            string. Do not use a phrase from a book or song, as that will
+            be guessed and is not secure. My advice is to not supply this
+            argument and let me generate a new random key for you.
 
         See https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#Serialization_format  # nopep8
         """
