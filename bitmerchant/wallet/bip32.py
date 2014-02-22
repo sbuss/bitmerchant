@@ -10,7 +10,7 @@ from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.numbertheory import square_root_mod_prime
 
-from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
@@ -304,10 +304,10 @@ class Wallet(object):
 
         if private:
             network_version = long_to_hex(
-                self.network.EXTENDED_PRIVATE_BYTE_PREFIX, 8)
+                self.network.EXT_SECRET_KEY, 8)
         else:
             network_version = long_to_hex(
-                self.network.EXTENDED_PUBLIC_BYTE_PREFIX, 8)
+                self.network.EXT_PUBLIC_KEY, 8)
         depth = long_to_hex(self.depth, 2)
         parent_fingerprint = self.parent_fingerprint
         child_number = self.child_number
@@ -338,7 +338,7 @@ class Wallet(object):
         hash160_bytes = hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
-            chr(self.network.ADDRESS_BYTE_PREFIX) + hash160_bytes
+            chr(self.network.PUBKEY_ADDRESS) + hash160_bytes
         # Return a base58 encoded address with a checksum
         return base58.b58encode_check(network_hash160_bytes)
 
@@ -377,16 +377,16 @@ class Wallet(object):
         public_pair = None
         if ord(key_data[0]) == 0:
             # Private key
-            if version_long != network.EXTENDED_PRIVATE_BYTE_PREFIX:
+            if version_long != network.EXT_SECRET_KEY:
                 raise incompatible_network_exception_factory(
-                    network.NAME, network.EXTENDED_PRIVATE_BYTE_PREFIX,
+                    network.NAME, network.EXT_SECRET_KEY,
                     version)
             exponent = key_data[1:]
         elif ord(key_data[0]) in [2, 3, 4]:
             # Compressed public coordinates
-            if version_long != network.EXTENDED_PUBLIC_BYTE_PREFIX:
+            if version_long != network.EXT_PUBLIC_KEY:
                 raise incompatible_network_exception_factory(
-                    network.NAME, network.EXTENDED_PUBLIC_BYTE_PREFIX,
+                    network.NAME, network.EXT_PUBLIC_KEY,
                     version)
             if ord(key_data[0]) == 4:
                 # Uncompressed public point
