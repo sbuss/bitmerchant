@@ -1,10 +1,10 @@
 import binascii
 from unittest import TestCase
 
+from bitmerchant.network import BitcoinMainNet
+from bitmerchant.network import BitcoinTestNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
-from bitmerchant.wallet.network import BitcoinMainNet
-from bitmerchant.wallet.network import BitcoinTestNet
 from bitmerchant.wallet.utils import long_to_hex
 
 

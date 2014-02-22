@@ -10,7 +10,7 @@ from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.numbertheory import square_root_mod_prime
 
-from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey

@@ -10,7 +10,7 @@ from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 
-from bitmerchant.wallet.network import BitcoinMainNet
+from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
