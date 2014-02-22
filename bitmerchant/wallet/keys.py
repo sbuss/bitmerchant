@@ -193,7 +193,7 @@ class PublicKey(Key):
         on the elliptic curve.
         """
         key = "{network}{x}{y}".format(
-            network=hexlify(chr(self.network.PUBLIC_KEY_BYTE_PREFIX)),
+            network=hexlify(chr(self.network.SCRIPT_ADDRESS)),
             x=long_to_hex(self.x, 64),
             y=long_to_hex(self.y, 64))
         return key.lower()
@@ -227,9 +227,9 @@ class PublicKey(Key):
                 key[64+2:])
             # Verify the network key matches the given network
             network_key_bytes = unhexlify(network_key)
-            if ord(network_key_bytes) != network.PUBLIC_KEY_BYTE_PREFIX:
+            if ord(network_key_bytes) != network.SCRIPT_ADDRESS:
                 raise incompatible_network_exception_factory(
-                    network.NAME, network.PUBLIC_KEY_BYTE_PREFIX,
+                    network.NAME, network.SCRIPT_ADDRESS,
                     ord(network_key_bytes))
         return cls(x=long(x, 16), y=long(y, 16), network=network)
 
