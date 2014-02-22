@@ -127,8 +127,37 @@ class TestPublicKey(_TestPublicKeyBase):
         self.assertRaises(KeyParseError, PublicKey.from_hex_key, 'badkey')
 
     def test_bad_network_key(self):
-        key = self.public_key.key
+        key = self.public_key.get_key()
         # Change the network constant
         key = "00" + key[2:]
         self.assertRaises(IncompatibleNetworkException,
                           PublicKey.from_hex_key, key)
+
+
+class TestVectors(TestCase):
+    """Test vectors
+    from https://github.com/bitcoin/bitcoin/blob/master/src/test/key_tests.cpp
+    """
+    def _test(self, secret, address):
+        key = PrivateKey.from_wif(secret)
+        self.assertEqual(address, key.get_public_key().to_address())
+
+    def test_1(self):
+        secret = "5HxWvvfubhXpYYpS3tJkw6fq9jE9j18THftkZjHHfmFiWtmAbrj"
+        address = "1QFqqMUD55ZV3PJEJZtaKCsQmjLT6JkjvJ"
+        self._test(secret, address)
+
+    def test_2(self):
+        secret = "5KC4ejrDjv152FGwP386VD1i2NYc5KkfSMyv1nGy1VGDxGHqVY3"
+        address = "1F5y5E5FMc5YzdJtB9hLaUe43GDxEKXENJ"
+        self._test(secret, address)
+
+    def test_3(self):
+        secret = "Kwr371tjA9u2rFSMZjTNun2PXXP3WPZu2afRHTcta6KxEUdm1vEw"
+        address = "1NoJrossxPBKfCHuJXT4HadJrXRE9Fxiqs"
+        self._test(secret, address)
+
+    def test_4(self):
+        secret = "L3Hq7a8FEQwJkW1M2GNKDW28546Vp5miewcCzSqUD9kCAXrJdS3g"
+        address = "1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs"
+        self._test(secret, address)
