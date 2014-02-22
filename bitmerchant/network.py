@@ -4,7 +4,7 @@ class BitcoinMainNet(object):
     PUBKEY_ADDRESS = 0x00  # = int(0) --> '\0'
     SECRET_KEY = 0x80  # = int(128) --> "5"
     EXT_PUBLIC_KEY = 0x0488B21E
-    EXT_PRIVATE_KEY = 0x0488ADE4
+    EXT_SECRET_KEY = 0x0488ADE4
 
 
 class BitcoinTestNet(object):
@@ -13,7 +13,7 @@ class BitcoinTestNet(object):
     PUBKEY_ADDRESS = 0x6f  # = int(111) --> 'o'
     SECRET_KEY = 0xEF  # = int(239) --> "9"
     EXT_PUBLIC_KEY = 0x043587CF
-    EXT_PRIVATE_KEY = 0x04358394
+    EXT_SECRET_KEY = 0x04358394
 
 
 class DogecoinMainNet(object):
@@ -24,7 +24,7 @@ class DogecoinMainNet(object):
     # Unofficial extended version bytes taken from
     # https://bitcointalk.org/index.php?topic=409731
     EXT_PUBLIC_KEY = 0x02facafd
-    EXT_PRIVATE_KEY = 0x02fac398
+    EXT_SECRET_KEY = 0x02fac398
 
 
 class DogecoinTestNet(object):
@@ -35,4 +35,4 @@ class DogecoinTestNet(object):
     # Unofficial extended version bytes taken from
     # https://bitcointalk.org/index.php?topic=409731
     EXT_PUBLIC_KEY = 0x0432a9a8
-    EXT_PRIVATE_KEY = 0x0432a243
+    EXT_SECRET_KEY = 0x0432a243
