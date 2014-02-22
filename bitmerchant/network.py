@@ -14,3 +14,25 @@ class BitcoinTestNet(object):
     PRIVATE_KEY_BYTE_PREFIX = 0xEF  # = int(239) --> "9"
     EXTENDED_PUBLIC_BYTE_PREFIX = 0x043587CF
     EXTENDED_PRIVATE_BYTE_PREFIX = 0x04358394
+
+
+class DogecoinMainNet(object):
+    PUBLIC_KEY_BYTE_PREFIX = 0x16  # int(0x16) --> 22
+    ADDRESS_BYTE_PREFIX = 0x1e  # int(0x1e) --> 30 --> "D"
+    PRIVATE_KEY_BYTE_PREFIX = PUBLIC_KEY_BYTE_PREFIX + 128  # 30 + 128 = 158
+
+    # Unofficial extended version bytes taken from
+    # https://bitcointalk.org/index.php?topic=409731
+    EXTENDED_PUBLIC_BYTE_PREFIX = 0x02facafd
+    EXTENDED_PRIVATE_BYTE_PREFIX = 0x02fac398
+
+
+class DogecoinTestNet(object):
+    PUBLIC_KEY_BYTE_PREFIX = 0xc4  # int(0xc4) --> 196
+    ADDRESS_BYTE_PREFIX = 0x71  # int(0x71) --> 113
+    PRIVATE_KEY_BYTE_PREFIX = PUBLIC_KEY_BYTE_PREFIX + 128  # 30 + 128 = 158
+
+    # Unofficial extended version bytes taken from
+    # https://bitcointalk.org/index.php?topic=409731
+    EXTENDED_PUBLIC_BYTE_PREFIX = 0x0432a9a8
+    EXTENDED_PRIVATE_BYTE_PREFIX = 0x0432a243
