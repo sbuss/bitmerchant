@@ -1,6 +1,6 @@
 # WORK IN PROGRESS
 
-The README below is a goal I an working toward. This library is not ready
+The README below is a goal I am working toward. This library is not ready
 for public use.
 
 # Bitmerchant
@@ -18,7 +18,7 @@ insecure server. What this means for you as a merchant is that **you can accept
 bitcoin/altcoin payments as securely as possible**.
 
 To link a user with a new bitcoin address, you just need to provide the user's
-ID to the `create_address` method:
+ID to the `create_new_address_for_user` method:
 
 ## Create a new wallet
 
@@ -28,17 +28,44 @@ If you haven't created a wallet yet, do so like this:
 be able to retrieve the coins sent to your public addresses.
 
 ```python
-from bitmerchant.wallet import DogecoinWallet
+from bitmerchant.wallet import Wallet
 
-my_wallet = DogecoinWallet.new_wallet()
+my_wallet = Wallet.new_random_wallet()
 
 # Then back up your private key
 
-private_key = my_wallet.get_private_key()
+private_key = my_wallet.serialize()
 print(private_key)
-# WRITE DOWN THE RESULT AND STORE IT IN A SECURE LOCATION
+# Make sure that you can load your wallet successfully from this key
+wallet_test = Wallet.deserialize(private_key)
+assert my_wallet == wallet_test
+# If that assertion fails then open a ticket!
+# NOW WRITE DOWN THE PRIVATE KEY AND STORE IT IN A SECURE LOCATION
+```
 
-public_key = my_wallet.get_public_key()
+BIP32 wallets (or hierarchical deterministic wallets) allow you to create
+child wallets with limited permissions. You can, for example, create a new
+child wallet for every website you run. It's a good idea to create at least
+*one* child wallet for use on your website. The thinking being that if your
+website's wallet gets compromised somehow, you haven't completely lost control
+because your master wallet is secured on an offline machine. You can use your
+master wallet to move any funds in compromised child wallets to new child
+wallets and you'll be ok. We'll talk more about a breach and how to handle it
+below.
+
+But first, let's generate a new child wallet for your first website!
+
+```python
+# Lets assume you're loading a wallet from your safe private key backup
+my_wallet = Wallet.deserialize(private_key)
+
+# Create a new, public-only child wallet. Since you have the master private
+# key, you can recreate this child at any time in the future and don't need
+# to securely store its private key.
+child = my_wallet.get_child(0, as_private=False)
+
+# And lets export this child key
+public_key = my_wallet.serialize(private=False)
 print(public_key)
 # You can safely store your public key in your app's source code. There's
 # no need to be paranoid about anyone getting it. All they can do is generate
@@ -48,18 +75,21 @@ print(public_key)
 ## Generating new public addresses
 
 BIP32 wallets allow you to generate public addresses without revealing your
-private key. 
+private key. Just pass in the user ID that needs a wallet:
 
 ```python
-from bitmerchant.wallet import DogecoinWallet
-from myapp.settings import master_public_key
+from bitmerchant.wallet import Wallet
+from myapp.settings import public_key  # Created above
 
-payment_address = DogecoinWallet.create_address(master_public_key, user_id)
+wallet = Wallet.deserialize(public_key)
+user_wallet = wallet.create_new_address_for_user(user_id)
+payment_address = user_wallet.to_address()
 ```
 
 This assumes that `user_id` is a unique positive integer and does not change
-for the life of the user. Now any payments received at `payment_address`
-should be credited to the user identified by `user_id`.
+for the life of the user (and is less than 2,147,483,648). Now any payments
+received at `payment_address` should be credited to the user identified by
+`user_id`.
 
 # Staying secure
 
@@ -70,7 +100,8 @@ key, all you can do is generate new addresses.
 You must have the PRIVATE key to spend any of your coins. If your private
 key is stolen then the hacker also has control of all of your coins.
 Generating a new wallet is the only point in dealing with cryptocurrency
-that you need to be paranoid.
+that you need to be paranoid (and you're not being paranoid if they really
+are out to get you).
 
 You should create your wallet on a computer that is not connected to the
 internet. Ideally, this computer will *never* be connected to the internet
@@ -95,11 +126,13 @@ ipython
 Once inside your ipython shell, generate a new wallet:
 
 ```python
-from bitmerchant.wallet import DogecoinWallet
+from bitmerchant.wallet import Wallet
 
-my_wallet = DogecoinWallet.new_wallet()
-private_key, public_key = my_wallet.get_keys()
+my_wallet = Wallet.new_random_wallet()
 
+# Then back up your private key
+
+private_key = my_wallet.serialize()
 print(private_key)
 # Write down this private key.
 # Double check it.
