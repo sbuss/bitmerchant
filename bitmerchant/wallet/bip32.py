@@ -1,6 +1,5 @@
 from binascii import hexlify
 from binascii import unhexlify
-from collections import namedtuple
 from hashlib import sha512
 import hmac
 import random
@@ -8,18 +7,15 @@ import random
 import base58
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
-from ecdsa.numbertheory import square_root_mod_prime
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.keys import PublicPair
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
-
-
-PublicPair = namedtuple("PublicPair", ["x", "y"])
 
 
 class Wallet(object):
@@ -106,27 +102,11 @@ class Wallet(object):
 
         DO NOT share this private key with anyone.
         """
-        return self.private_key.key
+        return self.private_key.get_key()
 
     def get_public_key_hex(self, compressed=True):
-        """Get the sec1 representation of the public key.
-
-        Note that I pieced this algorithm together from the pycoin source.
-
-        This is documented in http://www.secg.org/collateral/sec1_final.pdf
-        but, honestly, it's pretty confusing.
-
-        I guess this is a pretty big warning that I'm not *positive* this
-        will do the right thing in all cases. The tests pass, and this does
-        exactly what pycoin does, but I'm not positive pycoin works either!
-        """
-        if compressed:
-            parity = 2 + (self.public_key.y & 1)  # 0x02 even, 0x03 odd
-            return (long_to_hex(parity, 2) +
-                    long_to_hex(self.public_key.x, 32))
-        else:
-            return ('04' + long_to_hex(self.public_key.x, 32) +
-                    long_to_hex(self.public_key.y, 32))
+        """Get the sec1 representation of the public key."""
+        return self.public_key.get_key(compressed)
 
     @property
     def identifier(self):
@@ -226,7 +206,7 @@ class Wallet(object):
 
         if is_prime:
             # Let data = concat(0x00, self.key, child_number)
-            data = '00' + self.private_key.key
+            data = '00' + self.private_key.get_key()
         else:
             data = self.get_public_key_hex()
         data += child_number_hex
@@ -248,7 +228,7 @@ class Wallet(object):
             # I_L is added to the current key's secret exponent (mod n), where
             # n is the order of the ECDSA curve in use.
             private_exponent = (
-                (long(hexlify(I_L), 16) + long(self.private_key.key, 16))
+                (long(hexlify(I_L), 16) + long(self.private_key.get_key(), 16))
                 % SECP256k1.order)
             # I_R is the child's chain code
         else:
@@ -316,7 +296,7 @@ class Wallet(object):
                chain_code)
         # Private and public serializations are slightly different
         if private:
-            ret += '00' + self.private_key.key
+            ret += '00' + self.private_key.get_key()
         else:
             ret += self.get_public_key_hex(compressed)
         return ret.lower()
@@ -388,25 +368,8 @@ class Wallet(object):
                 raise incompatible_network_exception_factory(
                     network.NAME, network.EXT_PUBLIC_KEY,
                     version)
-            if ord(key_data[0]) == 4:
-                # Uncompressed public point
-                public_pair = PublicPair(
-                    long(hexlify(key_data[1:33]), 16),
-                    long(hexlify(key_data[33:]), 16))
-            else:
-                # Compressed public point!
-                y_odd = bool(ord(key_data[0]) & 0x01)  # 0 even, 1 odd
-                x = long(hexlify(key_data[1:]), 16)
-                # The following x-to-pair algorithm was lifted from pycoin
-                # I still need to sit down an understand it
-                curve = SECP256k1.curve
-                p = curve.p()
-                alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
-                beta = square_root_mod_prime(alpha, p)
-                if y_odd:
-                    public_pair = PublicPair(x, beta)
-                else:
-                    public_pair = PublicPair(x, p - beta)
+            pubkey = PublicKey.from_hex_key(key_data)
+            public_pair = pubkey.to_public_pair()
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))

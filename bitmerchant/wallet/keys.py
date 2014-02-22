@@ -1,5 +1,6 @@
 from binascii import hexlify
 from binascii import unhexlify
+from collections import namedtuple
 from hashlib import sha256
 import hmac
 import re
@@ -9,6 +10,7 @@ from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
+from ecdsa.numbertheory import square_root_mod_prime
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
@@ -16,14 +18,18 @@ from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
 
 
+PublicPair = namedtuple("PublicPair", ["x", "y"])
+
+
 class Key(object):
-    def __init__(self, network):
+    def __init__(self, network, compressed=False):
         """Construct a Key."""
         # Set network first because set_key needs it
         self.network = network
+        self.compressed = compressed
 
     def __eq__(self, other):
-        return (self.key == other.key and
+        return (self.get_key() == other.get_key() and
                 self.network == other.network and
                 type(self) == type(other))
 
@@ -56,10 +62,9 @@ class PrivateKey(Key):
         super(PrivateKey, self).__init__(network=network, *args, **kwargs)
         self.private_exponent = private_exponent
         pubkey = self.get_public_key()
-        self.point = _ECDSA_Private_key(pubkey.point, long(self.key, 16))
+        self.point = _ECDSA_Private_key(pubkey.point, long(self.get_key(), 16))
 
-    @property
-    def key(self):
+    def get_key(self):
         """Get the key - a hex formatted private exponent for the curve."""
         return long_to_hex(self.private_exponent, 64)
 
@@ -67,7 +72,8 @@ class PrivateKey(Key):
         """Get the PublicKey for this PrivateKey."""
         g = SECP256k1.generator
         point = _ECDSA_Public_key(g, g * self.private_exponent).point
-        return PublicKey.from_point(point, self.network)
+        return PublicKey.from_point(
+            point, self.network, compressed=self.compressed)
 
     def get_extended_key(self):
         """Get the extended key.
@@ -77,17 +83,26 @@ class PrivateKey(Key):
         """
         network_hex_chars = hexlify(
             chr(self.network.SECRET_KEY))
-        return network_hex_chars + self.key
+        return network_hex_chars + self.get_key()
 
-    def export_to_wif(self):
+    def export_to_wif(self, compressed=None):
         """Export a key to WIF.
 
+        :param compressed: False if you want a standard WIF export (the most
+            standard option). True if you want the compressed form (Note that
+            not all clients will accept this form). Defaults to None, which
+            in turn uses the self.compressed attribute.
+        :type compressed: bool
         See https://en.bitcoin.it/wiki/Wallet_import_format for a full
         description.
         """
         # Add the network byte, creating the "extended key"
         extended_key_hex = self.get_extended_key()
         extended_key_bytes = unhexlify(extended_key_hex)
+        if compressed is None:
+            compressed = self.compressed
+        if compressed:
+            extended_key_bytes += '\01'
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
@@ -119,8 +134,18 @@ class PrivateKey(Key):
 
         # Drop the network bytes
         extended_key_bytes = extended_key_bytes[1:]
+
+        # Check for comprssed public key
+        # This only affects the way in which addresses are generated.
+        compressed = False
+        if len(extended_key_bytes) == 33:
+            # We are supposed to use compressed form!
+            extended_key_bytes = extended_key_bytes[:-1]
+            compressed = True
+
         # And we should finally have a valid key
-        return cls(long(hexlify(extended_key_bytes), 16), network)
+        return cls(long(hexlify(extended_key_bytes), 16), network,
+                   compressed=compressed)
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):
@@ -166,7 +191,7 @@ class PrivateKey(Key):
 
 
 class PublicKey(Key):
-    def __init__(self, x, y, network=BitcoinMainNet):
+    def __init__(self, x, y, network=BitcoinMainNet, *args, **kwargs):
         """Create a public key.
 
         :param x: The x coordinate on the curve
@@ -176,68 +201,98 @@ class PublicKey(Key):
         :param network: The network you want (Networks just define certain
             constants, like byte-prefixes on public addresses).
         :type network: See `bitmerchant.wallet.network`
-        TODO: Support compressed pubkeys
         """
-        super(PublicKey, self).__init__(network=network)
+        super(PublicKey, self).__init__(network=network, *args, **kwargs)
         if not isinstance(x, long) or not isinstance(y, long):
             raise ValueError("Coordinates must be longs")
         self.x = x
         self.y = y
         self.point = self.create_point(x, y)
 
-    @property
-    def key(self):
+    def get_key(self, compressed=None):
         """Get the hex-encoded key.
 
-        PublicKeys consist of a network byte, the x, and the y coordinates
+        :param compressed: False if you want a standard 65 Byte key (the most
+            standard option). True if you want the compressed 33 Byte form.
+            Defaults to None, which in turn uses the self.compressed attribute.
+        :type compressed: bool
+
+        PublicKeys consist of an ID byte, the x, and the y coordinates
         on the elliptic curve.
+
+        In the case of uncompressed keys, the ID byte is 04.
+        Compressed keys use the SEC1 format:
+            If Y is odd: id_byte = 03
+            else: id_byte = 02
+
+        Note that I pieced this algorithm together from the pycoin source.
+
+        This is documented in http://www.secg.org/collateral/sec1_final.pdf
+        but, honestly, it's pretty confusing.
+
+        I guess this is a pretty big warning that I'm not *positive* this
+        will do the right thing in all cases. The tests pass, and this does
+        exactly what pycoin does, but I'm not positive pycoin works either!
         """
-        key = "{network}{x}{y}".format(
-            network=hexlify(chr(self.network.SCRIPT_ADDRESS)),
-            x=long_to_hex(self.x, 64),
-            y=long_to_hex(self.y, 64))
-        return key.lower()
+        if compressed is None:
+            compressed = self.compressed
+        if compressed:
+            parity = 2 + (self.y & 1)  # 0x02 even, 0x03 odd
+            return (long_to_hex(parity, 2) +
+                    long_to_hex(self.x, 64))
+        else:
+            return ('04' + long_to_hex(self.x, 64) +
+                    long_to_hex(self.y, 64))
 
     @classmethod
     def from_hex_key(cls, key, network=BitcoinMainNet):
-        """Return the key in hexlified nxy format.
+        """Load the PublicKey from a compressed or uncompressed hex key.
 
-        nxy format is a name I made up, it's the same as PublicKey.key.
-        The key consists of
-          * 1 Byte network key
-          * 32 Bytes x coordinate
-          * 32 Bytes y cooddinate
+        This format is defined in PublicKey.get_key()
         """
-        if len(key) == 65:
-            # It might be a byte array
+        if len(key) == 130 or len(key) == 66:
+            # It might be a hexlified byte array
             try:
-                key = hexlify(key)
+                key = unhexlify(key)
             except TypeError:
                 pass
 
-        if len(key) != 130:
+        compressed = False
+        if ord(key[0]) == 4:
+            # Uncompressed public point
+            # 1B ID + 32B x coord + 32B y coord = 65 B
+            if len(key) != 65:
+                raise KeyParseError("Invalid key length")
+            public_pair = PublicPair(
+                long(hexlify(key[1:33]), 16),
+                long(hexlify(key[33:]), 16))
+        elif ord(key[0]) in [2, 3]:
+            # Compressed public point!
+            compressed = True
+            if len(key) != 33:
+                raise KeyParseError("Invalid key length")
+            y_odd = bool(ord(key[0]) & 0x01)  # 0 even, 1 odd
+            x = long(hexlify(key[1:]), 16)
+            # The following x-to-pair algorithm was lifted from pycoin
+            # I still need to sit down an understand it
+            curve = SECP256k1.curve
+            p = curve.p()
+            alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
+            beta = square_root_mod_prime(alpha, p)
+            if y_odd:
+                public_pair = PublicPair(x, beta)
+            else:
+                public_pair = PublicPair(x, p - beta)
+        else:
             raise KeyParseError("The given key is not in a known format.")
-
-        if len(key) == 130:
-            # 1B network key + 32B x coord + 32B y coord = 65
-            # ...and double 65 because two hex chars = 1 Byte
-            network_key, x, y = (
-                key[:2],
-                key[2:64+2],
-                key[64+2:])
-            # Verify the network key matches the given network
-            network_key_bytes = unhexlify(network_key)
-            if ord(network_key_bytes) != network.SCRIPT_ADDRESS:
-                raise incompatible_network_exception_factory(
-                    network.NAME, network.SCRIPT_ADDRESS,
-                    ord(network_key_bytes))
-        return cls(x=long(x, 16), y=long(y, 16), network=network)
+        return cls.from_public_pair(public_pair, network=network,
+                                    compressed=compressed)
 
     def point_from_key(self, key):
         """Create an ECDSA Point from a key.
 
         :param key: The public key
-        :type key: A hex-encoded public key. See PublicKey.key
+        :type key: A hex-encoded public key. See PublicKey.get_key
         """
         _, x, y = key[:2], key[2:2+64], key[2+64:]
         return self.create_point(long(x, 16), long(y, 16))
@@ -263,12 +318,18 @@ class PublicKey(Key):
         """
         return cls(x=point.x(), y=point.y(), network=network, **kwargs)
 
-    def to_address(self):
+    def to_address(self, compressed=None):
         """Create a public address from this key.
+
+        :param compressed: False if you want a normal uncompressed address
+            (the most standard option). True if you want the compressed form.
+            Note that most clients will not accept compressed addresses.
+            Defaults to None, which in turn uses the self.compressed attribute.
+        :type compressed: bool
 
         https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
         """
-        key = unhexlify(self.key)
+        key = unhexlify(self.get_key(compressed))
         # First get the hash160 of the key
         hash160_bytes = hash160(key)
         # Prepend the network address byte
@@ -276,6 +337,13 @@ class PublicKey(Key):
             chr(self.network.PUBKEY_ADDRESS) + hash160_bytes
         # Return a base58 encoded address with a checksum
         return base58.b58encode_check(network_hash160_bytes)
+
+    def to_public_pair(self):
+        return PublicPair(self.x, self.y)
+
+    @classmethod
+    def from_public_pair(cls, pair, network=BitcoinMainNet, **kwargs):
+        return cls(x=pair.x, y=pair.y, network=network, **kwargs)
 
 
 class KeyParseError(Exception):
