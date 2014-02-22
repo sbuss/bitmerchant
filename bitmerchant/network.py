@@ -24,6 +24,46 @@ class BitcoinTestNet(object):
     EXT_SECRET_KEY = 0x04358394
 
 
+class LitecoinMainNet(object):
+    """Litecoin MainNet version bytes
+
+    Primary version bytes from:
+    https://github.com/litecoin-project/litecoin/blob/master-0.8/src/base58.h
+
+    Unofficial extended version bytes from
+    https://bitcointalk.org/index.php?topic=453395.0
+    """
+    NAME = "Litecoin Main Net"
+    SCRIPT_ADDRESS = 0x05  # int(0x05) = 5
+    PUBKEY_ADDRESS = 0x30  # int(0x30) = 48
+    SECRET_KEY = PUBKEY_ADDRESS + 128  # = int(0xb0) = 176
+
+    # Unofficial extended version bytes taken from
+    # https://bitcointalk.org/index.php?topic=453395.0
+    EXT_PUBLIC_KEY = 0x019da462
+    EXT_SECRET_KEY = 0x019d9cfe
+
+
+class LitecoinTestNet(object):
+    """Litecoin TestNet version bytes
+
+    Primary version bytes from:
+    https://github.com/litecoin-project/litecoin/blob/master-0.8/src/base58.h
+
+    Unofficial extended version bytes from
+    https://bitcointalk.org/index.php?topic=453395.0
+    """
+    NAME = "Litecoin Test Net"
+    SCRIPT_ADDRESS = 0xc4  # int(0xc4) = 196
+    PUBKEY_ADDRESS = 0x6f  # int(0x6f) = 111
+    SECRET_KEY = PUBKEY_ADDRESS + 128  # = int(0xef) = 239
+
+    # Unofficial extended version bytes taken from
+    # https://bitcointalk.org/index.php?topic=453395.0
+    EXT_PUBLIC_KEY = 0x0436f6e1
+    EXT_SECRET_KEY = 0x0436ef7d
+
+
 class DogecoinMainNet(object):
     """Dogecoin MainNet version bytes
 
