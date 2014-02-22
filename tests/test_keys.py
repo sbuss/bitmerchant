@@ -39,7 +39,7 @@ class TestPrivateKey(_TestPrivateKeyBase):
         self.assertEqual(PrivateKey(exp), self.key)
 
     def test_raw_key_hex_bytes(self):
-        key = binascii.unhexlify(self.key.key)
+        key = binascii.unhexlify(self.key.get_key())
         self.assertEqual(PrivateKey.from_hex_key(key), self.key)
 
     def test_from_master_password(self):
@@ -105,7 +105,7 @@ class TestPublicKey(_TestPublicKeyBase):
             "02cbfd5410fd04973c096a4275bf75070955ebd689f316a6fbd449980ba7b756"
             "c559764e5c367c03e002751aaf4ef8ec40fe97cda9b2d3f14fdd4cd244e8fcd2")
         public_key = PublicKey.from_hex_key(expected_key)
-        self.assertEqual(public_key.key, expected_key)
+        self.assertEqual(public_key.get_key(), expected_key)
 
     def test_address(self):
         expected_address = "16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM"
@@ -118,7 +118,7 @@ class TestPublicKey(_TestPublicKeyBase):
             self.public_key)
 
     def test_unhexlified_key(self):
-        key_bytes = binascii.unhexlify(self.public_key.key)
+        key_bytes = binascii.unhexlify(self.public_key.get_key())
         self.assertEqual(
             PublicKey.from_hex_key(key_bytes),
             self.public_key)
