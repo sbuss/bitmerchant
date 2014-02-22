@@ -44,7 +44,7 @@ class TestNode(TestCase):
         self.assertEqual(child.private_key, None)
         key = child.serialize(False)
         self.assertIn(
-            long_to_hex(BitcoinMainNet.EXTENDED_PUBLIC_BYTE_PREFIX, 8),
+            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
             key)
         self.assertEqual(Wallet.deserialize(key), child)
 

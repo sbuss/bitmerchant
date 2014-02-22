@@ -307,7 +307,7 @@ class Wallet(object):
                 self.network.EXTENDED_PRIVATE_BYTE_PREFIX, 8)
         else:
             network_version = long_to_hex(
-                self.network.EXTENDED_PUBLIC_BYTE_PREFIX, 8)
+                self.network.EXT_PUBLIC_KEY, 8)
         depth = long_to_hex(self.depth, 2)
         parent_fingerprint = self.parent_fingerprint
         child_number = self.child_number
@@ -384,9 +384,9 @@ class Wallet(object):
             exponent = key_data[1:]
         elif ord(key_data[0]) in [2, 3, 4]:
             # Compressed public coordinates
-            if version_long != network.EXTENDED_PUBLIC_BYTE_PREFIX:
+            if version_long != network.EXT_PUBLIC_KEY:
                 raise incompatible_network_exception_factory(
-                    network.NAME, network.EXTENDED_PUBLIC_BYTE_PREFIX,
+                    network.NAME, network.EXT_PUBLIC_KEY,
                     version)
             if ord(key_data[0]) == 4:
                 # Uncompressed public point
