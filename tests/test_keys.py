@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import base58
 
-from bitmerchant.wallet.network import BitcoinTestNet
+from bitmerchant.network import BitcoinTestNet
 from bitmerchant.wallet.keys import ChecksumException
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
