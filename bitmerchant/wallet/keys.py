@@ -16,6 +16,7 @@ from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
+from bitmerchant.wallet.utils import memoize
 
 
 PublicPair = namedtuple("PublicPair", ["x", "y"])
@@ -71,6 +72,7 @@ class PrivateKey(Key):
         """Get the key - a hex formatted private exponent for the curve."""
         return long_to_hex(self.private_exponent, 64)
 
+    @memoize
     def get_public_key(self):
         """Get the PublicKey for this PrivateKey."""
         g = SECP256k1.generator
@@ -296,6 +298,7 @@ class PublicKey(Key):
         return cls.from_public_pair(public_pair, network=network,
                                     compressed=compressed)
 
+    @memoize
     def create_point(self, x, y):
         """Create an ECDSA point on the SECP256k1 curve with the given coords.
 
