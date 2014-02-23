@@ -348,7 +348,9 @@ class Wallet(object):
             * 32 bytes: the chain code
             * 33 bytes: the public key or private key data
               (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
-              (Note that this also supports 0x04 + X + Y uncompressed points)
+              (Note that this also supports 0x04 + X + Y uncompressed points,
+              but this is totally non-standard and this library won't even
+              generate such data.)
         """
         if len(key) in [78, (78 + 32)]:
             # we have a byte array, so pass
