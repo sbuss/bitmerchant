@@ -8,5 +8,5 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
 # command to run tests, e.g. python setup.py test
-script:  nosetests  --with-coverage --cover-package=bitmerchant
+script:  coverage run setup.py test
 after_success: coveralls
