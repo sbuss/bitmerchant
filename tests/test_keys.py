@@ -11,6 +11,7 @@ from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.utils import long_or_int
 
 
 class _TestPrivateKeyBase(TestCase):
@@ -19,7 +20,7 @@ class _TestPrivateKeyBase(TestCase):
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_key = \
             "0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d"
-        self.key = PrivateKey(long(self.expected_key, 16))
+        self.key = PrivateKey(long_or_int(self.expected_key, 16))
 
 
 class _TestPublicKeyBase(TestCase):
@@ -28,7 +29,8 @@ class _TestPublicKeyBase(TestCase):
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_private_key = \
             "18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725"
-        self.private_key = PrivateKey(long(self.expected_private_key, 16))
+        self.private_key = PrivateKey(
+            long_or_int(self.expected_private_key, 16))
         self.public_key = PublicKey.from_hex_key(
             "04"
             "50863ad64a87ae8a2fe83c1af1a8403cb53f53e486d8511dad8a04887e5b2352"
