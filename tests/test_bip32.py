@@ -55,6 +55,12 @@ class TestWallet(TestCase):
         with self.assertRaises(ValueError):
             child.serialize()
 
+    def test_random_wallet(self):
+        w = Wallet.new_random_wallet()
+        self.assertTrue(Wallet.deserialize(w.serialize()), w)
+        self.assertEqual(w.depth, 0)
+        self.assertEqual(w.parent_fingerprint, long_to_hex(0, 8))
+        self.assertEqual(w.child_number, 0)
 
 
 class TestSerialize(TestCase):
