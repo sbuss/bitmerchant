@@ -29,9 +29,12 @@ class Key(object):
         self.compressed = compressed
 
     def __eq__(self, other):
-        return (self.get_key() == other.get_key() and
+        return (other and
                 self.network == other.network and
                 type(self) == type(other))
+
+    def __ne__(self, other):
+        return not self == other
 
     def is_hex_bytes(self, key):
         if len(key) == 32 and not self.is_hex(key):
@@ -191,7 +194,8 @@ class PrivateKey(Key):
 
     def __eq__(self, other):
         return (super(PrivateKey, self).__eq__(other) and
-                self.private_exponent == other.private_exponent)
+                self.private_exponent == other.private_exponent and
+                self.get_public_key() == other.get_public_key())
 
 
 class PublicKey(Key):
@@ -292,15 +296,6 @@ class PublicKey(Key):
         return cls.from_public_pair(public_pair, network=network,
                                     compressed=compressed)
 
-    def point_from_key(self, key):
-        """Create an ECDSA Point from a key.
-
-        :param key: The public key
-        :type key: A hex-encoded public key. See PublicKey.get_key
-        """
-        _, x, y = key[:2], key[2:2+64], key[2+64:]
-        return self.create_point(long(x, 16), long(y, 16))
-
     def create_point(self, x, y):
         """Create an ECDSA point on the SECP256k1 curve with the given coords.
 
@@ -352,7 +347,7 @@ class PublicKey(Key):
     def __eq__(self, other):
         return (super(PublicKey, self).__eq__(other) and
                 self.x == other.x and
-                self.compressed == other.compressed)
+                self.y == other.y)
 
 
 class KeyParseError(Exception):

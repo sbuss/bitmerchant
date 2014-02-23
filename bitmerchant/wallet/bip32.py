@@ -47,33 +47,40 @@ class Wallet(object):
                  parent_fingerprint=0L,
                  child_number=0L,
                  private_exponent=None,
+                 private_key=None,
                  public_pair=None,
+                 public_key=None,
                  network=BitcoinMainNet):
         """Construct a new BIP32 compliant wallet.
 
         You probably don't want to use this init methd. Instead use one
         of the 'from_master_secret' or 'deserialize' cosntructors.
         """
-        if not private_exponent and not public_pair:
+        if (not (private_exponent or private_key) and
+                not (public_pair or public_key)):
             raise ValueError(
                 "You must supply one of private_exponent or public_pair")
 
         self.private_key = None
         self.public_key = None
-        if private_exponent:
+        if private_key:
+            self.private_key = private_key
+        elif private_exponent:
             self.private_key = PrivateKey(
                 private_exponent, network=network)
-        if public_pair:
-            self.public_key = PublicKey(
-                long(public_pair.x),
-                long(public_pair.y),
-                network=network)
-            if (self.private_key and self.private_key.get_public_key() !=
-                    self.public_key):
-                raise ValueError(
-                    "Provided private and public values do not match")
+
+        if public_key:
+            self.public_key = public_key
+        elif public_pair:
+            self.public_key = PublicKey.from_public_pair(
+                public_pair, network=network)
         else:
             self.public_key = self.private_key.get_public_key()
+
+        if (self.private_key and self.private_key.get_public_key() !=
+                self.public_key):
+            raise ValueError(
+                "Provided private and public values do not match")
 
         def h(val, hex_len):
             if isinstance(val, long) or isinstance(val, int):
@@ -85,15 +92,23 @@ class Wallet(object):
             else:
                 raise ValueError("Invalid parameter type")
 
+        def l(val):
+            if isinstance(val, int) or isinstance(val, long):
+                return val
+            elif isinstance(val, basestring):
+                if not is_hex_string(val):
+                    val = hexlify(val)
+                return long(val, 16)
+            else:
+                raise ValueError("parameter must be an int or long")
+
         self.network = network
-        if not isinstance(depth, int) and not isinstance(depth, long):
-            raise ValueError("depth must be an int or long")
-        self.depth = depth
+        self.depth = l(depth)
         if (isinstance(parent_fingerprint, basestring) and
                 parent_fingerprint.startswith("0x")):
             parent_fingerprint = parent_fingerprint[2:]
         self.parent_fingerprint = h(parent_fingerprint, 8)
-        self.child_number = h(child_number, 8)
+        self.child_number = l(child_number)
         self.chain_code = h(chain_code, 64)
 
     def get_private_key_hex(self):
@@ -261,7 +276,7 @@ class Wallet(object):
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
-    def serialize(self, private=True, compressed=True):
+    def serialize(self, private=True):
         """Serialize this key.
 
         :param private: Whether or not the serialized key should contain
@@ -271,11 +286,6 @@ class Wallet(object):
             website and want to accept bitcoin payments. See the README
             for more information.
         :type private: bool, defaults to True
-        :param compressed: True if you want the public key compressed. False
-            if not. Note that uncompressed keys are non-standard and might
-            not be supported by other tools. You should pretty much always
-            use compressed=True.
-        :type compressed: bool, defaults to True
 
         See the spec in `deserialize` for more details.
         """
@@ -290,7 +300,7 @@ class Wallet(object):
                 self.network.EXT_PUBLIC_KEY, 8)
         depth = long_to_hex(self.depth, 2)
         parent_fingerprint = self.parent_fingerprint
-        child_number = self.child_number
+        child_number = long_to_hex(self.child_number, 8)
         chain_code = self.chain_code
         ret = (network_version + depth + parent_fingerprint + child_number +
                chain_code)
@@ -298,16 +308,15 @@ class Wallet(object):
         if private:
             ret += '00' + self.private_key.get_key()
         else:
-            ret += self.get_public_key_hex(compressed)
+            ret += self.get_public_key_hex(compressed=True)
         return ret.lower()
 
-    def serialize_b58(self, private=True, compressed=True):
+    def serialize_b58(self, private=True):
         """Encode the serialized node in base58."""
-        return base58.b58encode_check(
-            unhexlify(self.serialize(private, compressed)))
+        return base58.b58encode_check(unhexlify(self.serialize(private)))
 
     def to_address(self):
-        """Create a public address from this Node.
+        """Create a public address from this Wallet.
 
         Public addresses can accept payments.
 
@@ -339,22 +348,27 @@ class Wallet(object):
             * 32 bytes: the chain code
             * 33 bytes: the public key or private key data
               (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
-              (Note that this also supports 0x04 + X + Y uncompressed points)
+              (Note that this also supports 0x04 + X + Y uncompressed points,
+              but this is totally non-standard and this library won't even
+              generate such data.)
         """
-        if len(key) == 78:
-            # we have bytes
-            key = hexlify(key)
-        if not is_hex_string(key) or len(key) not in [78 * 2, (78 + 32) * 2]:
-            raise ValueError("Invalid hex key. Might be base58? TODO")
+        if len(key) in [78, (78 + 32)]:
+            # we have a byte array, so pass
+            pass
+        elif len(key) in [78 * 2, (78 + 32) * 2]:
+            # we have a hexlified non-base58 key, continue!
+            key = unhexlify(key)
+        elif len(key) == 111:
+            # We have a base58 encoded string
+            key = base58.b58decode_check(key)
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
-        key = unhexlify(key)
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
 
         version_long = long(hexlify(version), 16)
         exponent = None
-        public_pair = None
+        pubkey = None
         if ord(key_data[0]) == 0:
             # Private key
             if version_long != network.EXT_SECRET_KEY:
@@ -368,8 +382,10 @@ class Wallet(object):
                 raise incompatible_network_exception_factory(
                     network.NAME, network.EXT_PUBLIC_KEY,
                     version)
-            pubkey = PublicKey.from_hex_key(key_data)
-            public_pair = pubkey.to_public_pair()
+            pubkey = PublicKey.from_hex_key(key_data, network=network)
+            # Even though this was generated from a compressed pubkey, we
+            # want to store it as an uncompressed pubkey
+            pubkey.compressed = False
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))
@@ -384,7 +400,7 @@ class Wallet(object):
                    child_number=l(child),
                    chain_code=l(chain_code),
                    private_exponent=l(exponent),
-                   public_pair=public_pair,
+                   public_key=pubkey,
                    network=network)
 
     @classmethod
@@ -418,12 +434,15 @@ class Wallet(object):
             'public_key',
             'network',
         ]
-        return all(
+        return other and all(
             getattr(self, attr) == getattr(other, attr) for attr in attrs)
 
+    def __ne__(self, other):
+        return not self == other
+
     @classmethod
-    def new_random_wallet(cls, seed, network=BitcoinMainNet):
+    def new_random_wallet(cls, network=BitcoinMainNet):
         """Generate a new wallet using a randomly generated 512 bit seed."""
         random_seed = random.randint(0, 2**512)
         random_hex_bytes = long_to_hex(random_seed, 512)
-        return cls.from_master_secret(random_hex_bytes)
+        return cls.from_master_secret(random_hex_bytes, network=network)
