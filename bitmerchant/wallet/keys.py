@@ -296,15 +296,6 @@ class PublicKey(Key):
         return cls.from_public_pair(public_pair, network=network,
                                     compressed=compressed)
 
-    def point_from_key(self, key):
-        """Create an ECDSA Point from a key.
-
-        :param key: The public key
-        :type key: A hex-encoded public key. See PublicKey.get_key
-        """
-        _, x, y = key[:2], key[2:2+64], key[2+64:]
-        return self.create_point(long(x, 16), long(y, 16))
-
     def create_point(self, x, y):
         """Create an ECDSA point on the SECP256k1 curve with the given coords.
 
