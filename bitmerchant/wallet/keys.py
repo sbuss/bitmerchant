@@ -349,6 +349,11 @@ class PublicKey(Key):
     def from_public_pair(cls, pair, network=BitcoinMainNet, **kwargs):
         return cls(x=pair.x, y=pair.y, network=network, **kwargs)
 
+    def __eq__(self, other):
+        return (super(PublicKey, self).__eq__(other) and
+                self.x == other.x and
+                self.compressed == other.compressed)
+
 
 class KeyParseError(Exception):
     pass
