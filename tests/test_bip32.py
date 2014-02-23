@@ -55,15 +55,31 @@ class TestWallet(TestCase):
         with self.assertRaises(ValueError):
             child.serialize()
 
-    def test_public_export_uncompressed(self):
-        child = self.master_key.get_child(0, as_private=False)
-        key = child.serialize(private=False, compressed=False)
-        # 220 = (78 + 32) * 2
-        # where 78 is the compressed length
-        # 32 is the length of the uncompressed y coordinate
-        # and 2 is because hexlifying doubles the length
-        self.assertEqual(len(key), 220)
-        self.assertEqual(child, Wallet.deserialize(key))
+
+
+class TestSerialize(TestCase):
+    def setUp(self):
+        self.wallet = Wallet.new_random_wallet()
+
+    def test_serialize_private(self):
+        prv = self.wallet.serialize(private=True)
+        w = Wallet.deserialize(prv)
+        self.assertTrue(w.private_key)
+        self.assertEqual(w, self.wallet)
+
+        prv = self.wallet.serialize_b58(private=True)
+        w = Wallet.deserialize(prv)
+        self.assertTrue(w.private_key)
+        self.assertEqual(w, self.wallet)
+
+    def test_serialize_public(self):
+        pub = self.wallet.serialize(private=False)
+        w = Wallet.deserialize(pub)
+        self.assertFalse(w.private_key)
+
+        pub = self.wallet.serialize_b58(private=False)
+        w = Wallet.deserialize(pub)
+        self.assertFalse(w.private_key)
 
 
 class _TestWalletVectors(TestCase):

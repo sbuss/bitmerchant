@@ -261,7 +261,7 @@ class Wallet(object):
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
-    def serialize(self, private=True, compressed=True):
+    def serialize(self, private=True):
         """Serialize this key.
 
         :param private: Whether or not the serialized key should contain
@@ -271,11 +271,6 @@ class Wallet(object):
             website and want to accept bitcoin payments. See the README
             for more information.
         :type private: bool, defaults to True
-        :param compressed: True if you want the public key compressed. False
-            if not. Note that uncompressed keys are non-standard and might
-            not be supported by other tools. You should pretty much always
-            use compressed=True.
-        :type compressed: bool, defaults to True
 
         See the spec in `deserialize` for more details.
         """
@@ -298,13 +293,12 @@ class Wallet(object):
         if private:
             ret += '00' + self.private_key.get_key()
         else:
-            ret += self.get_public_key_hex(compressed)
+            ret += self.get_public_key_hex(compressed=True)
         return ret.lower()
 
-    def serialize_b58(self, private=True, compressed=True):
+    def serialize_b58(self, private=True):
         """Encode the serialized node in base58."""
-        return base58.b58encode_check(
-            unhexlify(self.serialize(private, compressed)))
+        return base58.b58encode_check(unhexlify(self.serialize(private)))
 
     def to_address(self):
         """Create a public address from this Node.
