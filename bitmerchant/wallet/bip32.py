@@ -16,6 +16,7 @@ from bitmerchant.wallet.keys import PublicPair
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_to_hex
+from bitmerchant.wallet.utils import memoize
 
 
 class Wallet(object):
@@ -159,6 +160,7 @@ class Wallet(object):
                 "Invalid UserID. Must be between 0 and %s" % max_id)
         return self.get_child(user_id, is_prime=False, as_private=False)
 
+    @memoize
     def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
 
@@ -338,6 +340,7 @@ class Wallet(object):
         return base58.b58encode_check(network_hash160_bytes)
 
     @classmethod
+    @memoize
     def deserialize(cls, key, network=BitcoinMainNet):
         """Load the ExtendedBip32Key from a hex key.
 
