@@ -11,6 +11,7 @@ from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 from ecdsa.numbertheory import square_root_mod_prime
+import six
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
@@ -61,7 +62,7 @@ class Key(object):
 class PrivateKey(Key):
     def __init__(self, private_exponent, network=BitcoinMainNet,
                  *args, **kwargs):
-        if not isinstance(private_exponent, long):
+        if not isinstance(private_exponent, six.integer_types):
             raise ValueError("private_exponent must be a long")
         super(PrivateKey, self).__init__(network=network, *args, **kwargs)
         self.private_exponent = private_exponent
@@ -307,7 +308,8 @@ class PublicKey(Key):
         :param y: The y coodinate on the curve
         :type y: long
         """
-        if not isinstance(x, long) or not isinstance(y, long):
+        if (not isinstance(x, six.integer_types) or
+                not isinstance(y, six.integer_types)):
             raise ValueError("The coordinates must be longs.")
         return _ECDSA_Point(SECP256k1.curve, x, y)
 

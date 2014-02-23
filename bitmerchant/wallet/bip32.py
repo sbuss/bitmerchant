@@ -7,6 +7,7 @@ import random
 import base58
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+import six
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.keys import incompatible_network_exception_factory
@@ -87,7 +88,7 @@ class Wallet(object):
                 "Provided private and public values do not match")
 
         def h(val, hex_len):
-            if isinstance(val, long) or isinstance(val, int):
+            if isinstance(val, six.integer_types):
                 return long_to_hex(val, hex_len)
             elif isinstance(val, basestring) and is_hex_string(val):
                 if len(val) != hex_len:
@@ -97,7 +98,7 @@ class Wallet(object):
                 raise ValueError("Invalid parameter type")
 
         def l(val):
-            if isinstance(val, int) or isinstance(val, long):
+            if isinstance(val, six.integer_types):
                 return val
             elif isinstance(val, basestring):
                 if not is_hex_string(val):
