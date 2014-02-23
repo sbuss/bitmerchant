@@ -85,15 +85,23 @@ class Wallet(object):
             else:
                 raise ValueError("Invalid parameter type")
 
+        def l(val):
+            if isinstance(val, int) or isinstance(val, long):
+                return val
+            elif isinstance(val, basestring):
+                if not is_hex_string(val):
+                    val = hexlify(val)
+                return long(val, 16)
+            else:
+                raise ValueError("parameter must be an int or long")
+
         self.network = network
-        if not isinstance(depth, int) and not isinstance(depth, long):
-            raise ValueError("depth must be an int or long")
-        self.depth = depth
+        self.depth = l(depth)
         if (isinstance(parent_fingerprint, basestring) and
                 parent_fingerprint.startswith("0x")):
             parent_fingerprint = parent_fingerprint[2:]
         self.parent_fingerprint = h(parent_fingerprint, 8)
-        self.child_number = h(child_number, 8)
+        self.child_number = l(child_number)
         self.chain_code = h(chain_code, 64)
 
     def get_private_key_hex(self):
@@ -285,7 +293,7 @@ class Wallet(object):
                 self.network.EXT_PUBLIC_KEY, 8)
         depth = long_to_hex(self.depth, 2)
         parent_fingerprint = self.parent_fingerprint
-        child_number = self.child_number
+        child_number = long_to_hex(self.child_number, 8)
         chain_code = self.chain_code
         ret = (network_version + depth + parent_fingerprint + child_number +
                chain_code)
