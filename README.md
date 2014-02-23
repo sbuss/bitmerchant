@@ -9,6 +9,13 @@ merchant uses.
 
 First goal is BIP32 wallets for linking user payments with their accounts.
 
+---
+
+If you find this library useful, please consider a small Bitcoin donation to
+[19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7](bitcoin:19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7)
+
+![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.png)
+
 # BIP32 wallets
 
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#)
