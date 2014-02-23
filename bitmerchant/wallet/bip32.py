@@ -206,8 +206,10 @@ class Wallet(object):
         else:
             # Otherwise is_prime is set so the child_number should be between
             # 0 and 0x80000000
-            if child_number < 0 or child_number > boundary:
-                raise ValueError("Invalid child number")
+            if child_number < 0:
+                child_number = abs(child_number)
+            elif child_number >= boundary:
+                child_number -= boundary
 
         if not self.private_key and is_prime:
             raise ValueError(
