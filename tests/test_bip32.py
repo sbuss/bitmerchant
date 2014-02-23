@@ -35,8 +35,8 @@ class TestWallet(TestCase):
         key = self.expected_key
         key = (long_to_hex(BitcoinTestNet.EXT_SECRET_KEY, 8) +
                self.expected_key[8:])
-        with self.assertRaises(IncompatibleNetworkException):
-            Wallet.deserialize(key, BitcoinMainNet)
+        self.assertRaises(IncompatibleNetworkException,
+                          Wallet.deserialize, key, BitcoinMainNet)
         self.assertTrue(Wallet.deserialize(key, BitcoinTestNet))
 
     def test_public_export(self):
@@ -53,8 +53,7 @@ class TestWallet(TestCase):
         """Can't export a public node as private."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
-        with self.assertRaises(ValueError):
-            child.serialize()
+        self.assertRaises(ValueError, child.serialize)
 
     def test_random_wallet(self):
         w = Wallet.new_random_wallet()
