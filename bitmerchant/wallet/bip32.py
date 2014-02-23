@@ -261,7 +261,8 @@ class Wallet(object):
             parent_fingerprint=self.fingerprint,
             child_number=child_number_hex,
             private_exponent=private_exponent,
-            public_pair=public_pair)
+            public_pair=public_pair,
+            network=self.network)
 
     def export_to_wif(self):
         """Export a key to WIF.
