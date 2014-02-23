@@ -116,6 +116,10 @@ class PrivateKey(Key):
         WIF is Wallet Import Format. It is a base58 encoded checksummed key.
         See https://en.bitcoin.it/wiki/Wallet_import_format for a full
         description.
+
+        This supports compressed WIFs - see this for an explanation:
+        http://bitcoin.stackexchange.com/questions/7299/when-importing-private-keys-will-compressed-or-uncompressed-format-be-used  # nopep8
+        (specifically http://bitcoin.stackexchange.com/a/7958)
         """
         # Decode the base58 string and ensure the checksum is valid
         try:
