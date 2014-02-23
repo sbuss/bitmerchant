@@ -141,7 +141,7 @@ class Wallet(object):
     def fingerprint(self):
         """The first 32 bits of the identifier are called the fingerprint."""
         # 32 bits == 4 Bytes == 8 hex characters
-        return hex(int(self.identifier[:8], 16))
+        return '0x' + self.identifier[:8]
 
     def create_new_address_for_user(self, user_id):
         """Create a new bitcoin address to accept payments for a User.
@@ -206,8 +206,10 @@ class Wallet(object):
         else:
             # Otherwise is_prime is set so the child_number should be between
             # 0 and 0x80000000
-            if child_number < 0 or child_number > boundary:
-                raise ValueError("Invalid child number")
+            if child_number < 0:
+                child_number = abs(child_number)
+            elif child_number >= boundary:
+                child_number -= boundary
 
         if not self.private_key and is_prime:
             raise ValueError(
@@ -261,7 +263,8 @@ class Wallet(object):
             parent_fingerprint=self.fingerprint,
             child_number=child_number_hex,
             private_exponent=private_exponent,
-            public_pair=public_pair)
+            public_pair=public_pair,
+            network=self.network)
 
     def export_to_wif(self):
         """Export a key to WIF.
