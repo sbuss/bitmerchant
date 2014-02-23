@@ -353,8 +353,17 @@ class Wallet(object):
         if len(key) == 78:
             # we have bytes
             key = hexlify(key)
-        if not is_hex_string(key) or len(key) not in [78 * 2, (78 + 32) * 2]:
-            raise ValueError("Invalid hex key. Might be base58? TODO")
+        if len(key) in [78, (78 + 32)]:
+            # we have a byte array, so hexlify it
+            key = hexlify(key)
+        elif len(key) in [78 * 2, (78 + 32) * 2]:
+            # we have a hexlified non-base58 key, continue!
+            pass
+        elif len(key) == 111:
+            # We have a base58 encoded string
+            key = hexlify(base58.b58decode_check(key))
+        if not is_hex_string(key):
+            raise ValueError("Invalid hex key.")
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
         key = unhexlify(key)
