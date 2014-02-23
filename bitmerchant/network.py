@@ -5,10 +5,10 @@ class BitcoinMainNet(object):
     """
     NAME = "Bitcoin Main Net"
     SCRIPT_ADDRESS = 0x05  # int(0x05) = 5
-    PUBKEY_ADDRESS = 0x00  # int(0x00) = 0
-    SECRET_KEY = 0x80      # int(0x80) = 128
-    EXT_PUBLIC_KEY = 0x0488B21E
-    EXT_SECRET_KEY = 0x0488ADE4
+    PUBKEY_ADDRESS = 0x00  # int(0x00) = 0  # Used to create payment addresses
+    SECRET_KEY = 0x80      # int(0x80) = 128  # Used for WIF format
+    EXT_PUBLIC_KEY = 0x0488B21E  # Used to serialize public BIP32 addresses
+    EXT_SECRET_KEY = 0x0488ADE4  # Used to serialize private BIP32 addresses
 
 
 class BitcoinTestNet(object):
