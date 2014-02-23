@@ -42,7 +42,7 @@ class TestWallet(TestCase):
         """Export a node as public."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
-        key = child.serialize(False)
+        key = child.serialize(private=False)
         self.assertIn(
             long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
             key)
