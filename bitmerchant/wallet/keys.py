@@ -29,9 +29,13 @@ class Key(object):
         self.compressed = compressed
 
     def __eq__(self, other):
-        return (self.get_key() == other.get_key() and
+        return (other and
+                self.get_key() == other.get_key() and
                 self.network == other.network and
                 type(self) == type(other))
+
+    def __ne__(self, other):
+        return not self == other
 
     def is_hex_bytes(self, key):
         if len(key) == 32 and not self.is_hex(key):
