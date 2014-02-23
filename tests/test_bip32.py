@@ -8,7 +8,7 @@ from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.utils import long_to_hex
 
 
-class TestNode(TestCase):
+class TestWallet(TestCase):
     def setUp(self):
         self.expected_key = (
             "0488ade4"  # BitcoinMainNet version
@@ -66,7 +66,7 @@ class TestNode(TestCase):
         self.assertEqual(child, Wallet.deserialize(key))
 
 
-class _TestNodeVectors(TestCase):
+class _TestWalletVectors(TestCase):
     def _test_vector(self, key, id_hex, fingerprint, address,
                      secret_key_hex, secret_key_wif,
                      pubkey_hex, chaincode_hex,
@@ -90,7 +90,7 @@ class _TestNodeVectors(TestCase):
             self.assertEqual(key.serialize_b58(), private_base58)
 
 
-class TestNodeVectors1(_TestNodeVectors):
+class TestWalletVectors1(_TestWalletVectors):
     def setUp(self):
         self.master_key = Wallet.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
@@ -203,7 +203,7 @@ class TestNodeVectors1(_TestNodeVectors):
         self._test_vector(node, *vector)
 
 
-class TestNodeVectors2(_TestNodeVectors):
+class TestWalletVectors2(_TestWalletVectors):
     def setUp(self):
         self.master_key = Wallet.from_master_secret(binascii.unhexlify(
             'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
