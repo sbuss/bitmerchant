@@ -351,3 +351,165 @@ class TestWalletVectors2(_TestWalletVectors):
                           .get_child(1)
                           .get_child(-2147483646)
                           .get_child(2), *vector)
+
+
+class _TestWalletVectorsDogecoin(TestCase):
+    def setUp(self):
+        self.master_key = Wallet.deserialize(
+            'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsb'
+            'acyx3NL2puToxM9MQYhZSsD8tBkXeQkm5btsKxpZawwPQND',
+            DogecoinMainNet
+        )
+
+    def _test(self, key, private_key_b58, private_key_wif,
+              pubkey_b58, pubkey_hex, address):
+        self.assertEqual(key.serialize_b58(), private_key_b58)
+        self.assertEqual(key.export_to_wif(), private_key_wif)
+        self.assertEqual(key.serialize_b58(private=False), pubkey_b58)
+        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
+        self.assertEqual(key.to_address(), address)
+
+
+class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
+    def test_m_0p(self):
+        vector = [
+            'dgpv54rTeYviMxmUs9cNrWWrvqJZ5C6bfH7yV66f1k9p6EBtFPSiGe8X3zP9e3YyarxzcYHWgbuuc3PcNFynEYyDFNS7yNWbisqdU9nYy2bZGPD',  # nopep8
+            'QTndqZdNU46ndUrbHzMC3rqSP5PWdE3vfEeRrUDZxEHXveLwbpta',
+            'dgub8ojUzErbv7RpA1GXtk8q3gr9XkUEVQ9gmgssArYntMEtoSZQgQgHhHnoDJ8Wp4swrdBSmQs7WZWp5q96TjgW8k1HpqyyfpqEvq4MD6cNMgn',  # nopep8
+            '037379173b8d4a681c2dfe1d4ea4c0961f3087f7e52380e0d20d617ba175ba18ce',  # nopep8
+            'DCJCTZdCiddc47n23zoaJ1cWCXpkYLfyYJ'
+        ]
+        key = self.master_key.get_child(0, True)
+        self._test(key, *vector)
+
+    def test_m_0p_1(self):
+        vector = [
+            'dgpv55yu5Hmd9XBBe1UNqhzUuy77eWQyBiyBGHxKrUoZGFGe3foc9AuJxVQ5e8K6C3LogwyGkEmJVwZ9kWCdg8vd61WRXpcJ6fqosi7Q69teU9r',  # nopep8
+            'QUf7sx5yK5Jw6a9rHuMsRwYv3WrdzfMfwX7mwb6MG6CZ4T1TYcBW',
+            'dgub8prvQyhWhfqWvs8XswcT2pei74nc1qztYtjY1bCY4NKebivJYwT5bnojDMRLqR7pnWY46yChRSoeYYCLxGrQiWWbhvBWi6WSR6kQaabSGdN',  # nopep8
+            '02cbcaa03b355646ac834df6bd24744f1fbe801a9168744604171b6e228f44d4b4',  # nopep8
+            'DF1kyuBcTfUwx5rvEXWLBwjUDJZVXqyNkD'
+        ]
+        key = (self.master_key.get_child(0, True)
+               .get_child(1))
+        self._test(key, *vector)
+
+    def test_m_0p_1_2p(self):
+        vector = [
+            'dgpv585jjaM2m4VAQHfu9TQ9iGEiyeRbJbiwF3mqxoC7ER8FDc5rCtmVckFRQXH5XpwBiLduR5PjB85s2n1DBLqYAXkhuXC6AMmfw1mF9MkkiqJ',  # nopep8
+            'QWuyvRUVSzGsPcV6r7wZD51GK8tHJ5CSHpccAdr5ojFaLSQmHXqu',
+            'dgub8rxm5GGvKD9Vh9L4Bh27q7nKSCoE8ikeXeZ47ub62YBFmfCYcfKGG3f4yijWNXbZDuss3HKmJAZsjkFcC63SiPUYHxLXLnXaGg2Etq6UdSD',  # nopep8
+            '0235881bfba654b68153c3e781588d2c161defeb273ff6bd333b1075f0102c8cd7',  # nopep8
+            'D6VUtfV7L874S9c5Vcxmek3aRV3hDS6eqR'
+        ]
+        key = (self.master_key.get_child(0, True)
+               .get_child(1)
+               .get_child(2, True))
+        self._test(key, *vector)
+
+    def test_m_0p_1_2p_2(self):
+        vector = [
+            'dgpv59H2Cgx4gUkZwbZH44mDznT18YtBstwstes8dR5H3fVLzXzo91dwGDFRhTHY637rus3akpLUe1EQ54rsBqxGj5ZJRrxxZc7GSw2bBX9FJWi',  # nopep8
+            'QQMEq6rxPz7ZToTtfkGbshrNzn13kXLUUG6733rrqArzpaWCnYv5',
+            'dgub8tA3YNsxEdQuETDS6JPC7dzbb7Fpi1ybBFeLnXUFqnYMYb7VYnBhuWf5GgFYWN8B4vSqfSfpEgdR97QSBgMAyp3w2JHyzPCxP41nRXAMdno',  # nopep8
+            '0238859645107ce894071e0ba4243b512d4d0fcd9fc49c0d1f1fe98ab86afe2179',  # nopep8
+            'D5zp6rHbVHWepGxonaSG1CKAmSY7fgRZdW'
+        ]
+        key = (self.master_key.get_child(0, True)
+               .get_child(1)
+               .get_child(2, True)
+               .get_child(2))
+        self._test(key, *vector)
+
+    def test_m_0p_1_2p_2_1000000000(self):
+        vector = [
+            'dgpv5B7qzmM1EoGC3RtP2wNxfAxTZsZ8ULrAeTNgTxABfSsdUSGkwpskeHaixWSW4urESb5ATNA49QhJK39RR8wzbXJrkLbBvMiv2MzTCTB3wJR',  # nopep8
+            'QW8D8EFkCa5JqLg4zeDwBj7iuk3jyGgEyFmwV6kUSQQhjwZk3nBv',
+            'dgub8uzsLTGtnwvXLHYY5Azvn2W42RvmJTssw49td4ZATZve2VPTMbRXHazNXiqqASTcaTsxoPRhsZAeiY3XA9gaJH6dJkZNUw3LwRvbVAYtuEL',  # nopep8
+            '029aa4dc7df5d6b55058ab29b7e4020dbb7253aec3ecfa31fcd3170d2b26ec61b1',  # nopep8
+            'DTRNwCes9k4xqLb9iD9kpSUpLpfsnQk2uw'
+        ]
+        key = (self.master_key.get_child(0, True)
+               .get_child(1)
+               .get_child(2, True)
+               .get_child(2)
+               .get_child(1000000000))
+        self._test(key, *vector)
+
+
+class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
+    """
+    This is a reduced test because Dogecoin doesn't have official vectors.
+    """
+    def test_m(self):
+        vector = [
+            'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsbacyx3NL2puToxM9MQYhZSsD8tBkXeQkm5btsKxpZawwPQND',  # nopep8
+            'QPNHZTWZzk2tdNknJqkP5SS4jwqjHwsDA4i4oPcsQ1abCck5dZzx',
+            'dgub8kXBZ7ymNWy2RhHHMuscZu2cs7YrGsaC8CMXP3xo1V7kB7232BfUjWGZ4VS8wHCPDNWmJdCZjo81gbpm1Co2pLyNSjpqDJYmMTGKeyAGuo9',  # nopep8
+            '0371070e700787e78e1810b2843c0723fcf25643f9de9bb90fca95ca2941dd485c',  # nopep8
+            'DMeAv9o4rFgDTFDhSYupoRHEwNmE98FDDi'
+        ]
+        self._test(self.master_key, *vector)
+
+    def test_m_0(self):
+        vector = [
+            'dgpv54rTeYva2JEWgt3hvAU6ukxYEgeKwe9Nh5CNhYkdvRDL2SrhuWHurhsER1cbNuHrtUcRVrSgJ3so8PX7V2Bn6KLhYzq9GZickzbrsavazMV',  # nopep8
+            'QSk4UkgRmxH6XDBofiUZad7grkSKj4NQsxyKWniaoun4Az3fmmdE',
+            'dgub8ojUzErTaStqyjhrxQ652cW8hF1xmmB5yfyarf9ciYGLaVyQKGqgW1GszEmFjCQkXWGV9SkCpjUfNpc4mQW1EcoBBsQoe4RV61QJC4G9X3d',  # nopep8
+            '029820c6a6046cebadb9a40c717326b004257f4cc111010b571daacfe58b542565',  # nopep8
+            'D6DLgbqjac4JqFQj7TkU2q5uqVAKFvAUHz'
+        ]
+        self._test(self.master_key.get_child(0), *vector)
+
+    def test_m_0_2147483647p(self):
+        vector = [
+            'dgpv55VT18PENZdLnv1jMvtZXELhZCfzsFmFG9Qoe5ktw4oLSirqapnwx3x9nHL6jCZSRkYMKwcziQAZmKgBGbttC6kFbwoTfGWtNWnF5hFQwsk',  # nopep8
+            'QVvKXa4BZKMok5WLJVPY9mF6YkhWaS5BJeM8pMfGBufKUKyjiwoL',
+            'dgub8pNULpK7viHg5mftQAWXe5tJ1m3dhNnxYkC1oC9sjBrLzmyXzbLibMMoMYSUC34ETAQM3BVUHbdgvuFFvCGLTLifbqLeiR67x2rfcndnNC8',  # nopep8
+            '03f91b9fe3110c8cbe885666e9a86237114faf54d6e124a20320a10b7847ad8e7c',  # nopep8
+            'DFLc2YseDUQkS9gChgzjuFA7MNUo2Kz2ch'
+        ]
+        key = self.master_key.get_child(0).get_child(2147483647, True)
+        self._test(key, *vector)
+
+    def test_m_0_2147483647p_1(self):
+        vector = [
+            'dgpv587FrzGt8WwxqYnVBDDrEmfR5TVjBaH6p2js6YQ6S7arktrwK9Pt4AqzcLMuUnbrCJyUnomeYHHfxp9qDrtJLUJPaEyjg263PfzYgCwXnjH',  # nopep8
+            'QQrZo8xssr5ryo8PBUsu2ukzbGEYu8khaZnTYYDDA8p8xwqe8Ub4',
+            'dgub8rzHCgCmgfcJ8QSeDSqpMdD1Y1sN1hJp6dX5Feo5EEdsJwydiuwehUFeBcBPyyTMTCToL5E3DsWtMpDLD7ZxwXDHA5Ty7kxnLgK4SxsMmbg',  # nopep8
+            '03bf5c6222396af17f76f577d5b4f1ab291ef051ae538eab1db8586f5de6112aa7',  # nopep8
+            'DRwmLE3MgfPigYkeZ8nJArb37eCrrubVqM'
+        ]
+        key = (self.master_key.get_child(0).
+               get_child(2147483647, True).
+               get_child(1))
+        self._test(key, *vector)
+
+    def test_m_0_2147483647p_1_2147483646p(self):
+        vector = [
+            'dgpv5AqzQ1J7t4unSJCG7GhNnvSEnicPLNVdjB1xXseffVjc7HnkCBAJ7vDvZdqYUX3xnhhPDXqTKdwLGkuiLqMjvFoPcSbATYxEgCMYsqexwQB',  # nopep8
+            'QP3TK4n8NaHY35rkzSYFCPX2zMXxjshjVUXcqpStspQ6HE1qsbXX',
+            'dgub8uj1jhE1SDa7j9rR9WKLumyqFGz2AVXM1moAgz3eTcncfLuSbwi4mDda8uKTuyiw7K66K2CwXY7KPMCGk7rQD7V6CtZ2yr4EVoBPMTqt4Bd',  # nopep8
+            '035cd9e4427e59a367b04ca0b34be7a78968d713004bcf1917fcc11c94c04e4477',  # nopep8
+            'DK6Rf67LRccSVPA8ew1jtDsMV2W6deokqg'
+        ]
+        key = (self.master_key.get_child(0)
+               .get_child(2147483647, True)
+               .get_child(1)
+               .get_child(2147483646, True))
+        self._test(key, *vector)
+
+    def test_m_0_2147483647p_1_2147483646p_2(self):
+        vector = [
+            'dgpv5CB6BEhuLSCN16LBqxDgpLZMtAmu88f6c376sK4FVds1PYgSyAy8dB4oMXwxmDiuodEVKEMoWzaDci3fmpi2yE9eE2jQjHcvQ2ojqQLLcrH',  # nopep8
+            'QWLvYMin1VjHqQuS33nq23CMmACUxBxAfYLmZXYaaGuJHjp5T5Lx',
+            'dgub8w47WvdntarhHwzLtBqewC6xLj9XxFgotdtK2RTEHkv1wbo9NwWuGUUSvnSy57u82XKNZkxzfv6iNTcakj8VLzhtnhCpKLrdW4spZB7eosx',  # nopep8
+            '03b5770cca42dd6159a22113a4f1970794d5db993a46a45bcd1c4ee6399003d394',  # nopep8
+            'DNoz4kLEcUENEjUceiugpw6hGPgmFJoc7C'
+        ]
+        key = (self.master_key.get_child(0)
+               .get_child(2147483647, True)
+               .get_child(1)
+               .get_child(2147483646, True)
+               .get_child(2))
+        self._test(key, *vector)
