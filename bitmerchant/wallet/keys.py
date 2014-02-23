@@ -30,7 +30,6 @@ class Key(object):
 
     def __eq__(self, other):
         return (other and
-                self.get_key() == other.get_key() and
                 self.network == other.network and
                 type(self) == type(other))
 
@@ -195,7 +194,8 @@ class PrivateKey(Key):
 
     def __eq__(self, other):
         return (super(PrivateKey, self).__eq__(other) and
-                self.private_exponent == other.private_exponent)
+                self.private_exponent == other.private_exponent and
+                self.get_public_key() == other.get_public_key())
 
 
 class PublicKey(Key):
@@ -356,7 +356,7 @@ class PublicKey(Key):
     def __eq__(self, other):
         return (super(PublicKey, self).__eq__(other) and
                 self.x == other.x and
-                self.compressed == other.compressed)
+                self.y == other.y)
 
 
 class KeyParseError(Exception):

@@ -133,6 +133,12 @@ class TestPublicKey(_TestPublicKeyBase):
         self.assertRaises(KeyParseError,
                           PublicKey.from_hex_key, key)
 
+    def test_compressed(self):
+        compressed_key = self.public_key.get_key(compressed=True)
+        self.assertEqual(len(compressed_key), 66)
+        self.assertEqual(
+            PublicKey.from_hex_key(compressed_key), self.public_key)
+
 
 class TestVectors(TestCase):
     """Test vectors
