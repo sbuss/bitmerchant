@@ -13,13 +13,10 @@ First goal is BIP32 wallets for linking user payments with their accounts.
 
 If you find this library useful, please consider a small donation to
 
-BTC: 19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7
-
-![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.png)
-
-DOGE: DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv
-
-![Donate DOGE](https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif)
+|BTC|Doge|
+|:-:|:--:|
+|19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7|DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv|
+|![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.png)|![Donate DOGE](https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif)|
 
 # BIP32 wallets
 
