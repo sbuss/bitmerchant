@@ -420,8 +420,11 @@ class Wallet(object):
             'public_key',
             'network',
         ]
-        return all(
+        return other and all(
             getattr(self, attr) == getattr(other, attr) for attr in attrs)
+
+    def __ne__(self, other):
+        return not self == other
 
     @classmethod
     def new_random_wallet(cls, seed, network=BitcoinMainNet):
