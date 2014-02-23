@@ -141,7 +141,7 @@ class Wallet(object):
     def fingerprint(self):
         """The first 32 bits of the identifier are called the fingerprint."""
         # 32 bits == 4 Bytes == 8 hex characters
-        return hex(int(self.identifier[:8], 16))
+        return '0x' + self.identifier[:8]
 
     def create_new_address_for_user(self, user_id):
         """Create a new bitcoin address to accept payments for a User.
