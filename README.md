@@ -16,7 +16,7 @@ If you find this library useful, please consider a small donation to
 |BTC|Doge|
 |:-:|:--:|
 |19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7|DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv|
-|![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.png)|![Donate DOGE](https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif)|
+|![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.gif)|![Donate DOGE](https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif)|
 
 # BIP32 wallets
 
