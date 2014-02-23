@@ -350,23 +350,17 @@ class Wallet(object):
               (0x02 + X or 0x03 + X for public keys, 0x00 + k for private keys)
               (Note that this also supports 0x04 + X + Y uncompressed points)
         """
-        if len(key) == 78:
-            # we have bytes
-            key = hexlify(key)
         if len(key) in [78, (78 + 32)]:
-            # we have a byte array, so hexlify it
-            key = hexlify(key)
+            # we have a byte array, so pass
+            pass
         elif len(key) in [78 * 2, (78 + 32) * 2]:
             # we have a hexlified non-base58 key, continue!
-            pass
+            key = unhexlify(key)
         elif len(key) == 111:
             # We have a base58 encoded string
-            key = hexlify(base58.b58decode_check(key))
-        if not is_hex_string(key):
-            raise ValueError("Invalid hex key.")
+            key = base58.b58decode_check(key)
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
-        key = unhexlify(key)
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
 
