@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sbuss/bitmerchant.png?branch=travisci)](https://travis-ci.org/sbuss/bitmerchant)
+[![Build Status](https://travis-ci.org/sbuss/bitmerchant.png?branch=travisci)](https://travis-ci.org/sbuss/bitmerchant) [![Coverage Status](https://coveralls.io/repos/sbuss/bitmerchant/badge.png)](https://coveralls.io/r/sbuss/bitmerchant)
 
 # WORK IN PROGRESS
 
