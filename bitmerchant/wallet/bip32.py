@@ -40,6 +40,9 @@ class Wallet(object):
 
     If you want to use this wallet on your website to accept bitcoin or
     altcoin payments, you should first create a primary child.
+
+    BIP32 Hierarchical Deterministic Wallets are described in this BIP:
+    https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
     """
     def __init__(self,
                  chain_code,
