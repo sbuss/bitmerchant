@@ -16,6 +16,7 @@ from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.keys import PublicPair
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
+from bitmerchant.wallet.utils import long_or_int
 from bitmerchant.wallet.utils import long_to_hex
 from bitmerchant.wallet.utils import memoize
 
@@ -103,7 +104,7 @@ class Wallet(object):
             elif isinstance(val, basestring):
                 if not is_hex_string(val):
                     val = hexlify(val)
-                return long(val, 16)
+                return long_or_int(val, 16)
             else:
                 raise ValueError("parameter must be an int or long")
 
@@ -251,13 +252,14 @@ class Wallet(object):
             # I_L is added to the current key's secret exponent (mod n), where
             # n is the order of the ECDSA curve in use.
             private_exponent = (
-                (long(hexlify(I_L), 16) + long(self.private_key.get_key(), 16))
+                (long_or_int(hexlify(I_L), 16) +
+                 long_or_int(self.private_key.get_key(), 16))
                 % SECP256k1.order)
             # I_R is the child's chain code
         else:
             # Only use public information for this derivation
             g = SECP256k1.generator
-            I_L_long = long(hexlify(I_L), 16)
+            I_L_long = long_or_int(hexlify(I_L), 16)
             point = (_ECDSA_Public_key(g, g * I_L_long).point +
                      self.public_key.point)
             # I_R is the child's chain code
@@ -376,7 +378,7 @@ class Wallet(object):
         version, depth, parent_fingerprint, child, chain_code, key_data = (
             key[:4], key[4], key[5:9], key[9:13], key[13:45], key[45:])
 
-        version_long = long(hexlify(version), 16)
+        version_long = long_or_int(hexlify(version), 16)
         exponent = None
         pubkey = None
         if ord(key_data[0]) == 0:
@@ -403,7 +405,7 @@ class Wallet(object):
         def l(byte_seq):
             if byte_seq is None:
                 return byte_seq
-            return long(hexlify(byte_seq), 16)
+            return long_or_int(hexlify(byte_seq), 16)
 
         return cls(depth=l(depth),
                    parent_fingerprint=l(parent_fingerprint),
@@ -430,8 +432,8 @@ class Wallet(object):
         # Split I into two 32-byte sequences, IL and IR.
         I_L, I_R = I[:32], I[32:]
         # Use IL as master secret key, and IR as master chain code.
-        return cls(private_exponent=long(hexlify(I_L), 16),
-                   chain_code=long(hexlify(I_R), 16),
+        return cls(private_exponent=long_or_int(hexlify(I_L), 16),
+                   chain_code=long_or_int(hexlify(I_R), 16),
                    network=network)
 
     def __eq__(self, other):

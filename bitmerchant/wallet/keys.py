@@ -16,6 +16,7 @@ import six
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
+from bitmerchant.wallet.utils import long_or_int
 from bitmerchant.wallet.utils import long_to_hex
 from bitmerchant.wallet.utils import memoize
 
@@ -67,7 +68,8 @@ class PrivateKey(Key):
         super(PrivateKey, self).__init__(network=network, *args, **kwargs)
         self.private_exponent = private_exponent
         pubkey = self.get_public_key()
-        self.point = _ECDSA_Private_key(pubkey.point, long(self.get_key(), 16))
+        self.point = _ECDSA_Private_key(
+            pubkey.point, long_or_int(self.get_key(), 16))
 
     def get_key(self):
         """Get the key - a hex formatted private exponent for the curve."""
@@ -154,7 +156,7 @@ class PrivateKey(Key):
             compressed = True
 
         # And we should finally have a valid key
-        return cls(long(hexlify(extended_key_bytes), 16), network,
+        return cls(long_or_int(hexlify(extended_key_bytes), 16), network,
                    compressed=compressed)
 
     @classmethod
@@ -164,7 +166,7 @@ class PrivateKey(Key):
             key = hexlify(key)
         if not is_hex_string(key) or len(key) != 64:
             raise ValueError("Invalid hex key")
-        return cls(long(key, 16), network)
+        return cls(long_or_int(key, 16), network)
 
     @classmethod
     def from_master_password(cls, password, network=BitcoinMainNet):
@@ -275,15 +277,15 @@ class PublicKey(Key):
             if len(key) != 65:
                 raise KeyParseError("Invalid key length")
             public_pair = PublicPair(
-                long(hexlify(key[1:33]), 16),
-                long(hexlify(key[33:]), 16))
+                long_or_int(hexlify(key[1:33]), 16),
+                long_or_int(hexlify(key[33:]), 16))
         elif ord(key[0]) in [2, 3]:
             # Compressed public point!
             compressed = True
             if len(key) != 33:
                 raise KeyParseError("Invalid key length")
             y_odd = bool(ord(key[0]) & 0x01)  # 0 even, 1 odd
-            x = long(hexlify(key[1:]), 16)
+            x = long_or_int(hexlify(key[1:]), 16)
             # The following x-to-pair algorithm was lifted from pycoin
             # I still need to sit down an understand it
             curve = SECP256k1.curve

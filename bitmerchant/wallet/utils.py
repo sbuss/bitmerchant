@@ -1,8 +1,11 @@
 from functools import wraps
-import re
-
 import hashlib
 from hashlib import sha256
+import re
+import sys
+
+if sys.version > '3':
+    long = int
 
 
 def hash160(data):
@@ -23,6 +26,10 @@ def long_to_hex(l, size):
     long size should be 64 (two hex characters per byte"."""
     f_str = "{0:0%sx}" % size
     return f_str.format(l).lower()
+
+
+def long_or_int(val, *args):
+    return long(val, *args)
 
 
 def memoize(f):
