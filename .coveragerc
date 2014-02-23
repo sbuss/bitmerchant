@@ -1,2 +1,6 @@
 [run]
 source = bitmerchant
+
+[report]
+omit =
+    */_version.py
