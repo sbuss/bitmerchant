@@ -354,6 +354,11 @@ class TestWalletVectors2(_TestWalletVectors):
 
 
 class _TestWalletVectorsDogecoin(TestCase):
+    """
+    This is a reduced test because Dogecoin doesn't have official vectors.
+
+    I generated these test values using http://bip32.org
+    """
     def setUp(self):
         self.master_key = Wallet.deserialize(
             'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsb'
@@ -438,9 +443,6 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
 
 
 class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
-    """
-    This is a reduced test because Dogecoin doesn't have official vectors.
-    """
     def test_m(self):
         vector = [
             'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsbacyx3NL2puToxM9MQYhZSsD8tBkXeQkm5btsKxpZawwPQND',  # nopep8
