@@ -316,7 +316,7 @@ class Wallet(object):
         return base58.b58encode_check(unhexlify(self.serialize(private)))
 
     def to_address(self):
-        """Create a public address from this Node.
+        """Create a public address from this Wallet.
 
         Public addresses can accept payments.
 
