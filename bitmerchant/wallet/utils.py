@@ -1,3 +1,4 @@
+from functools import wraps
 import re
 
 import hashlib
@@ -22,3 +23,15 @@ def long_to_hex(l, size):
     long size should be 64 (two hex characters per byte"."""
     f_str = "{0:0%sx}" % size
     return f_str.format(l).lower()
+
+
+def memoize(f):
+    """Memoization decorator for a function taking one or more arguments."""
+    def _c(*args, **kwargs):
+        if not hasattr(f, 'cache'):
+            f.cache = dict()
+        key = (args, tuple(kwargs))
+        if key not in f.cache:
+            f.cache[key] = f(*args, **kwargs)
+        return f.cache[key]
+    return wraps(f)(_c)
