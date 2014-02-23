@@ -47,33 +47,40 @@ class Wallet(object):
                  parent_fingerprint=0L,
                  child_number=0L,
                  private_exponent=None,
+                 private_key=None,
                  public_pair=None,
+                 public_key=None,
                  network=BitcoinMainNet):
         """Construct a new BIP32 compliant wallet.
 
         You probably don't want to use this init methd. Instead use one
         of the 'from_master_secret' or 'deserialize' cosntructors.
         """
-        if not private_exponent and not public_pair:
+        if (not (private_exponent or private_key) and
+                not (public_pair or public_key)):
             raise ValueError(
                 "You must supply one of private_exponent or public_pair")
 
         self.private_key = None
         self.public_key = None
-        if private_exponent:
+        if private_key:
+            self.private_key = private_key
+        elif private_exponent:
             self.private_key = PrivateKey(
                 private_exponent, network=network)
-        if public_pair:
-            self.public_key = PublicKey(
-                long(public_pair.x),
-                long(public_pair.y),
-                network=network)
-            if (self.private_key and self.private_key.get_public_key() !=
-                    self.public_key):
-                raise ValueError(
-                    "Provided private and public values do not match")
+
+        if public_key:
+            self.public_key = public_key
+        elif public_pair:
+            self.public_key = PublicKey.from_public_pair(
+                public_pair, network=network)
         else:
             self.public_key = self.private_key.get_public_key()
+
+        if (self.private_key and self.private_key.get_public_key() !=
+                self.public_key):
+            raise ValueError(
+                "Provided private and public values do not match")
 
         def h(val, hex_len):
             if isinstance(val, long) or isinstance(val, int):
@@ -356,7 +363,7 @@ class Wallet(object):
 
         version_long = long(hexlify(version), 16)
         exponent = None
-        public_pair = None
+        pubkey = None
         if ord(key_data[0]) == 0:
             # Private key
             if version_long != network.EXT_SECRET_KEY:
@@ -370,8 +377,7 @@ class Wallet(object):
                 raise incompatible_network_exception_factory(
                     network.NAME, network.EXT_PUBLIC_KEY,
                     version)
-            pubkey = PublicKey.from_hex_key(key_data)
-            public_pair = pubkey.to_public_pair()
+            pubkey = PublicKey.from_hex_key(key_data, network=network)
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))
@@ -386,7 +392,7 @@ class Wallet(object):
                    child_number=l(child),
                    chain_code=l(chain_code),
                    private_exponent=l(exponent),
-                   public_pair=public_pair,
+                   public_key=pubkey,
                    network=network)
 
     @classmethod
