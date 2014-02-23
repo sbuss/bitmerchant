@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sbuss/bitmerchant.png?branch=travisci)](https://travis-ci.org/sbuss/bitmerchant)
+
 # WORK IN PROGRESS
 
 The README below is a goal I am working toward. This library is not ready
