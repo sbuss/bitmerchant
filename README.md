@@ -11,8 +11,9 @@ First goal is BIP32 wallets for linking user payments with their accounts.
 
 ---
 
-If you find this library useful, please consider a small Bitcoin donation to
-<a href="bitcoin://19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7?amount=0.01&message=Donation%20for%20bitmerchant">19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7</a>
+If you find this library useful, please consider a small donation to
+
+BTC: 19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7
 
 ![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.png)
 
