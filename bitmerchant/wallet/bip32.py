@@ -383,6 +383,9 @@ class Wallet(object):
                     network.NAME, network.EXT_PUBLIC_KEY,
                     version)
             pubkey = PublicKey.from_hex_key(key_data, network=network)
+            # Even though this was generated from a compressed pubkey, we
+            # want to store it as an uncompressed pubkey
+            pubkey.compressed = False
         else:
             raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
                              "got %s" % ord(key_data[0]))
