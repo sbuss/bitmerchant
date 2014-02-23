@@ -3,12 +3,13 @@ from unittest import TestCase
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
+from bitmerchant.network import DogecoinMainNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.utils import long_to_hex
 
 
-class TestNode(TestCase):
+class TestWallet(TestCase):
     def setUp(self):
         self.expected_key = (
             "0488ade4"  # BitcoinMainNet version
@@ -42,7 +43,7 @@ class TestNode(TestCase):
         """Export a node as public."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
-        key = child.serialize(False)
+        key = child.serialize(private=False)
         self.assertIn(
             long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
             key)
@@ -55,18 +56,46 @@ class TestNode(TestCase):
         with self.assertRaises(ValueError):
             child.serialize()
 
-    def test_public_export_uncompressed(self):
-        child = self.master_key.get_child(0, as_private=False)
-        key = child.serialize(private=False, compressed=False)
-        # 220 = (78 + 32) * 2
-        # where 78 is the compressed length
-        # 32 is the length of the uncompressed y coordinate
-        # and 2 is because hexlifying doubles the length
-        self.assertEqual(len(key), 220)
-        self.assertEqual(child, Wallet.deserialize(key))
+    def test_random_wallet(self):
+        w = Wallet.new_random_wallet()
+        self.assertTrue(Wallet.deserialize(w.serialize()), w)
+        self.assertEqual(w.depth, 0)
+        self.assertEqual(w.parent_fingerprint, long_to_hex(0, 8))
+        self.assertEqual(w.child_number, 0)
 
 
-class _TestNodeVectors(TestCase):
+class TestSerialize(TestCase):
+    network = BitcoinMainNet
+
+    def setUp(self):
+        self.wallet = Wallet.new_random_wallet(network=self.network)
+
+    def test_serialize_private(self):
+        prv = self.wallet.serialize(private=True)
+        w = Wallet.deserialize(prv, network=self.network)
+        self.assertTrue(w.private_key)
+        self.assertEqual(w, self.wallet)
+
+        prv = self.wallet.serialize_b58(private=True)
+        w = Wallet.deserialize(prv, network=self.network)
+        self.assertTrue(w.private_key)
+        self.assertEqual(w, self.wallet)
+
+    def test_serialize_public(self):
+        pub = self.wallet.serialize(private=False)
+        w = Wallet.deserialize(pub, network=self.network)
+        self.assertFalse(w.private_key)
+
+        pub = self.wallet.serialize_b58(private=False)
+        w = Wallet.deserialize(pub, network=self.network)
+        self.assertFalse(w.private_key)
+
+
+class TestSerializeDogecoin(TestSerialize):
+    network = DogecoinMainNet
+
+
+class _TestWalletVectors(TestCase):
     def _test_vector(self, key, id_hex, fingerprint, address,
                      secret_key_hex, secret_key_wif,
                      pubkey_hex, chaincode_hex,
@@ -90,7 +119,7 @@ class _TestNodeVectors(TestCase):
             self.assertEqual(key.serialize_b58(), private_base58)
 
 
-class TestNodeVectors1(_TestNodeVectors):
+class TestWalletVectors1(_TestWalletVectors):
     def setUp(self):
         self.master_key = Wallet.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
@@ -203,7 +232,7 @@ class TestNodeVectors1(_TestNodeVectors):
         self._test_vector(node, *vector)
 
 
-class TestNodeVectors2(_TestNodeVectors):
+class TestWalletVectors2(_TestWalletVectors):
     def setUp(self):
         self.master_key = Wallet.from_master_secret(binascii.unhexlify(
             'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
