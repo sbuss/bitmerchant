@@ -55,7 +55,7 @@ setup(
     ],
     test_suite="tests",
     install_requires=[
-        'pycoin==0.25',
-        'mock==1.0.1',
+        'base58==0.2.1',
+        'ecdsa==0.10',
     ],
 )
