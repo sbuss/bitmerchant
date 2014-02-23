@@ -139,6 +139,15 @@ class TestPublicKey(_TestPublicKeyBase):
         self.assertEqual(
             PublicKey.from_hex_key(compressed_key), self.public_key)
 
+    def test_point(self):
+        self.assertEqual(PublicKey.from_point(self.public_key.point),
+                         self.public_key)
+
+    def test_public_pair(self):
+        self.assertEqual(
+            PublicKey.from_public_pair(self.public_key.to_public_pair()),
+            self.public_key)
+
 
 class TestVectors(TestCase):
     """Test vectors
