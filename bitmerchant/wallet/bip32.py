@@ -445,4 +445,4 @@ class Wallet(object):
         """Generate a new wallet using a randomly generated 512 bit seed."""
         random_seed = random.randint(0, 2**512)
         random_hex_bytes = long_to_hex(random_seed, 512)
-        return cls.from_master_secret(random_hex_bytes)
+        return cls.from_master_secret(random_hex_bytes, network=network)

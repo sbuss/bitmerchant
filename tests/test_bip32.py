@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
+from bitmerchant.network import DogecoinMainNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.utils import long_to_hex
@@ -64,28 +65,34 @@ class TestWallet(TestCase):
 
 
 class TestSerialize(TestCase):
+    network = BitcoinMainNet
+
     def setUp(self):
-        self.wallet = Wallet.new_random_wallet()
+        self.wallet = Wallet.new_random_wallet(network=self.network)
 
     def test_serialize_private(self):
         prv = self.wallet.serialize(private=True)
-        w = Wallet.deserialize(prv)
+        w = Wallet.deserialize(prv, network=self.network)
         self.assertTrue(w.private_key)
         self.assertEqual(w, self.wallet)
 
         prv = self.wallet.serialize_b58(private=True)
-        w = Wallet.deserialize(prv)
+        w = Wallet.deserialize(prv, network=self.network)
         self.assertTrue(w.private_key)
         self.assertEqual(w, self.wallet)
 
     def test_serialize_public(self):
         pub = self.wallet.serialize(private=False)
-        w = Wallet.deserialize(pub)
+        w = Wallet.deserialize(pub, network=self.network)
         self.assertFalse(w.private_key)
 
         pub = self.wallet.serialize_b58(private=False)
-        w = Wallet.deserialize(pub)
+        w = Wallet.deserialize(pub, network=self.network)
         self.assertFalse(w.private_key)
+
+
+class TestSerializeDogecoin(TestSerialize):
+    network = DogecoinMainNet
 
 
 class _TestWalletVectors(TestCase):
