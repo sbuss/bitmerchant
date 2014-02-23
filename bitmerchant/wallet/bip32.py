@@ -427,7 +427,7 @@ class Wallet(object):
         return not self == other
 
     @classmethod
-    def new_random_wallet(cls, seed, network=BitcoinMainNet):
+    def new_random_wallet(cls, network=BitcoinMainNet):
         """Generate a new wallet using a randomly generated 512 bit seed."""
         random_seed = random.randint(0, 2**512)
         random_hex_bytes = long_to_hex(random_seed, 512)
