@@ -4,6 +4,9 @@ python:
   - "2.7"
   - "2.6"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -r requirements.txt
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
 # command to run tests, e.g. python setup.py test
-script:  nosetests
+script:  nosetests  --with-coverage --cover-package=bitmerchant
+after_success: coveralls
