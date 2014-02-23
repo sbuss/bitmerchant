@@ -44,9 +44,8 @@ class TestWallet(TestCase):
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
         key = child.serialize(private=False)
-        self.assertIn(
-            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
-            key)
+        self.assertTrue(
+            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8) in key)
         self.assertEqual(Wallet.deserialize(key), child)
 
     def test_public_export_mismatch(self):
