@@ -68,7 +68,17 @@ class TestSubkeyPath(TestCase):
     """Tests for get_child_for_path not covered by TestVectors."""
     @classmethod
     def setUpClass(cls):
-        cls.wallet = Wallet.new_random_wallet()
+        """
+        This particular key was found by accident to cause the public
+        deserialized wallet to have a bad public key point!
+
+        There was a bug that did not properly handle restoring a key from
+        a compressed point that had an odd beta parameter.
+        (see PublicKey.from_hex_key)
+        """
+        cls.wallet = Wallet.deserialize(
+            u'xprv9s21ZrQH143K319oTMcEt2n2g51StkEnXq23t52ajHM4zFX7cyPqaHShDod'
+            'cHAqorNQuDW82jUhXJLomy5A8kM36y8HntnosgCvc1szPJ6x')
 
     def assert_public(self, node):
         self.assertEqual(node.private_key, None)
@@ -89,6 +99,15 @@ class TestSubkeyPath(TestCase):
 
     def test_public_final_with_prime(self):
         self.assert_public(self.wallet.get_child_for_path("M/0/1'/2/3'.pub"))
+
+    def test_public_child_restore(self):
+        pub_child = self.wallet.get_child_for_path("M/0")
+        self.assert_public(pub_child)
+        loaded = Wallet.deserialize(pub_child.serialize(False))
+        self.assertEqual(pub_child, loaded)
+        n1 = pub_child.get_child_for_path("m/1")
+        n2 = loaded.get_child_for_path("m/1")
+        self.assertEqual(n1, n2)
 
 
 class TestSerialize(TestCase):
