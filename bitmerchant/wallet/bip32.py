@@ -182,12 +182,12 @@ class Wallet(object):
 
         # Figure out public/private derivation
         if path.startswith("M"):
-            strip_private_key = True
+            as_private = False
         elif path.endswith(".pub"):
-            strip_private_key = True
+            as_private = False
             path = path[::-4]
         else:
-            strip_private_key = False
+            as_private = True
 
         parts = path.split("/")
         if len(parts) == 0:
@@ -205,7 +205,7 @@ class Wallet(object):
                 child_number = long_or_int(part)
             except TypeError:
                 raise InvalidPathError("%s is not a valid path" % path)
-            child = child.get_child(child_number, is_prime, strip_private_key)
+            child = child.get_child(child_number, is_prime, as_private)
         return child
 
     @memoize
