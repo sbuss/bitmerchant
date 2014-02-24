@@ -452,6 +452,8 @@ class Wallet(object):
     def __ne__(self, other):
         return not self == other
 
+    __hash__ = object.__hash__
+
     @classmethod
     def new_random_wallet(cls, network=BitcoinMainNet):
         """Generate a new wallet using a randomly generated 512 bit seed."""
