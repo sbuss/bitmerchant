@@ -11,8 +11,9 @@ from bitmerchant.wallet.utils import long_to_hex
 
 
 class TestWallet(TestCase):
-    def setUp(self):
-        self.expected_key = ensure_bytes(
+    @classmethod
+    def setUpClass(cls):
+        cls.expected_key = ensure_bytes(
             "0488ade4"  # BitcoinMainNet version
             "00"  # depth
             "00000000"  # parent fingerprint
@@ -22,7 +23,7 @@ class TestWallet(TestCase):
             "00"  # key identifier
             # private exponent
             "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35")
-        self.master_key = Wallet.deserialize(self.expected_key)
+        cls.master_key = Wallet.deserialize(cls.expected_key)
 
     def test_serialize_master_key(self):
         self.assertEqual(self.expected_key, self.master_key.serialize())
@@ -65,8 +66,9 @@ class TestWallet(TestCase):
 
 class TestSubkeyPath(TestCase):
     """Tests for get_child_for_path not covered by TestVectors."""
-    def setUp(self):
-        self.wallet = Wallet.new_random_wallet()
+    @classmethod
+    def setUpClass(cls):
+        cls.wallet = Wallet.new_random_wallet()
 
     def assert_public(self, node):
         self.assertEqual(node.private_key, None)
@@ -92,8 +94,9 @@ class TestSubkeyPath(TestCase):
 class TestSerialize(TestCase):
     network = BitcoinMainNet
 
-    def setUp(self):
-        self.wallet = Wallet.new_random_wallet(network=self.network)
+    @classmethod
+    def setUpClass(cls):
+        cls.wallet = Wallet.new_random_wallet(network=cls.network)
 
     def test_serialize_private(self):
         prv = self.wallet.serialize(private=True)
@@ -147,8 +150,9 @@ class _TestWalletVectors(TestCase):
 
 
 class TestWalletVectors1(_TestWalletVectors):
-    def setUp(self):
-        self.master_key = Wallet.from_master_secret(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
     def test_m(self):
@@ -281,8 +285,9 @@ class TestWalletVectors1(_TestWalletVectors):
 
 
 class TestWalletVectors2(_TestWalletVectors):
-    def setUp(self):
-        self.master_key = Wallet.from_master_secret(binascii.unhexlify(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.from_master_secret(binascii.unhexlify(
             'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
             '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
         ))
@@ -407,8 +412,9 @@ class _TestWalletVectorsDogecoin(TestCase):
 
     I generated these test values using http://bip32.org
     """
-    def setUp(self):
-        self.master_key = Wallet.deserialize(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.deserialize(
             'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsb'
             'acyx3NL2puToxM9MQYhZSsD8tBkXeQkm5btsKxpZawwPQND',
             DogecoinMainNet
