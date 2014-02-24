@@ -209,28 +209,28 @@ class Wallet(object):
         return child
 
     @memoize
-    def get_child(self, child_number, is_prime=None, as_private=True):
+    def get_child(self, child_number, is_prime=None, as_private=False):
         """Derive a child key.
 
         :param child_number: The number of the child key to compute
         :type child_number: int
-        :param is_prime: If set, determines if the resulting child is prime
+        :param is_prime: If True, the child is calculated via private
+            derivation. If False, then public derivation is used. If None,
+            then it is figured out from the value of child_number.
         :type is_prime: bool, defaults to None
-        :param as_private: If True, include private key in result. Defaults
-            to True. If there is no private key present, this is ignored.
+        :param as_private: If True, strips private key from the result.
+            Defaults to False. If there is no private key present, this is
+            ignored.
         :type as_private: bool
 
-        Positive child_numbers (less than 2,147,483,648) produce public
-        children. Public children can only create other public children, and
-        cannot spend any funds.
+        Positive child_numbers (less than 2,147,483,648) produce publicly
+        derived children.
 
         Negative numbers (or numbers between 2,147,483,648 & 4,294,967,295)
-        produce private children. Private children can create more private
-        keys, spend the funds in its associated public key, and spend all funds
-        from subsequent children, so should be kept safe.
+        uses private derivation.
 
-        NOTE: Python can't do -0, so if you want the private 0th child you
-        need to manually set is_prime=True.
+        NOTE: Python can't do -0, so if you want the privately derived 0th
+        child you need to manually set is_prime=True.
 
         NOTE: negative numbered children are provided as a convenience
         because nobody wants to remember the above numbers. Negative numbers
