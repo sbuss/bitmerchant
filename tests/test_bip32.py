@@ -63,6 +63,32 @@ class TestWallet(TestCase):
         self.assertEqual(w.child_number, 0)
 
 
+class TestSubkeyPath(TestCase):
+    """Tests for get_child_for_path not covered by TestVectors."""
+    def setUp(self):
+        self.wallet = Wallet.new_random_wallet()
+
+    def assert_public(self, node):
+        self.assertEqual(node.private_key, None)
+
+    def test_strip_private_key(self):
+        self.assert_public(self.wallet.strip_private_key())
+        self.assertNotEqual(self.wallet.private_key, None)
+
+    def test_export_as_public(self):
+        self.assert_public(self.wallet.get_child(0, as_private=False))
+
+    def test_path_as_public(self):
+        self.assert_public(self.wallet.get_child_for_path("M/0"))
+        self.assert_public(self.wallet.get_child_for_path("M/0.pub"))
+        self.assert_public(self.wallet.get_child_for_path("m/0.pub"))
+        self.assert_public(self.wallet.get_child_for_path("M"))
+        self.assert_public(self.wallet.get_child_for_path("m.pub"))
+
+    def test_public_final_with_prime(self):
+        self.assert_public(self.wallet.get_child_for_path("M/0/1'/2/3'.pub"))
+
+
 class TestSerialize(TestCase):
     network = BitcoinMainNet
 
