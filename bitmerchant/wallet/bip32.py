@@ -293,7 +293,7 @@ class Wallet(object):
         c_i = hexlify(I_R)
         private_exponent = None
         public_pair = None
-        if as_private and self.private_key:
+        if self.private_key:
             # Use private information for derivation
             # I_L is added to the current key's secret exponent (mod n), where
             # n is the order of the ECDSA curve in use.
@@ -311,7 +311,7 @@ class Wallet(object):
             # I_R is the child's chain code
             public_pair = PublicPair(point.x(), point.y())
 
-        return self.__class__(
+        child = self.__class__(
             chain_code=c_i,
             depth=self.depth + 1,  # we have to go deeper...
             parent_fingerprint=self.fingerprint,
@@ -319,6 +319,12 @@ class Wallet(object):
             private_exponent=private_exponent,
             public_pair=public_pair,
             network=self.network)
+        if not as_private:
+            child.strip_private_key()
+        return child
+
+    def strip_private_key(self):
+        del self.private_key
 
     def export_to_wif(self):
         """Export a key to WIF.
