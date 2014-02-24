@@ -6,12 +6,13 @@ from bitmerchant.network import BitcoinTestNet
 from bitmerchant.network import DogecoinMainNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.keys import IncompatibleNetworkException
+from bitmerchant.wallet.utils import ensure_bytes
 from bitmerchant.wallet.utils import long_to_hex
 
 
 class TestWallet(TestCase):
     def setUp(self):
-        self.expected_key = (
+        self.expected_key = ensure_bytes(
             "0488ade4"  # BitcoinMainNet version
             "00"  # depth
             "00000000"  # parent fingerprint
@@ -27,7 +28,7 @@ class TestWallet(TestCase):
         self.assertEqual(self.expected_key, self.master_key.serialize())
 
     def test_from_master_secret(self):
-        secret = binascii.unhexlify('000102030405060708090a0b0c0d0e0f')
+        secret = binascii.unhexlify(b'000102030405060708090a0b0c0d0e0f')
         self.assertEqual(Wallet.from_master_secret(secret),
                          self.master_key)
 
@@ -35,8 +36,8 @@ class TestWallet(TestCase):
         key = self.expected_key
         key = (long_to_hex(BitcoinTestNet.EXT_SECRET_KEY, 8) +
                self.expected_key[8:])
-        with self.assertRaises(IncompatibleNetworkException):
-            Wallet.deserialize(key, BitcoinMainNet)
+        self.assertRaises(IncompatibleNetworkException,
+                          Wallet.deserialize, key, BitcoinMainNet)
         self.assertTrue(Wallet.deserialize(key, BitcoinTestNet))
 
     def test_public_export(self):
@@ -44,17 +45,15 @@ class TestWallet(TestCase):
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
         key = child.serialize(private=False)
-        self.assertIn(
-            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8),
-            key)
+        self.assertTrue(
+            long_to_hex(BitcoinMainNet.EXT_PUBLIC_KEY, 8) in key)
         self.assertEqual(Wallet.deserialize(key), child)
 
     def test_public_export_mismatch(self):
         """Can't export a public node as private."""
         child = self.master_key.get_child(0, as_private=False)
         self.assertEqual(child.private_key, None)
-        with self.assertRaises(ValueError):
-            child.serialize()
+        self.assertRaises(ValueError, child.serialize)
 
     def test_random_wallet(self):
         w = Wallet.new_random_wallet()
@@ -104,18 +103,20 @@ class _TestWalletVectors(TestCase):
                      include_private=True
                      ):
         self.assertEqual(key.to_address(), address)
-        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
-        self.assertEqual(key.chain_code, chaincode_hex)
+        self.assertEqual(key.get_public_key_hex(), ensure_bytes(pubkey_hex))
+        self.assertEqual(key.chain_code, ensure_bytes(chaincode_hex))
         self.assertEqual(key.serialize(private=False),
-                         pubkey_serialized_hex)
+                         ensure_bytes(pubkey_serialized_hex))
         self.assertEqual(key.serialize_b58(private=False), pubkey_base58)
 
         if include_private:
-            self.assertEqual(key.identifier, id_hex)
-            self.assertEqual(key.fingerprint, fingerprint)
-            self.assertEqual(key.get_private_key_hex(), secret_key_hex)
+            self.assertEqual(key.identifier, ensure_bytes(id_hex))
+            self.assertEqual(key.fingerprint, ensure_bytes(fingerprint))
+            self.assertEqual(key.get_private_key_hex(),
+                             ensure_bytes(secret_key_hex))
             self.assertEqual(key.export_to_wif(), secret_key_wif)
-            self.assertEqual(key.serialize(), private_serialized_hex)
+            self.assertEqual(key.serialize(),
+                             ensure_bytes(private_serialized_hex))
             self.assertEqual(key.serialize_b58(), private_base58)
 
 
@@ -371,7 +372,7 @@ class _TestWalletVectorsDogecoin(TestCase):
         self.assertEqual(key.serialize_b58(), private_key_b58)
         self.assertEqual(key.export_to_wif(), private_key_wif)
         self.assertEqual(key.serialize_b58(private=False), pubkey_b58)
-        self.assertEqual(key.get_public_key_hex(), pubkey_hex)
+        self.assertEqual(key.get_public_key_hex(), ensure_bytes(pubkey_hex))
         self.assertEqual(key.to_address(), address)
 
 
