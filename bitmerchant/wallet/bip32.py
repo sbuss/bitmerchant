@@ -1,6 +1,5 @@
 from binascii import hexlify
 from binascii import unhexlify
-from copy import deepcopy
 from hashlib import sha512
 import hmac
 import random
@@ -207,7 +206,7 @@ class Wallet(object):
                 raise InvalidPathError("%s is not a valid path" % path)
             child = child.get_child(child_number, is_prime)
         if not as_private:
-            return child.strip_private_key()
+            return child.public_copy()
         return child
 
     @memoize
@@ -322,14 +321,18 @@ class Wallet(object):
             public_pair=public_pair,
             network=self.network)
         if not as_private:
-            return child.strip_private_key()
+            return child.public_copy()
         return child
 
-    def strip_private_key(self):
+    def public_copy(self):
         """Clone this wallet and strip it of its private information."""
-        node = deepcopy(self)
-        node.private_key = None
-        return node
+        return self.__class__(
+            chain_code=self.chain_code,
+            depth=self.depth,
+            parent_fingerprint=self.parent_fingerprint,
+            child_number=self.child_number,
+            public_pair=self.public_key.to_public_pair(),
+            network=self.network)
 
     def export_to_wif(self):
         """Export a key to WIF.

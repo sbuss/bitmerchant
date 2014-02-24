@@ -84,7 +84,7 @@ class TestSubkeyPath(TestCase):
         self.assertEqual(node.private_key, None)
 
     def test_strip_private_key(self):
-        self.assert_public(self.wallet.strip_private_key())
+        self.assert_public(self.wallet.public_copy())
         self.assertNotEqual(self.wallet.private_key, None)
 
     def test_export_as_public(self):
