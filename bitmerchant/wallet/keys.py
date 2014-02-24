@@ -39,6 +39,8 @@ class Key(object):
     def __ne__(self, other):
         return not self == other
 
+    __hash__ = object.__hash__
+
     def is_hex_bytes(self, key):
         if len(key) == 32 and not self.is_hex(key):
             try:
@@ -58,6 +60,9 @@ class Key(object):
     @classmethod
     def decompress(self, key):
         "TODO"
+
+    def get_key(self):
+        raise NotImplementedError()
 
 
 class PrivateKey(Key):
@@ -201,6 +206,8 @@ class PrivateKey(Key):
         return (super(PrivateKey, self).__eq__(other) and
                 self.private_exponent == other.private_exponent and
                 self.get_public_key() == other.get_public_key())
+
+    __hash__ = Key.__hash__
 
 
 class PublicKey(Key):
@@ -355,6 +362,8 @@ class PublicKey(Key):
         return (super(PublicKey, self).__eq__(other) and
                 self.x == other.x and
                 self.y == other.y)
+
+    __hash__ = Key.__hash__
 
 
 class KeyParseError(Exception):
