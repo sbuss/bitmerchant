@@ -171,6 +171,43 @@ class Wallet(object):
                 "Invalid UserID. Must be between 0 and %s" % max_id)
         return self.get_child(user_id, is_prime=False, as_private=False)
 
+    def get_child_for_path(self, path):
+        """Get a child for a given path.
+        TODOCS
+        """
+        path = ensure_str(path)
+
+        if not path:
+            raise InvalidPathError("%s is not a valid path" % path)
+
+        # Figure out public/private derivation
+        if path.startswith("M"):
+            strip_private_key = True
+        elif path.endswith(".pub"):
+            strip_private_key = True
+            path = path[::-4]
+        else:
+            strip_private_key = False
+
+        parts = path.split("/")
+        if len(parts) == 0:
+            raise InvalidPathError()
+
+        child = self
+        for part in parts:
+            if part.lower() == "m":
+                continue
+            is_prime = False
+            if part[-1] in "'p":
+                is_prime = True
+                part = part.replace("'", "").replace("p", "")
+            try:
+                child_number = long_or_int(part)
+            except TypeError:
+                raise InvalidPathError("%s is not a valid path" % path)
+            child = child.get_child(child_number, is_prime, strip_private_key)
+        return child
+
     @memoize
     def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
@@ -477,3 +514,7 @@ class Wallet(object):
         random_seed = random.randint(0, 2**512)
         random_hex_bytes = long_to_hex(random_seed, 512)
         return cls.from_master_secret(random_hex_bytes, network=network)
+
+
+class InvalidPathError(Exception):
+    pass

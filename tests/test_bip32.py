@@ -141,6 +141,7 @@ class TestWalletVectors1(_TestWalletVectors):
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi',  # nopep8
         ]
         self._test_vector(self.master_key, *vector)
+        self._test_vector(self.master_key.get_child_for_path("m"), *vector)
 
     def test_m_0p(self):
         vector = [
@@ -158,6 +159,8 @@ class TestWalletVectors1(_TestWalletVectors):
         ]
         key = self.master_key.get_child(0, is_prime=True)
         self._test_vector(key, *vector)
+        self._test_vector(self.master_key.get_child_for_path("m/0'"), *vector)
+        self._test_vector(self.master_key.get_child_for_path("m/0p"), *vector)
 
     def test_m_0p_1(self):
         vector = [
@@ -176,6 +179,10 @@ class TestWalletVectors1(_TestWalletVectors):
         m0 = self.master_key.get_child(0, is_prime=True)
         key = m0.get_child(1, is_prime=False)
         self._test_vector(key, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1"), *vector)
 
     def test_m_0p_1_2p(self):
         vector = [
@@ -194,6 +201,10 @@ class TestWalletVectors1(_TestWalletVectors):
         self._test_vector(
             self.master_key.get_child(0, True).get_child(1).get_child(-2),
             *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p"), *vector)
 
     def test_m_0p_1_2p_2(self):
         vector = [
@@ -212,6 +223,10 @@ class TestWalletVectors1(_TestWalletVectors):
         node = self.master_key.get_child(0, True).get_child(1).get_child(-2)
         node = node.get_child(2)
         self._test_vector(node, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'/2"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p/2"), *vector)
 
     def test_m_0p_1_2p_2_1000000000(self):
         vector = [
@@ -231,6 +246,12 @@ class TestWalletVectors1(_TestWalletVectors):
                 .get_child(1).get_child(-2).get_child(2)
                 .get_child(1000000000))
         self._test_vector(node, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'/2/1000000000"),
+            *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p/2/1000000000"),
+            *vector)
 
 
 class TestWalletVectors2(_TestWalletVectors):
