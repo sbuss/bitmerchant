@@ -105,7 +105,7 @@ class Wallet(object):
 
         def l(val):
             if isinstance(val, six.integer_types):
-                return val
+                return long_or_int(val)
             elif (isinstance(val, six.string_types) or
                     isinstance(val, six.binary_type)):
                 val = ensure_bytes(val)
