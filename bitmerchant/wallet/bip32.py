@@ -182,13 +182,12 @@ class Wallet(object):
             raise InvalidPathError("%s is not a valid path" % path)
 
         # Figure out public/private derivation
+        as_private = True
         if path.startswith("M"):
             as_private = False
-        elif path.endswith(".pub"):
+        if path.endswith(".pub"):
             as_private = False
-            path = path[::-4]
-        else:
-            as_private = True
+            path = path[:-4]
 
         parts = path.split("/")
         if len(parts) == 0:
