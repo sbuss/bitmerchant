@@ -16,23 +16,25 @@ from bitmerchant.wallet.utils import long_or_int
 
 
 class _TestPrivateKeyBase(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
-        self.expected_key = \
+        cls.expected_key = \
             b"0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d"
-        self.key = PrivateKey(long_or_int(self.expected_key, 16))
+        cls.key = PrivateKey(long_or_int(cls.expected_key, 16))
 
 
 class _TestPublicKeyBase(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
-        self.expected_private_key = \
+        cls.expected_private_key = \
             b"18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725"
-        self.private_key = PrivateKey(
-            long_or_int(self.expected_private_key, 16))
-        self.public_key = PublicKey.from_hex_key(
+        cls.private_key = PrivateKey(
+            long_or_int(cls.expected_private_key, 16))
+        cls.public_key = PublicKey.from_hex_key(
             "04"
             "50863ad64a87ae8a2fe83c1af1a8403cb53f53e486d8511dad8a04887e5b2352"
             "2cd470243453a299fa9e77237716103abc11a1df38855ed6f2ee187e9c582ba6")
@@ -59,9 +61,10 @@ class TestPrivateKey(_TestPrivateKeyBase):
 
 
 class TestWIF(_TestPrivateKeyBase):
-    def setUp(self):
-        super(TestWIF, self).setUp()
-        self.expected_wif = \
+    @classmethod
+    def setUpClass(cls):
+        super(TestWIF, cls).setUpClass()
+        cls.expected_wif = \
             '5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ'
 
     def test_export_to_wif(self):

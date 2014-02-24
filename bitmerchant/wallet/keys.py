@@ -316,10 +316,11 @@ class PublicKey(Key):
             p = curve.p()
             alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
             beta = square_root_mod_prime(alpha, p)
-            if y_odd:
-                public_pair = PublicPair(x, beta)
-            else:
+            y_even = not y_odd
+            if y_even == bool(beta & 1):
                 public_pair = PublicPair(x, p - beta)
+            else:
+                public_pair = PublicPair(x, beta)
         else:
             raise KeyParseError("The given key is not in a known format.")
         return cls.from_public_pair(public_pair, network=network,

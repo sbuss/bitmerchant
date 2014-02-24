@@ -11,8 +11,9 @@ from bitmerchant.wallet.utils import long_to_hex
 
 
 class TestWallet(TestCase):
-    def setUp(self):
-        self.expected_key = ensure_bytes(
+    @classmethod
+    def setUpClass(cls):
+        cls.expected_key = ensure_bytes(
             "0488ade4"  # BitcoinMainNet version
             "00"  # depth
             "00000000"  # parent fingerprint
@@ -22,7 +23,7 @@ class TestWallet(TestCase):
             "00"  # key identifier
             # private exponent
             "e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35")
-        self.master_key = Wallet.deserialize(self.expected_key)
+        cls.master_key = Wallet.deserialize(cls.expected_key)
 
     def test_serialize_master_key(self):
         self.assertEqual(self.expected_key, self.master_key.serialize())
@@ -63,11 +64,58 @@ class TestWallet(TestCase):
         self.assertEqual(w.child_number, 0)
 
 
+class TestSubkeyPath(TestCase):
+    """Tests for get_child_for_path not covered by TestVectors."""
+    @classmethod
+    def setUpClass(cls):
+        """
+        This particular key was found by accident to cause the public
+        deserialized wallet to have a bad public key point!
+
+        There was a bug that did not properly handle restoring a key from
+        a compressed point that had an odd beta parameter.
+        (see PublicKey.from_hex_key)
+        """
+        cls.wallet = Wallet.deserialize(
+            u'xprv9s21ZrQH143K319oTMcEt2n2g51StkEnXq23t52ajHM4zFX7cyPqaHShDod'
+            'cHAqorNQuDW82jUhXJLomy5A8kM36y8HntnosgCvc1szPJ6x')
+
+    def assert_public(self, node):
+        self.assertEqual(node.private_key, None)
+
+    def test_strip_private_key(self):
+        self.assert_public(self.wallet.public_copy())
+        self.assertNotEqual(self.wallet.private_key, None)
+
+    def test_export_as_public(self):
+        self.assert_public(self.wallet.get_child(0, as_private=False))
+
+    def test_path_as_public(self):
+        self.assert_public(self.wallet.get_child_for_path("M/0"))
+        self.assert_public(self.wallet.get_child_for_path("M/0.pub"))
+        self.assert_public(self.wallet.get_child_for_path("m/0.pub"))
+        self.assert_public(self.wallet.get_child_for_path("M"))
+        self.assert_public(self.wallet.get_child_for_path("m.pub"))
+
+    def test_public_final_with_prime(self):
+        self.assert_public(self.wallet.get_child_for_path("M/0/1'/2/3'.pub"))
+
+    def test_public_child_restore(self):
+        pub_child = self.wallet.get_child_for_path("M/0")
+        self.assert_public(pub_child)
+        loaded = Wallet.deserialize(pub_child.serialize(False))
+        self.assertEqual(pub_child, loaded)
+        n1 = pub_child.get_child_for_path("m/1")
+        n2 = loaded.get_child_for_path("m/1")
+        self.assertEqual(n1, n2)
+
+
 class TestSerialize(TestCase):
     network = BitcoinMainNet
 
-    def setUp(self):
-        self.wallet = Wallet.new_random_wallet(network=self.network)
+    @classmethod
+    def setUpClass(cls):
+        cls.wallet = Wallet.new_random_wallet(network=cls.network)
 
     def test_serialize_private(self):
         prv = self.wallet.serialize(private=True)
@@ -121,8 +169,9 @@ class _TestWalletVectors(TestCase):
 
 
 class TestWalletVectors1(_TestWalletVectors):
-    def setUp(self):
-        self.master_key = Wallet.from_master_secret(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.from_master_secret(
             binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
 
     def test_m(self):
@@ -141,6 +190,7 @@ class TestWalletVectors1(_TestWalletVectors):
             'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi',  # nopep8
         ]
         self._test_vector(self.master_key, *vector)
+        self._test_vector(self.master_key.get_child_for_path("m"), *vector)
 
     def test_m_0p(self):
         vector = [
@@ -158,6 +208,8 @@ class TestWalletVectors1(_TestWalletVectors):
         ]
         key = self.master_key.get_child(0, is_prime=True)
         self._test_vector(key, *vector)
+        self._test_vector(self.master_key.get_child_for_path("m/0'"), *vector)
+        self._test_vector(self.master_key.get_child_for_path("m/0p"), *vector)
 
     def test_m_0p_1(self):
         vector = [
@@ -176,6 +228,10 @@ class TestWalletVectors1(_TestWalletVectors):
         m0 = self.master_key.get_child(0, is_prime=True)
         key = m0.get_child(1, is_prime=False)
         self._test_vector(key, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1"), *vector)
 
     def test_m_0p_1_2p(self):
         vector = [
@@ -194,6 +250,10 @@ class TestWalletVectors1(_TestWalletVectors):
         self._test_vector(
             self.master_key.get_child(0, True).get_child(1).get_child(-2),
             *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p"), *vector)
 
     def test_m_0p_1_2p_2(self):
         vector = [
@@ -212,6 +272,10 @@ class TestWalletVectors1(_TestWalletVectors):
         node = self.master_key.get_child(0, True).get_child(1).get_child(-2)
         node = node.get_child(2)
         self._test_vector(node, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'/2"), *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p/2"), *vector)
 
     def test_m_0p_1_2p_2_1000000000(self):
         vector = [
@@ -231,11 +295,18 @@ class TestWalletVectors1(_TestWalletVectors):
                 .get_child(1).get_child(-2).get_child(2)
                 .get_child(1000000000))
         self._test_vector(node, *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0'/1/2'/2/1000000000"),
+            *vector)
+        self._test_vector(
+            self.master_key.get_child_for_path("m/0p/1/2p/2/1000000000"),
+            *vector)
 
 
 class TestWalletVectors2(_TestWalletVectors):
-    def setUp(self):
-        self.master_key = Wallet.from_master_secret(binascii.unhexlify(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.from_master_secret(binascii.unhexlify(
             'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
             '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
         ))
@@ -360,8 +431,9 @@ class _TestWalletVectorsDogecoin(TestCase):
 
     I generated these test values using http://bip32.org
     """
-    def setUp(self):
-        self.master_key = Wallet.deserialize(
+    @classmethod
+    def setUpClass(cls):
+        cls.master_key = Wallet.deserialize(
             'dgpv51eADS3spNJh8qd8KgFeT3V2QZBDSkYUqbaKDwZpDN4jd3uLcR7i6CruVDsb'
             'acyx3NL2puToxM9MQYhZSsD8tBkXeQkm5btsKxpZawwPQND',
             DogecoinMainNet

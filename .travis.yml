@@ -6,6 +6,8 @@ python:
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
   - pip install -r requirements-dev.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
 # command to run tests, e.g. python setup.py test
-script:  coverage run setup.py test
+script:
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -m unittest2.__main__ discover; else coverage run -m unittest discover; fi
 after_success: coveralls

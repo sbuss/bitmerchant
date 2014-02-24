@@ -105,7 +105,7 @@ class Wallet(object):
 
         def l(val):
             if isinstance(val, six.integer_types):
-                return val
+                return long_or_int(val)
             elif (isinstance(val, six.string_types) or
                     isinstance(val, six.binary_type)):
                 val = ensure_bytes(val)
@@ -171,29 +171,90 @@ class Wallet(object):
                 "Invalid UserID. Must be between 0 and %s" % max_id)
         return self.get_child(user_id, is_prime=False, as_private=False)
 
+    def get_child_for_path(self, path):
+        """Get a child for a given path.
+
+        Rather than repeated calls to get_child, children can be found
+        by a derivation path. Paths look like:
+
+            m/0/1'/10
+
+        Which is the same as
+
+            self.get_child(0).get_child(-1).get_child(10)
+
+        Or, in other words, the 10th publicly derived child of the 1st
+        privately derived child of the 0th publicly derived child of master.
+
+        You can use either ' or p to denote a prime (that is, privately
+        derived) child.
+
+        A child that has had its private key stripped can be requested by
+        either passing a capital M or appending '.pub' to the end of the path.
+        These three paths all give the same child that has had its private
+        key scrubbed:
+
+            M/0/1
+            m/0/1.pub
+            M/0/1.pub
+        """
+        path = ensure_str(path)
+
+        if not path:
+            raise InvalidPathError("%s is not a valid path" % path)
+
+        # Figure out public/private derivation
+        as_private = True
+        if path.startswith("M"):
+            as_private = False
+        if path.endswith(".pub"):
+            as_private = False
+            path = path[:-4]
+
+        parts = path.split("/")
+        if len(parts) == 0:
+            raise InvalidPathError()
+
+        child = self
+        for part in parts:
+            if part.lower() == "m":
+                continue
+            is_prime = False
+            if part[-1] in "'p":
+                is_prime = True
+                part = part.replace("'", "").replace("p", "")
+            try:
+                child_number = long_or_int(part)
+            except TypeError:
+                raise InvalidPathError("%s is not a valid path" % path)
+            child = child.get_child(child_number, is_prime)
+        if not as_private:
+            return child.public_copy()
+        return child
+
     @memoize
     def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
 
         :param child_number: The number of the child key to compute
         :type child_number: int
-        :param is_prime: If set, determines if the resulting child is prime
+        :param is_prime: If True, the child is calculated via private
+            derivation. If False, then public derivation is used. If None,
+            then it is figured out from the value of child_number.
         :type is_prime: bool, defaults to None
-        :param as_private: If True, include private key in result. Defaults
-            to True. If there is no private key present, this is ignored.
+        :param as_private: If True, strips private key from the result.
+            Defaults to False. If there is no private key present, this is
+            ignored.
         :type as_private: bool
 
-        Positive child_numbers (less than 2,147,483,648) produce public
-        children. Public children can only create other public children, and
-        cannot spend any funds.
+        Positive child_numbers (less than 2,147,483,648) produce publicly
+        derived children.
 
         Negative numbers (or numbers between 2,147,483,648 & 4,294,967,295)
-        produce private children. Private children can create more private
-        keys, spend the funds in its associated public key, and spend all funds
-        from subsequent children, so should be kept safe.
+        uses private derivation.
 
-        NOTE: Python can't do -0, so if you want the private 0th child you
-        need to manually set is_prime=True.
+        NOTE: Python can't do -0, so if you want the privately derived 0th
+        child you need to manually set is_prime=True.
 
         NOTE: negative numbered children are provided as a convenience
         because nobody wants to remember the above numbers. Negative numbers
@@ -256,7 +317,7 @@ class Wallet(object):
         c_i = hexlify(I_R)
         private_exponent = None
         public_pair = None
-        if as_private and self.private_key:
+        if self.private_key:
             # Use private information for derivation
             # I_L is added to the current key's secret exponent (mod n), where
             # n is the order of the ECDSA curve in use.
@@ -274,13 +335,26 @@ class Wallet(object):
             # I_R is the child's chain code
             public_pair = PublicPair(point.x(), point.y())
 
-        return self.__class__(
+        child = self.__class__(
             chain_code=c_i,
             depth=self.depth + 1,  # we have to go deeper...
             parent_fingerprint=self.fingerprint,
             child_number=child_number_hex,
             private_exponent=private_exponent,
             public_pair=public_pair,
+            network=self.network)
+        if not as_private:
+            return child.public_copy()
+        return child
+
+    def public_copy(self):
+        """Clone this wallet and strip it of its private information."""
+        return self.__class__(
+            chain_code=self.chain_code,
+            depth=self.depth,
+            parent_fingerprint=self.parent_fingerprint,
+            child_number=self.child_number,
+            public_pair=self.public_key.to_public_pair(),
             network=self.network)
 
     def export_to_wif(self):
@@ -477,3 +551,7 @@ class Wallet(object):
         random_seed = random.randint(0, 2**512)
         random_hex_bytes = long_to_hex(random_seed, 512)
         return cls.from_master_secret(random_hex_bytes, network=network)
+
+
+class InvalidPathError(Exception):
+    pass
