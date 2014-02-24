@@ -14,6 +14,9 @@ from bitmerchant.wallet.keys import incompatible_network_exception_factory
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
 from bitmerchant.wallet.keys import PublicPair
+from bitmerchant.wallet.utils import chr_py2
+from bitmerchant.wallet.utils import ensure_bytes
+from bitmerchant.wallet.utils import ensure_str
 from bitmerchant.wallet.utils import hash160
 from bitmerchant.wallet.utils import is_hex_string
 from bitmerchant.wallet.utils import long_or_int
@@ -91,7 +94,9 @@ class Wallet(object):
         def h(val, hex_len):
             if isinstance(val, six.integer_types):
                 return long_to_hex(val, hex_len)
-            elif isinstance(val, basestring) and is_hex_string(val):
+            elif (isinstance(val, six.string_types) or
+                    isinstance(val, six.binary_type)) and is_hex_string(val):
+                val = ensure_bytes(val)
                 if len(val) != hex_len:
                     raise ValueError("Invalid parameter length")
                 return val
@@ -101,7 +106,9 @@ class Wallet(object):
         def l(val):
             if isinstance(val, six.integer_types):
                 return val
-            elif isinstance(val, basestring):
+            elif (isinstance(val, six.string_types) or
+                    isinstance(val, six.binary_type)):
+                val = ensure_bytes(val)
                 if not is_hex_string(val):
                     val = hexlify(val)
                 return long_or_int(val, 16)
@@ -110,9 +117,11 @@ class Wallet(object):
 
         self.network = network
         self.depth = l(depth)
-        if (isinstance(parent_fingerprint, basestring) and
-                parent_fingerprint.startswith("0x")):
-            parent_fingerprint = parent_fingerprint[2:]
+        if (isinstance(parent_fingerprint, six.string_types) or
+                isinstance(parent_fingerprint, six.binary_type)):
+            val = ensure_bytes(parent_fingerprint)
+            if val.startswith(b"0x"):
+                parent_fingerprint = val[2:]
         self.parent_fingerprint = h(parent_fingerprint, 8)
         self.child_number = l(child_number)
         self.chain_code = h(chain_code, 64)
@@ -123,11 +132,11 @@ class Wallet(object):
 
         DO NOT share this private key with anyone.
         """
-        return self.private_key.get_key()
+        return ensure_bytes(self.private_key.get_key())
 
     def get_public_key_hex(self, compressed=True):
         """Get the sec1 representation of the public key."""
-        return self.public_key.get_key(compressed)
+        return ensure_bytes(self.public_key.get_key(compressed))
 
     @property
     def identifier(self):
@@ -141,13 +150,13 @@ class Wallet(object):
         key itself).
         """
         key = self.get_public_key_hex()
-        return hexlify(hash160(unhexlify(key)))
+        return ensure_bytes(hexlify(hash160(unhexlify(key))))
 
     @property
     def fingerprint(self):
         """The first 32 bits of the identifier are called the fingerprint."""
         # 32 bits == 4 Bytes == 8 hex characters
-        return '0x' + self.identifier[:8]
+        return b'0x' + self.identifier[:8]
 
     def create_new_address_for_user(self, user_id):
         """Create a new bitcoin address to accept payments for a User.
@@ -230,7 +239,7 @@ class Wallet(object):
 
         if is_prime:
             # Let data = concat(0x00, self.key, child_number)
-            data = '00' + self.private_key.get_key()
+            data = b'00' + self.private_key.get_key()
         else:
             data = self.get_public_key_hex()
         data += child_number_hex
@@ -317,14 +326,15 @@ class Wallet(object):
                chain_code)
         # Private and public serializations are slightly different
         if private:
-            ret += '00' + self.private_key.get_key()
+            ret += b'00' + self.private_key.get_key()
         else:
             ret += self.get_public_key_hex(compressed=True)
-        return ret.lower()
+        return ensure_bytes(ret.lower())
 
     def serialize_b58(self, private=True):
         """Encode the serialized node in base58."""
-        return base58.b58encode_check(unhexlify(self.serialize(private)))
+        return ensure_str(
+            base58.b58encode_check(unhexlify(self.serialize(private))))
 
     def to_address(self):
         """Create a public address from this Wallet.
@@ -338,9 +348,9 @@ class Wallet(object):
         hash160_bytes = hash160(key)
         # Prepend the network address byte
         network_hash160_bytes = \
-            chr(self.network.PUBKEY_ADDRESS) + hash160_bytes
+            chr_py2(self.network.PUBKEY_ADDRESS) + hash160_bytes
         # Return a base58 encoded address with a checksum
-        return base58.b58encode_check(network_hash160_bytes)
+        return ensure_str(base58.b58encode_check(network_hash160_bytes))
 
     @classmethod
     @memoize
@@ -367,12 +377,14 @@ class Wallet(object):
         if len(key) in [78, (78 + 32)]:
             # we have a byte array, so pass
             pass
-        elif len(key) in [78 * 2, (78 + 32) * 2]:
-            # we have a hexlified non-base58 key, continue!
-            key = unhexlify(key)
-        elif len(key) == 111:
-            # We have a base58 encoded string
-            key = base58.b58decode_check(key)
+        else:
+            key = ensure_bytes(key)
+            if len(key) in [78 * 2, (78 + 32) * 2]:
+                # we have a hexlified non-base58 key, continue!
+                key = unhexlify(key)
+            elif len(key) == 111:
+                # We have a base58 encoded string
+                key = base58.b58decode_check(key)
         # Now that we double checkd the values, convert back to bytes because
         # they're easier to slice
         version, depth, parent_fingerprint, child, chain_code, key_data = (
@@ -381,14 +393,17 @@ class Wallet(object):
         version_long = long_or_int(hexlify(version), 16)
         exponent = None
         pubkey = None
-        if ord(key_data[0]) == 0:
+        point_type = key_data[0]
+        if not isinstance(point_type, six.integer_types):
+            point_type = ord(point_type)
+        if point_type == 0:
             # Private key
             if version_long != network.EXT_SECRET_KEY:
                 raise incompatible_network_exception_factory(
                     network.NAME, network.EXT_SECRET_KEY,
                     version)
             exponent = key_data[1:]
-        elif ord(key_data[0]) in [2, 3, 4]:
+        elif point_type in [2, 3, 4]:
             # Compressed public coordinates
             if version_long != network.EXT_PUBLIC_KEY:
                 raise incompatible_network_exception_factory(
@@ -399,11 +414,12 @@ class Wallet(object):
             # want to store it as an uncompressed pubkey
             pubkey.compressed = False
         else:
-            raise ValueError("Invalid key_data prefix. Expecting 0x00 + k, "
-                             "got %s" % ord(key_data[0]))
+            raise ValueError("Invalid key_data prefix, got %s" % point_type)
 
         def l(byte_seq):
             if byte_seq is None:
+                return byte_seq
+            elif isinstance(byte_seq, six.integer_types):
                 return byte_seq
             return long_or_int(hexlify(byte_seq), 16)
 
@@ -426,6 +442,7 @@ class Wallet(object):
 
         See https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#Serialization_format  # nopep8
         """
+        seed = ensure_bytes(seed)
         # Given a seed S of at least 128 bits, but 256 is advised
         # Calculate I = HMAC-SHA512(key="Bitcoin seed", msg=S)
         I = hmac.new(b"Bitcoin seed", msg=seed, digestmod=sha512).digest()

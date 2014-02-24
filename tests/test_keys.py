@@ -11,6 +11,7 @@ from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
 from bitmerchant.wallet.keys import PrivateKey
 from bitmerchant.wallet.keys import PublicKey
+from bitmerchant.wallet.utils import ensure_bytes
 from bitmerchant.wallet.utils import long_or_int
 
 
@@ -19,7 +20,7 @@ class _TestPrivateKeyBase(TestCase):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_key = \
-            "0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d"
+            b"0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d"
         self.key = PrivateKey(long_or_int(self.expected_key, 16))
 
 
@@ -28,7 +29,7 @@ class _TestPublicKeyBase(TestCase):
         # This private key chosen from the bitcoin docs:
         # https://en.bitcoin.it/wiki/Wallet_import_format
         self.expected_private_key = \
-            "18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725"
+            b"18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725"
         self.private_key = PrivateKey(
             long_or_int(self.expected_private_key, 16))
         self.public_key = PublicKey.from_hex_key(
@@ -104,7 +105,7 @@ class TestPublicKey(_TestPublicKeyBase):
         # if k.startswith('0'):
         #     print i
         #     break
-        expected_key = (
+        expected_key = ensure_bytes(
             "04"
             "02cbfd5410fd04973c096a4275bf75070955ebd689f316a6fbd449980ba7b756"
             "c559764e5c367c03e002751aaf4ef8ec40fe97cda9b2d3f14fdd4cd244e8fcd2")
@@ -133,7 +134,7 @@ class TestPublicKey(_TestPublicKeyBase):
     def test_bad_network_key(self):
         key = self.public_key.get_key()
         # Change the network constant
-        key = "00" + key[2:]
+        key = b"00" + key[2:]
         self.assertRaises(KeyParseError,
                           PublicKey.from_hex_key, key)
 
