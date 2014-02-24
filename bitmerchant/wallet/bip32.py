@@ -324,7 +324,7 @@ class Wallet(object):
         return child
 
     def strip_private_key(self):
-        del self.private_key
+        self.private_key = None
 
     def export_to_wif(self):
         """Export a key to WIF.
