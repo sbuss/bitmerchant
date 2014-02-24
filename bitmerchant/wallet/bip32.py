@@ -173,7 +173,30 @@ class Wallet(object):
 
     def get_child_for_path(self, path):
         """Get a child for a given path.
-        TODOCS
+
+        Rather than repeated calls to get_child, children can be found
+        by a derivation path. Paths look like:
+
+            m/0/1'/10
+
+        Which is the same as
+
+            self.get_child(0).get_child(-1).get_child(10)
+
+        Or, in other words, the 10th publicly derived child of the 1st
+        privately derived child of the 0th publicly derived child of master.
+
+        You can use either ' or p to denote a prime (that is, privately
+        derived) child.
+
+        A child that has had its private key stripped can be requested by
+        either passing a capital M or appending '.pub' to the end of the path.
+        These three paths all give the same child that has had its private
+        key scrubbed:
+
+            M/0/1
+            m/0/1.pub
+            M/0/1.pub
         """
         path = ensure_str(path)
 
