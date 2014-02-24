@@ -1,5 +1,6 @@
 from binascii import hexlify
 from binascii import unhexlify
+from copy import deepcopy
 from hashlib import sha512
 import hmac
 import random
@@ -320,11 +321,14 @@ class Wallet(object):
             public_pair=public_pair,
             network=self.network)
         if not as_private:
-            child.strip_private_key()
+            return child.strip_private_key()
         return child
 
     def strip_private_key(self):
-        self.private_key = None
+        """Clone this wallet and strip it of its private information."""
+        node = deepcopy(self)
+        node.private_key = None
+        return node
 
     def export_to_wif(self):
         """Export a key to WIF.
