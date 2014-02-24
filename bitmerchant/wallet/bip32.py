@@ -209,7 +209,7 @@ class Wallet(object):
         return child
 
     @memoize
-    def get_child(self, child_number, is_prime=None, as_private=False):
+    def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
 
         :param child_number: The number of the child key to compute
