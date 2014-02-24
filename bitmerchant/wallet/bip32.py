@@ -205,7 +205,9 @@ class Wallet(object):
                 child_number = long_or_int(part)
             except TypeError:
                 raise InvalidPathError("%s is not a valid path" % path)
-            child = child.get_child(child_number, is_prime, as_private)
+            child = child.get_child(child_number, is_prime)
+        if not as_private:
+            return child.strip_private_key()
         return child
 
     @memoize
