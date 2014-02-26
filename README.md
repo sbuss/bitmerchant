@@ -32,6 +32,37 @@ bitcoin/altcoin payments as securely as possible**.
 To link a user with a new bitcoin address, you just need to provide the user's
 ID to the `create_new_address_for_user` method:
 
+## TL;DR
+
+```python
+## DO THIS ON AN OFFLINE MACHINE, NOT YOUR WEBSERVER
+from bitmerchant.wallet import Wallet
+
+# Create a wallet, and a primary child wallet for your app
+my_wallet = Wallet.new_random_wallet()
+print(my_wallet.serialize_b58(private=True))  # Write this down or print it out and keep in a secure location
+project_0_wallet = my_wallet.get_child(0, is_prime=True)
+project_0_public = project_0_wallet.public_copy()
+print(project_0_public.serialize_b58(private=False))  # Put this in your app's settings file
+
+
+## THINGS BELOW ARE PUBLIC FOR YOUR WEBSERVER
+
+# In your app's settings file, declare your public wallet:
+WALLET_PUBKEY = "<public output from above>"
+
+# Create a payment address for a user as needed:
+from bitmerchant.wallet import Wallet
+from myapp.settings import WALLET_PUBKEY
+
+def get_payment_address_for_user(user):
+    user_id = user.id
+    assert isinstance(user_id, (int, long))
+    wallet = Wallet.deserialize(WALLET_PUBKEY)
+    wallet_for_user = wallet.create_new_address_for_user(user.id)
+    return wallet_for_user.to_address()
+```
+
 ## Create a new wallet
 
 If you haven't created a wallet yet, do so like this:
