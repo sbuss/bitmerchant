@@ -9,7 +9,8 @@ for public use.
 Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
 merchant uses.
 
-First goal is BIP32 wallets for linking user payments with their accounts.
+The first goal is an easy to use BIP32 wallet for linking user payments with
+their accounts.
 
 ---
 
