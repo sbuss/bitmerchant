@@ -110,10 +110,16 @@ child = my_wallet.get_child(0, as_private=False)
 # And lets export this child key
 public_key = my_wallet.serialize(private=False)
 print(public_key)
-# You can safely store your public key in your app's source code. There's
-# no need to be paranoid about anyone getting it. All they can do is generate
-# payment addresses that YOU control.
 ```
+
+You can safely store your public key in your app's source code. There's
+no need to be paranoid* about anyone getting it. All they can do is generate
+payment addresses that YOU control.
+
+*Ok.. you should be a *little* paranoid. If someone gets a hold of your public
+key then they can generate all of your subsequent child addresses, which means
+they'll know exactly how many coins you have. The attacker cannot spend any
+coins, though.
 
 ## Generating new public addresses
 
@@ -122,9 +128,9 @@ private key. Just pass in the user ID that needs a wallet:
 
 ```python
 from bitmerchant.wallet import Wallet
-from myapp.settings import public_key  # Created above
+from myapp.settings import WALLET_PUBKEY  # Created above
 
-wallet = Wallet.deserialize(public_key)
+wallet = Wallet.deserialize(WALLET_PUBKEY)
 user_wallet = wallet.create_new_address_for_user(user_id)
 payment_address = user_wallet.to_address()
 ```
@@ -136,15 +142,25 @@ received at `payment_address` should be credited to the user identified by
 
 # Staying secure
 
-Public keys are PUBLIC. There's no need to protect your public key from
-hackers or curious eyes. You can't spend any of your coins with the public
-key, all you can do is generate new addresses.
+## Public Keys
 
-You must have the PRIVATE key to spend any of your coins. If your private
-key is stolen then the hacker also has control of all of your coins.
-Generating a new wallet is the only point in dealing with cryptocurrency
-that you need to be paranoid (and you're not being paranoid if they really
-are out to get you).
+Public keys are safe to keep on a public webserver. However, even though a
+public key does not allow an attacker to spend any of your coinds, you should
+still try to protect the public key from hackers or curious eyes. Knowing the
+public key allows an attacker to generate all possible child wallets and know
+exactly how many coins you have. This isn't terrible, but nobody likes having
+their books opened up like this.
+
+Your master public key can be used to generate a virtually unlimited number of
+child public keys. Your users won't pay to your master public key, but instead
+you'll use your master public key to generate a new wallet for each user.
+
+## Private Keys
+
+You must have the private key to spend any of your coins. If your private key
+is stolen then the hacker also has control of all of your coins. Generating a
+new wallet is the only point in dealing with cryptocurrency that you need to be
+paranoid (and you're not being paranoid if they really *are* out to get you).
 
 You should create your wallet on a computer that is not connected to the
 internet. Ideally, this computer will *never* be connected to the internet
@@ -190,16 +206,17 @@ connected to the internet.
 
 Master private keys must NEVER be put on the internet. They must NEVER be
 located on a computer that is even *connected* to the internet. The only key
-that should be online is your PUBLIC key. Your PRIVATE key should be written
-down (yes, ON PAPER) and stored in a safe location, or on a computer that is
-NEVER connected to the internet.
+that should be online is your PUBLIC key. Your private key should be written
+down (yes, on paper) and stored in a safe location, or on a computer that is
+never connected to the internet.
 
 Security wise, this is the most important part of generating secure public
-payment addresses. A master private key is the onlyway to retrieve the funds
-paid to a public address.
+payment addresses. A master private key is the only way to retrieve the funds
+paid to a public address. You can use your master private key to generate the
+private keys of any child wallets, and then transfer those to a networked
+computer as necessary, if you want slightly smaller surface area for attacks.
 
-## Master public key
-
-Master public keys are essential in producing secure public payment addresses.
-You can generate an unlimited number of public addresses with your public key.
-Each user in your system should have their own payment address.
+Forthcoming versions of bitmerchant will allow you to generate transactions
+offline that you can safely transfer to a networked computer, allowing you to
+spend your child funds without ever putting a private key on a networked
+machine.
