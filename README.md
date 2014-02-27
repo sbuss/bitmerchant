@@ -113,10 +113,10 @@ print(public_key)
 ```
 
 You can safely store your public key in your app's source code. There's
-no need to be paranoid* about anyone getting it. All they can do is generate
+no need to be paranoid\* about anyone getting it. All they can do is generate
 payment addresses that YOU control.
 
-*Ok.. you should be a *little* paranoid. If someone gets a hold of your public
+\*Ok.. you should be a *little* paranoid. If someone gets a hold of your public
 key then they can generate all of your subsequent child addresses, which means
 they'll know exactly how many coins you have. The attacker cannot spend any
 coins, though.
