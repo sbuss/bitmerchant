@@ -2,9 +2,9 @@ from binascii import hexlify
 from binascii import unhexlify
 from hashlib import sha512
 import hmac
-import random
 
 import base58
+from Crypto.Random import random
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 import six
@@ -548,8 +548,8 @@ class Wallet(object):
     @classmethod
     def new_random_wallet(cls, network=BitcoinMainNet):
         """Generate a new wallet using a randomly generated 512 bit seed."""
-        random_seed = random.randint(0, 2**512)
-        random_hex_bytes = long_to_hex(random_seed, 512)
+        random_seed = random.getrandbits(512)
+        random_hex_bytes = long_to_hex(random_seed, 128)  # 64 Bytes
         return cls.from_master_secret(random_hex_bytes, network=network)
 
 
