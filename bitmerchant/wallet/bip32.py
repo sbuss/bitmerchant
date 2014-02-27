@@ -548,8 +548,9 @@ class Wallet(object):
     @classmethod
     def new_random_wallet(cls, network=BitcoinMainNet):
         """Generate a new wallet using a randomly generated 512 bit seed."""
-        random_seed = random.randint(0, 2**512)
-        random_hex_bytes = long_to_hex(random_seed, 512)
+        rand = random.SystemRandom()
+        random_seed = rand.getrandbits(512)
+        random_hex_bytes = long_to_hex(random_seed, 128)  # 64 Bytes
         return cls.from_master_secret(random_hex_bytes, network=network)
 
 
