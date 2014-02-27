@@ -13,15 +13,15 @@ from ecdsa.ellipticcurve import Point as _ECDSA_Point
 from ecdsa.numbertheory import square_root_mod_prime
 import six
 
-from bitmerchant.network import BitcoinMainNet
-from bitmerchant.wallet.utils import chr_py2
-from bitmerchant.wallet.utils import ensure_bytes
-from bitmerchant.wallet.utils import ensure_str
-from bitmerchant.wallet.utils import hash160
-from bitmerchant.wallet.utils import is_hex_string
-from bitmerchant.wallet.utils import long_or_int
-from bitmerchant.wallet.utils import long_to_hex
-from bitmerchant.wallet.utils import memoize
+from ..network import BitcoinMainNet
+from .utils import chr_py2
+from .utils import ensure_bytes
+from .utils import ensure_str
+from .utils import hash160
+from .utils import is_hex_string
+from .utils import long_or_int
+from .utils import long_to_hex
+from .utils import memoize
 
 
 PublicPair = namedtuple("PublicPair", ["x", "y"])
