@@ -9,8 +9,11 @@ for public use.
 Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
 merchant uses.
 
-The first goal is an easy to use BIP32 wallet for linking user payments with
-their accounts.
+The first goal is an easy to use [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#)
+wallet for linking user payments with their accounts.
+
+Up next is a system that monitors the blockchain and sends out a signal
+when a payment is received at an address you're tracking.
 
 ---
 
@@ -26,8 +29,7 @@ If you find this library useful, please consider a small donation to
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#)
 wallets are hierarchical deterministic wallets. They allow you to generate
 bitcoin/altcoin addresses without exposing your private key to a potentially
-insecure server. What this means for you as a merchant is that **you can accept
-bitcoin/altcoin payments as securely as possible**.
+insecure server.
 
 To link a user with a new bitcoin address, you just need to provide the user's
 ID to the `create_new_address_for_user` method:
@@ -130,8 +132,8 @@ private key. Just pass in the user ID that needs a wallet:
 from bitmerchant.wallet import Wallet
 from myapp.settings import WALLET_PUBKEY  # Created above
 
-wallet = Wallet.deserialize(WALLET_PUBKEY)
-user_wallet = wallet.create_new_address_for_user(user_id)
+master_wallet = Wallet.deserialize(WALLET_PUBKEY)
+user_wallet = master_wallet.create_new_address_for_user(user_id)
 payment_address = user_wallet.to_address()
 ```
 
@@ -158,9 +160,11 @@ you'll use your master public key to generate a new wallet for each user.
 ## Private Keys
 
 You must have the private key to spend any of your coins. If your private key
-is stolen then the hacker also has control of all of your coins. Generating a
-new wallet is the only point in dealing with cryptocurrency that you need to be
-paranoid (and you're not being paranoid if they really *are* out to get you).
+is stolen then the hacker also has control of all of your coins. With a BIP32
+Wallet, generating a new master wallet is one of the only times that you need
+to be paranoid (and you're not being paranoid if they really *are* out to get
+you). Paranoia here is good because if anyone gets control of your master
+wallet they can spend all funds in all child wallets.
 
 You should create your wallet on a computer that is not connected to the
 internet. Ideally, this computer will *never* be connected to the internet
