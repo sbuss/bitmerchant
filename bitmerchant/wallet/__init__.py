@@ -1,4 +1,4 @@
-from bitmerchant.wallet.bip32 import Wallet
+from .bip32 import Wallet
 
 __all__ = [
     'Wallet'
