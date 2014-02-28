@@ -311,9 +311,13 @@ class PublicKey(Key):
             y_odd = bool(id_byte & 0x01)  # 0 even, 1 odd
             x = long_or_int(hexlify(key[1:]), 16)
             # The following x-to-pair algorithm was lifted from pycoin
-            # I still need to sit down an understand it
+            # I still need to sit down an understand it. It is also described
+            # in http://www.secg.org/collateral/sec1_final.pdf
             curve = SECP256k1.curve
             p = curve.p()
+            # For SECP256k1, curve.a() is 0 and curve.b() is 7, so this is
+            # effectively (x ** 3 + 7) % p, but the full equation is kept
+            # for just-in-case-the-curve-is-broken future-proofing
             alpha = (pow(x, 3, p) + curve.a() * x + curve.b()) % p
             beta = square_root_mod_prime(alpha, p)
             y_even = not y_odd
