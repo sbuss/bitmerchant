@@ -95,8 +95,7 @@ child wallet for every website you run. It's a good idea to create at least
 website's wallet gets compromised somehow, you haven't completely lost control
 because your master wallet is secured on an offline machine. You can use your
 master wallet to move any funds in compromised child wallets to new child
-wallets and you'll be ok. We'll talk more about a breach and how to handle it
-below.
+wallets and you'll be ok.
 
 But first, let's generate a new child wallet for your first website!
 
