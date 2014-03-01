@@ -122,7 +122,7 @@ class Wallet(object):
             val = ensure_bytes(parent_fingerprint)
             if val.startswith(b"0x"):
                 parent_fingerprint = val[2:]
-        self.parent_fingerprint = h(parent_fingerprint, 8)
+        self.parent_fingerprint = "0x" + h(parent_fingerprint, 8)
         self.child_number = l(child_number)
         self.chain_code = h(chain_code, 64)
 
@@ -393,7 +393,7 @@ class Wallet(object):
             network_version = long_to_hex(
                 self.network.EXT_PUBLIC_KEY, 8)
         depth = long_to_hex(self.depth, 2)
-        parent_fingerprint = self.parent_fingerprint
+        parent_fingerprint = self.parent_fingerprint[2:]  # strip leading 0x
         child_number = long_to_hex(self.child_number, 8)
         chain_code = self.chain_code
         ret = (network_version + depth + parent_fingerprint + child_number +
