@@ -42,7 +42,7 @@ class _TestPublicKeyBase(TestCase):
 
 class TestPrivateKey(_TestPrivateKeyBase):
     def test_raw_key_hex(self):
-        exp = self.key.private_exponent
+        exp = self.key._private_key.privkey.secret_multiplier
         self.assertEqual(PrivateKey(exp), self.key)
 
     def test_raw_key_hex_bytes(self):
@@ -84,7 +84,8 @@ class TestWIF(_TestPrivateKeyBase):
     def test_import_wif_network(self):
         # Make a wif for bitcoin testnet:
         testnet_key = PrivateKey(
-            self.key.private_exponent, network=BitcoinTestNet)
+            self.key._private_key.privkey.secret_multiplier,
+            network=BitcoinTestNet)
         testnet_wif = testnet_key.export_to_wif()
         # We should be able to load it properly
         key = PrivateKey.from_wif(testnet_wif, BitcoinTestNet)

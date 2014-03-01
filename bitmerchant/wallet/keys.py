@@ -6,9 +6,8 @@ import hmac
 import re
 
 import base58
+from ecdsa import SigningKey
 from ecdsa import SECP256k1
-from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
-from ecdsa.ecdsa import Private_key as _ECDSA_Private_key
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 from ecdsa.numbertheory import square_root_mod_prime
 import six
@@ -69,25 +68,22 @@ class Key(object):
 
 
 class PrivateKey(Key):
-    def __init__(self, private_exponent, network=BitcoinMainNet,
+    def __init__(self, secret_exponent, network=BitcoinMainNet,
                  *args, **kwargs):
-        if not isinstance(private_exponent, six.integer_types):
-            raise ValueError("private_exponent must be a long")
+        if not isinstance(secret_exponent, six.integer_types):
+            raise ValueError("secret_exponent must be a long")
         super(PrivateKey, self).__init__(network=network, *args, **kwargs)
-        self.private_exponent = private_exponent
-        pubkey = self.get_public_key()
-        self.point = _ECDSA_Private_key(
-            pubkey.point, long_or_int(self.get_key(), 16))
+        self._private_key = SigningKey.from_secret_exponent(
+            secret_exponent, curve=SECP256k1)
 
     def get_key(self):
         """Get the key - a hex formatted private exponent for the curve."""
-        return ensure_bytes(long_to_hex(self.private_exponent, 64))
+        return ensure_bytes(hexlify(self._private_key.to_string()))
 
     @memoize
     def get_public_key(self):
         """Get the PublicKey for this PrivateKey."""
-        g = SECP256k1.generator
-        point = _ECDSA_Public_key(g, g * self.private_exponent).point
+        point = self._private_key.get_verifying_key().pubkey.point
         return PublicKey.from_point(
             point, self.network, compressed=self.compressed)
 
@@ -213,7 +209,11 @@ class PrivateKey(Key):
 
     def __eq__(self, other):
         return (super(PrivateKey, self).__eq__(other) and
-                self.private_exponent == other.private_exponent and
+                self._private_key.curve == other._private_key.curve and
+                (self._private_key.to_string() ==
+                 other._private_key.to_string()) and
+                (self._private_key.privkey.secret_multiplier ==
+                 other._private_key.privkey.secret_multiplier) and
                 self.get_public_key() == other.get_public_key())
 
     __hash__ = Key.__hash__
