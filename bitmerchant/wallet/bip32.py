@@ -395,7 +395,8 @@ class Wallet(object):
         # Public derivation is the same as private derivation plus some offset
         # knowing the child's private key allows us to find this offset just
         # by subtracting the child's private key from the parent I_L data
-        privkey = PrivateKey(long(hexlify(I_L), 16), network=self.network)
+        privkey = PrivateKey(long_or_int(hexlify(I_L), 16),
+                             network=self.network)
         parent_private_key = child_private_key.private_key - privkey
         return self.__class__(
             chain_code=self.chain_code,

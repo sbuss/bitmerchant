@@ -60,7 +60,7 @@ class TestWallet(TestCase):
         w = Wallet.new_random_wallet()
         self.assertTrue(Wallet.deserialize(w.serialize()), w)
         self.assertEqual(w.depth, 0)
-        self.assertEqual(w.parent_fingerprint, '0x' + long_to_hex(0, 8))
+        self.assertEqual(w.parent_fingerprint, b'0x' + long_to_hex(0, 8))
         self.assertEqual(w.child_number, 0)
 
 
