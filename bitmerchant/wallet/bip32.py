@@ -357,6 +357,54 @@ class Wallet(object):
             public_pair=self.public_key.to_public_pair(),
             network=self.network)
 
+    def crack_private_key(self, child_private_key):
+        """Crack the parent private key given a child private key.
+
+        BIP32 has a vulnerability/feature that allows you to recover the
+        master private key if you're given a master public key and any of its
+        publicly-derived child private keys. This is a pretty serious security
+        vulnerability that looks as innocuous as this:
+
+        >>> w = Wallet.new_random_wallet()
+        >>> child = w.get_child(0, is_prime=False)
+        >>> w_pub = w.public_copy()
+        >>> assert w_pub.private_key is None
+        >>> master_public_key = w_pub.serialize_b58(private=False)
+        >>> # Now you put master_public_key on your website
+        >>> # and give somebody a private key
+        >>> public_master = Wallet.deserialize(master_public_key)
+        >>> cracked_private_master = public_master.crack_private_key(child)
+        >>> assert w == cracked_private_master  # :(
+        """
+        if self.private_key:
+            raise AssertionError("You already know the private key")
+        if child_private_key.parent_fingerprint != self.fingerprint:
+            raise ValueError("This is not a valid child")
+        if child_private_key.child_number >= 0x80000000:
+            raise ValueError(
+                "Cannot crack private keys from private derivation")
+
+        # Duplicate the public child derivation
+        child_number_hex = long_to_hex(child_private_key.child_number, 8)
+        data = self.get_public_key_hex() + child_number_hex
+        I = hmac.new(
+            unhexlify(self.chain_code),
+            msg=unhexlify(data),
+            digestmod=sha512).digest()
+        I_L, I_R = I[:32], I[32:]
+        # Public derivation is the same as private derivation plus some offset
+        # knowing the child's private key allows us to find this offset just
+        # by subtracting the child's private key from the parent I_L data
+        privkey = PrivateKey(long(hexlify(I_L), 16), network=self.network)
+        parent_private_key = child_private_key.private_key - privkey
+        return self.__class__(
+            chain_code=self.chain_code,
+            depth=self.depth,
+            parent_fingerprint=self.parent_fingerprint,
+            child_number=self.child_number,
+            private_key=parent_private_key,
+            network=self.network)
+
     def export_to_wif(self):
         """Export a key to WIF.
 
