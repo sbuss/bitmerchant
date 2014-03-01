@@ -4,3 +4,7 @@ coveralls
 coverage
 nose
 nose-timer==0.2.0
+
+# For test vector generation script
+bunch==1.0.1
+python-jsonrpc==0.3.4
