@@ -65,6 +65,48 @@ def get_payment_address_for_user(user):
     return wallet_for_user.to_address()
 ```
 
+<a id="security"></a>
+## Security warning
+
+BIP32 wallets have a vulnerability/bug that allows an attacker to recover
+the master private key when given a master public key and a publicly-derived
+private child. In other words:
+
+```python
+from bitmerchant.wallet import Wallet
+
+w = Wallet.new_random_wallet()
+child = w.get_child(0, is_prime=False)  # public derivation of a private child
+w_pub = w.public_copy()
+master_public_key = w_pub.serialize_b58(private=False)
+private_child_key = child.serialize_b58(private=True)
+```
+
+Given `master_public_key` and `private_child_key`, the steps to recover the
+secret master private key (`w`) are as simple as a subtraction on the
+elliptic curve. This has been implemented as `Wallet.crack_private_key`,
+because if it's possible to do this, then anyone should be able to do it so
+the attack is well known:
+
+```python
+public_master = Wallet.deserialize(master_public_key)
+private_child = Wallet.deserialize(private_child_key)
+private_master = public_master.crack_private_key(private_child)
+assert private_master == w  # :(
+```
+
+This attack can be mitigated by these simple steps:
+
+1. NEVER give out your root master public key.
+2. When uploading a master public key to a webserver, always use a prime child
+of your master root.
+3. Never give out a private child key unless the user you're giving it to
+already has control of the parent private key (eg, for user-owned wallets).
+
+Why "always use a prime child of your master root" in step 2?  Because prime
+children use private derivation, which means they cannot be used to recover the
+parent private key (no easier than brute force, anyway).
+
 ## Create a new wallet
 
 If you haven't created a wallet yet, do so like this:
@@ -88,39 +130,44 @@ assert my_wallet == wallet_test
 # NOW WRITE DOWN THE PRIVATE KEY AND STORE IT IN A SECURE LOCATION
 ```
 
-BIP32 wallets (or hierarchical deterministic wallets) allow you to create
-child wallets with limited permissions. You can, for example, create a new
-child wallet for every website you run. It's a good idea to create at least
-*one* child wallet for use on your website. The thinking being that if your
-website's wallet gets compromised somehow, you haven't completely lost control
-because your master wallet is secured on an offline machine. You can use your
-master wallet to move any funds in compromised child wallets to new child
-wallets and you'll be ok.
+BIP32 wallets (or hierarchical deterministic wallets) allow you to create child
+wallets which can only generate public keys and don't expose a private key to
+an insecure server. You should create a new prime child wallet for every
+website you run (or a new wallet entirely), and perhaps a new prime child for
+each user (though that requires pre-generating a bunch of prime children
+offline, since you need the private key). Try to use prime children where
+possible (see [security](#security)).
 
-But first, let's generate a new child wallet for your first website!
+It's a good idea to create at least *one* prime child wallet for use
+on your website. The thinking being that if your website's wallet gets
+compromised somehow, you haven't completely lost control because your master
+wallet is secured on an offline machine. You can use your master wallet to move
+any funds in compromised child wallets to new child wallets and you'll be ok.
+
+Let's generate a new child wallet for your first website!
 
 ```python
 # Lets assume you're loading a wallet from your safe private key backup
 my_wallet = Wallet.deserialize(private_key)
 
-# Create a new, public-only child wallet. Since you have the master private
-# key, you can recreate this child at any time in the future and don't need
-# to securely store its private key.
-child = my_wallet.get_child(0, as_private=False)
+# Create a new, public-only prime child wallet. Since you have the master
+# private key, you can recreate this child at any time in the future and don't
+# need to securely store its private key.
+# Remember to generate this as a prime child! See the security notice above.
+child = my_wallet.get_child(0, is_prime=True, as_private=False)
 
 # And lets export this child key
-public_key = my_wallet.serialize(private=False)
+public_key = my_wallet.serialize_b58(private=False)
 print(public_key)
 ```
 
-You can safely store your public key in your app's source code. There's
-no need to be paranoid\* about anyone getting it. All they can do is generate
-payment addresses that YOU control.
+You can store your public key in your app's source code, as long as you
+never reveal any private keys. See the [security notice](#security) above.
 
-\*Ok.. you should be a *little* paranoid. If someone gets a hold of your public
-key then they can generate all of your subsequent child addresses, which means
-they'll know exactly how many coins you have. The attacker cannot spend any
-coins, though.
+Be aware that if someone gets a hold of your public key then they can generate
+all of your subsequent child addresses, which means they'll know exactly how
+many coins you have. The attacker cannot spend any coins, however, unless they
+are able to [recover the private key](#security).
 
 ## Generating new public addresses
 
@@ -145,12 +192,16 @@ received at `payment_address` should be credited to the user identified by
 
 ## Public Keys
 
-Public keys are safe to keep on a public webserver. However, even though a
-public key does not allow an attacker to spend any of your coinds, you should
+Public keys are mostly safe to keep on a public webserver. However, even though
+a public key does not allow an attacker to spend any of your coins, you should
 still try to protect the public key from hackers or curious eyes. Knowing the
 public key allows an attacker to generate all possible child wallets and know
 exactly how many coins you have. This isn't terrible, but nobody likes having
 their books opened up like this.
+
+As mentioned earlier, knowledge of a master public key and a non-prime private
+child of that key is enough to be able to recover the master private key. Never
+reveal private keys to users unless they already own the master private parent.
 
 Your master public key can be used to generate a virtually unlimited number of
 child public keys. Your users won't pay to your master public key, but instead
