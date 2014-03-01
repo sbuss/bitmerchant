@@ -160,7 +160,7 @@ class TestPublicKey(_TestPublicKeyBase):
             PublicKey.from_hex_key(compressed_key), self.public_key)
 
     def test_point(self):
-        self.assertEqual(PublicKey.from_point(self.public_key.point),
+        self.assertEqual(PublicKey.from_point(self.public_key.to_point()),
                          self.public_key)
 
     def test_public_pair(self):

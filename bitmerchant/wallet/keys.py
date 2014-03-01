@@ -7,6 +7,7 @@ import re
 
 import base58
 from ecdsa import SigningKey
+from ecdsa import VerifyingKey
 from ecdsa import SECP256k1
 from ecdsa.ellipticcurve import Point as _ECDSA_Point
 from ecdsa.numbertheory import square_root_mod_prime
@@ -83,9 +84,9 @@ class PrivateKey(Key):
     @memoize
     def get_public_key(self):
         """Get the PublicKey for this PrivateKey."""
-        point = self._private_key.get_verifying_key().pubkey.point
-        return PublicKey.from_point(
-            point, self.network, compressed=self.compressed)
+        return PublicKey.from_verifying_key(
+            self._private_key.get_verifying_key(),
+            network=self.network, compressed=self.compressed)
 
     def get_extended_key(self):
         """Get the extended key.
@@ -220,24 +221,20 @@ class PrivateKey(Key):
 
 
 class PublicKey(Key):
-    def __init__(self, x, y, network=BitcoinMainNet, *args, **kwargs):
+    def __init__(self, verifying_key, network=BitcoinMainNet, *args, **kwargs):
         """Create a public key.
 
-        :param x: The x coordinate on the curve
-        :type x: long
-        :param y: The y coordinate on the curve
-        :type y: long
+        :param verifying_key: The ECDSA VerifyingKey corresponding to this
+            public key.
+        :type verifying_key: ecdsa.VerifyingKey
         :param network: The network you want (Networks just define certain
             constants, like byte-prefixes on public addresses).
         :type network: See `bitmerchant.wallet.network`
         """
         super(PublicKey, self).__init__(network=network, *args, **kwargs)
-        if (not isinstance(x, six.integer_types) or
-                not isinstance(y, six.integer_types)):
-            raise ValueError("Coordinates must be longs")
-        self.x = x
-        self.y = y
-        self.point = self.create_point(x, y)
+        self._verifying_key = verifying_key
+        self.x = verifying_key.pubkey.point.x()
+        self.y = verifying_key.pubkey.point.y()
 
     def get_key(self, compressed=None):
         """Get the hex-encoded key.
@@ -344,6 +341,9 @@ class PublicKey(Key):
             raise ValueError("The coordinates must be longs.")
         return _ECDSA_Point(SECP256k1.curve, x, y)
 
+    def to_point(self):
+        return self._verifying_key.pubkey.point
+
     @classmethod
     def from_point(cls, point, network=BitcoinMainNet, **kwargs):
         """Create a PublicKey from a point on the SECP256k1 curve.
@@ -351,7 +351,13 @@ class PublicKey(Key):
         :param point: A point on the SECP256k1 curve.
         :type point: SECP256k1.point
         """
-        return cls(x=point.x(), y=point.y(), network=network, **kwargs)
+        verifying_key = VerifyingKey.from_public_point(point, curve=SECP256k1)
+        return cls.from_verifying_key(verifying_key, network=network, **kwargs)
+
+    @classmethod
+    def from_verifying_key(
+            cls, verifying_key, network=BitcoinMainNet, **kwargs):
+        return cls(verifying_key, network=network, **kwargs)
 
     def to_address(self, compressed=None):
         """Create a public address from this key.
@@ -378,7 +384,8 @@ class PublicKey(Key):
 
     @classmethod
     def from_public_pair(cls, pair, network=BitcoinMainNet, **kwargs):
-        return cls(x=pair.x, y=pair.y, network=network, **kwargs)
+        point = _ECDSA_Point(SECP256k1.curve, pair.x, pair.y)
+        return cls.from_point(point, network=network, **kwargs)
 
     def __eq__(self, other):
         return (super(PublicKey, self).__eq__(other) and
