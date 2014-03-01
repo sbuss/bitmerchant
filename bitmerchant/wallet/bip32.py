@@ -375,6 +375,8 @@ class Wallet(object):
         >>> public_master = Wallet.deserialize(master_public_key)
         >>> cracked_private_master = public_master.crack_private_key(child)
         >>> assert w == cracked_private_master  # :(
+
+        Implementation details from http://bitcoinmagazine.com/8396/deterministic-wallets-advantages-flaw/  # nopep8
         """
         if self.private_key:
             raise AssertionError("You already know the private key")
