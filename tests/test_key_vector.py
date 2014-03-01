@@ -17,3 +17,4 @@ class TestKeys(TestCase):
             public_key = PublicKey.from_hex_key(
                 vector['pubkey'], network=BitcoinMainNet)
             self.assertEqual(private_key.get_public_key(), public_key)
+            self.assertEqual(public_key.to_address(), vector['address'])
