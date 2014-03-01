@@ -208,6 +208,8 @@ class PrivateKey(Key):
             key = hmac.new(key, digestmod=sha256).digest()
         return cls.from_hex_key(key, network)
 
+    __hash__ = Key.__hash__
+
     def __eq__(self, other):
         return (super(PrivateKey, self).__eq__(other) and
                 self._private_key.curve == other._private_key.curve and
@@ -217,7 +219,15 @@ class PrivateKey(Key):
                  other._private_key.privkey.secret_multiplier) and
                 self.get_public_key() == other.get_public_key())
 
-    __hash__ = Key.__hash__
+    def __sub__(self, other):
+        assert isinstance(other, self.__class__)
+        assert self.network == other.network
+        k1 = self._private_key.privkey.secret_multiplier
+        k2 = other._private_key.privkey.secret_multiplier
+        result = (k1 - k2) % SECP256k1.order
+        if result < 0:
+            result += SECP256k1.order
+        return self.__class__(result, network=self.network)
 
 
 class PublicKey(Key):
