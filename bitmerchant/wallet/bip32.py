@@ -331,7 +331,7 @@ class Wallet(object):
             g = SECP256k1.generator
             I_L_long = long_or_int(hexlify(I_L), 16)
             point = (_ECDSA_Public_key(g, g * I_L_long).point +
-                     self.public_key.point)
+                     self.public_key.to_point())
             # I_R is the child's chain code
             public_pair = PublicPair(point.x(), point.y())
 
