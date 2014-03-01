@@ -60,8 +60,36 @@ class TestWallet(TestCase):
         w = Wallet.new_random_wallet()
         self.assertTrue(Wallet.deserialize(w.serialize()), w)
         self.assertEqual(w.depth, 0)
-        self.assertEqual(w.parent_fingerprint, long_to_hex(0, 8))
+        self.assertEqual(w.parent_fingerprint, b'0x' + long_to_hex(0, 8))
         self.assertEqual(w.child_number, 0)
+
+
+class TestCrackPrivateKey(TestCase):
+    def setUp(self):
+        self.w = Wallet.new_random_wallet()
+        self.pub_derived_private_child = self.w.get_child(100)
+        self.wpub = self.w.public_copy()
+        self.assertTrue(self.wpub.private_key is None)
+
+    def test_already_have_private(self):
+        self.assertRaises(AssertionError,
+                          self.w.crack_private_key,
+                          self.pub_derived_private_child)
+
+    def test_invalid_fingerprint(self):
+        child = self.pub_derived_private_child.get_child(10)
+        self.assertRaises(ValueError, self.wpub.crack_private_key, child)
+
+    def test_invalid_prime(self):
+        child = self.w.get_child(-100)
+        self.assertRaises(ValueError, self.wpub.crack_private_key, child)
+
+    def test_crack_child(self):
+        cracked = self.wpub.crack_private_key(self.pub_derived_private_child)
+        self.assertEqual(cracked, self.w)
+        self.assertEqual(cracked.get_child(100),
+                         self.pub_derived_private_child)
+        self.assertEqual(cracked.get_child(-100), self.w.get_child(-100))
 
 
 class TestSubkeyPath(TestCase):
