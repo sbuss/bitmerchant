@@ -44,7 +44,8 @@ def generate_address_vector(outfile, num_addresses):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate test vectors for pub/private key validation")
-    parser.add_argument("-o", "--output", help="output file path")
+    parser.add_argument("-o", "--output", help="output file path",
+                        default="tests/keys_test_vector.json")
     parser.add_argument("-n", "--num-keys", type=int, default=1000,
                         help="Number of keys to generate")
     args = parser.parse_args()
