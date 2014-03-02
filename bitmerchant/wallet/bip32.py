@@ -270,7 +270,7 @@ class Wallet(object):
         # If is_prime isn't set, then we can infer it from the child_number
         if is_prime is None:
             if child_number > max_child or child_number < -1 * boundary:
-                raise ValueError("Invalid child number")
+                raise ValueError("Invalid child number %s" % child_number)
             # Prime children are either < 0 or > 0x80000000
             if child_number < 0:
                 child_number = abs(child_number)
