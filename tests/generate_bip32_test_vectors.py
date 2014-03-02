@@ -24,14 +24,16 @@ def get_new_address(wallet_num):
     passphrase = sha256(b"%s" % random.randint(0, 2**30)).hexdigest()
     wallet = Wallet.from_master_secret(passphrase)
     ret = dump_node(wallet)
-    children = {}
+    children = []
     # Now build up some random paths
     # Just go five deep
     path = "m"
     for depth in range(5):
         child_number = random.randint(0, 0xFFFFFFFF)
         path = "%s/%s" % (path, child_number)
-        children[path] = dump_node(wallet.subkey_for_path(path[2:]))
+        children.append(
+            {"path": path,
+             "child": dump_node(wallet.subkey_for_path(path[2:]))})
     ret['children'] = children
     return ret
 
