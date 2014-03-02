@@ -34,9 +34,9 @@ def get_new_address(wallet_num):
     return ret
 
 
-def generate_address_vector(outfile, num_addresses, seed=None):
-    if seed:
-        random.seed(seed)
+def generate_address_vector(outfile, num_addresses, seed):
+    if args.seed:
+        random.seed(args.seed)
     with open(outfile, 'w') as f:
         f.write("[\n")
         for i in range(num_addresses):
@@ -57,4 +57,5 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--seed", type=int, default=None,
                         help="The random seed for random wallets. Optional.")
     args = parser.parse_args()
-    generate_address_vector(outfile=args.output, num_addresses=args.num_keys)
+    generate_address_vector(
+        outfile=args.output, num_addresses=args.num_keys, seed=args.seed)
