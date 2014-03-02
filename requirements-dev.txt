@@ -8,3 +8,6 @@ nose-timer==0.2.0
 # For test vector generation script
 bunch==1.0.1
 python-jsonrpc==0.3.4
+
+# For bip32 test vector generation
+pycoin==0.26
