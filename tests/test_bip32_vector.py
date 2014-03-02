@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.wallet import Wallet
+from bitmerchant.wallet.utils import ensure_bytes
 
 
 class TestBIP32(TestCase):
@@ -12,8 +13,8 @@ class TestBIP32(TestCase):
         self.assertEqual(
             wallet.serialize_b58(private=False), data['public_key'])
         self.assertEqual(wallet.export_to_wif(), data['wif'])
-        self.assertEqual(wallet.chain_code, data['chain_code'])
-        fingerprint = data['fingerprint']
+        self.assertEqual(wallet.chain_code, ensure_bytes(data['chain_code']))
+        fingerprint = ensure_bytes(data['fingerprint'])
         if not fingerprint.startswith(b'0x'):
             fingerprint = b'0x' + fingerprint
         self.assertEqual(wallet.fingerprint, fingerprint)
