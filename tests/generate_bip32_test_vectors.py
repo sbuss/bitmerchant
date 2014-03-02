@@ -1,6 +1,7 @@
 """Generate BIP32 wallet test vectors from pycoin"""
 import argparse
 from binascii import hexlify
+from hashlib import sha256
 import json
 import random
 
@@ -20,7 +21,8 @@ def dump_node(node):
 
 
 def get_new_address(wallet_num):
-    wallet = Wallet.from_master_secret("%s" % wallet_num)
+    passphrase = sha256(b"%s" % random.randint(0, 2**30)).hexdigest()
+    wallet = Wallet.from_master_secret(passphrase)
     ret = dump_node(wallet)
     children = {}
     # Now build up some random paths
