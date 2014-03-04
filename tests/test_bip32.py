@@ -250,6 +250,14 @@ class TestSubkeyPath(TestCase):
 
     def test_invalid_path(self):
         self.assertRaises(
+            ValueError,
+            self.wallet.get_child_for_path,
+            None)
+        self.assertRaises(
+            InvalidPathError,
+            self.wallet.get_child_for_path,
+            "")
+        self.assertRaises(
             InvalidPathError,
             self.wallet.get_child_for_path,
             "m/foo")
