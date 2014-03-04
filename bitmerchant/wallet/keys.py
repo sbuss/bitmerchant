@@ -204,8 +204,6 @@ class PrivateKey(Key):
         k1 = self._private_key.privkey.secret_multiplier
         k2 = other._private_key.privkey.secret_multiplier
         result = (k1 - k2) % SECP256k1.order
-        if result < 0:
-            result += SECP256k1.order
         return self.__class__(result, network=self.network)
 
 
