@@ -5,6 +5,11 @@ from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
 from bitmerchant.network import DogecoinMainNet
 from bitmerchant.wallet import Wallet
+from bitmerchant.wallet.bip32 import InsufficientKeyDataError
+from bitmerchant.wallet.bip32 import InvalidPathError
+from bitmerchant.wallet.bip32 import InvalidPrivateKeyError
+from bitmerchant.wallet.bip32 import InvalidPublicKeyError
+from bitmerchant.wallet.bip32 import KeyMismatchError
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.utils import ensure_bytes
 from bitmerchant.wallet.utils import long_to_hex
@@ -62,6 +67,71 @@ class TestWallet(TestCase):
         self.assertEqual(w.depth, 0)
         self.assertEqual(w.parent_fingerprint, b'0x' + long_to_hex(0, 8))
         self.assertEqual(w.child_number, 0)
+
+    def test_insuffient_key_data(self):
+        self.assertRaises(InsufficientKeyDataError, Wallet,
+                          chain_code=self.master_key.chain_code,
+                          private_exponent=None,
+                          private_key=None,
+                          public_pair=None,
+                          public_key=None)
+
+    def test_private_exponent(self):
+        """Ensure we can create a wallet with just a private exponent."""
+        Wallet(chain_code='0' * 64,
+               private_exponent=(self.master_key.private_key._private_key
+                                 .privkey.secret_multiplier))
+
+    def test_private_key(self):
+        """Ensure a private key is sufficient to create a wallet."""
+        Wallet(chain_code='0' * 64,
+               private_key=self.master_key.private_key)
+
+    def test_private_key_type(self):
+        """Must be a bitmerchant private key"""
+        self.assertRaises(
+            InvalidPrivateKeyError, Wallet,
+            chain_code='0' * 64,
+            private_key=self.master_key.private_key._private_key)
+
+    def test_public_pair(self):
+        Wallet(chain_code=b'0' * 64,
+               public_pair=self.master_key.public_key.to_public_pair())
+
+    def test_public_key(self):
+        Wallet(chain_code=b'0' * 64,
+               public_key=self.master_key.public_key)
+
+    def test_public_key_type(self):
+        self.assertRaises(
+            InvalidPublicKeyError, Wallet,
+            chain_code=b'0' * 64,
+            public_key=self.master_key.public_key._verifying_key)
+
+    def test_mismatch_public_private(self):
+        w = Wallet.new_random_wallet()
+        self.assertRaises(
+            KeyMismatchError, Wallet,
+            chain_code=b'0' * 64,
+            private_key=self.master_key.private_key,
+            public_key=w.public_key)
+
+
+class TestNewAddressForUser(TestWallet):
+    def test_invalid_user_id(self):
+        self.assertRaises(
+            ValueError,
+            self.master_key.create_new_address_for_user,
+            -10)
+        self.assertRaises(
+            ValueError,
+            self.master_key.create_new_address_for_user,
+            0x80000000 + 1)
+
+    def test_new_address(self):
+        child = self.master_key.create_new_address_for_user(10)
+        self.assertEqual(
+            self.master_key.get_child(10, as_private=False), child)
 
 
 class TestCrackPrivateKey(TestCase):
@@ -137,6 +207,36 @@ class TestSubkeyPath(TestCase):
         n2 = loaded.get_child_for_path("m/1")
         self.assertEqual(n1, n2)
 
+    def test_invalid_path(self):
+        self.assertRaises(
+            InvalidPathError,
+            self.wallet.get_child_for_path,
+            "m/foo")
+        self.assertRaises(
+            InvalidPathError,
+            self.wallet.get_child_for_path,
+            "M/1234/4567m")
+
+    def test_path_too_big(self):
+        self.assertTrue(
+            self.wallet.get_child_for_path("m/%s" % 0xFFFFFFFF))
+        self.assertRaises(
+            ValueError,
+            self.wallet.get_child_for_path,
+            "m/%s" % (0xFFFFFFFF + 1))
+
+    def test_child_too_small(self):
+        self.assertRaises(
+            ValueError,
+            self.wallet.get_child,
+            -(0x80000000 + 1))
+
+    def test_child_too_big(self):
+        self.assertRaises(
+            ValueError,
+            self.wallet.get_child,
+            0xFFFFFFFF + 1)
+
 
 class TestSerialize(TestCase):
     network = BitcoinMainNet
@@ -164,6 +264,11 @@ class TestSerialize(TestCase):
         pub = self.wallet.serialize_b58(private=False)
         w = Wallet.deserialize(pub, network=self.network)
         self.assertFalse(w.private_key)
+
+    def test_deserialize_byte_array(self):
+        key = binascii.unhexlify(self.wallet.serialize())
+        w = Wallet.deserialize(key, network=self.network)
+        self.assertEqual(w, self.wallet)
 
 
 class TestSerializeDogecoin(TestSerialize):
