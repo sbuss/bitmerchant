@@ -3,7 +3,6 @@ from binascii import unhexlify
 from collections import namedtuple
 from hashlib import sha256
 import hmac
-import re
 
 import base58
 from ecdsa import SigningKey
@@ -43,26 +42,6 @@ class Key(object):
         return not self == other
 
     __hash__ = object.__hash__
-
-    def is_hex_bytes(self, key):
-        if len(key) == 32 and not self.is_hex(key):
-            try:
-                hexlify(key)
-                return True
-            except Exception:
-                pass
-        return False
-
-    def hex_bytes_to_hex(self, key):
-        return hexlify(key)
-
-    def is_hex(self, key):
-        return (len(key) == 64 and
-                re.match(r'[A-Fa-f0-9]+', key) is not None)
-
-    @classmethod
-    def decompress(self, key):
-        "TODO"
 
     def get_key(self):
         raise NotImplementedError()
