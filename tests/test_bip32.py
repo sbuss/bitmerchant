@@ -491,12 +491,23 @@ class _TestWalletVectorsDogecoin(TestCase):
         )
 
     def _test(self, key, private_key_b58, private_key_wif,
-              pubkey_b58, pubkey_hex, address):
-        self.assertEqual(key.serialize_b58(), private_key_b58)
-        self.assertEqual(key.export_to_wif(), private_key_wif)
+              pubkey_b58, pubkey_hex, address, include_private=True):
+        if include_private:
+            self.assertEqual(key.serialize_b58(), private_key_b58)
+            self.assertEqual(key.export_to_wif(), private_key_wif)
         self.assertEqual(key.serialize_b58(private=False), pubkey_b58)
         self.assertEqual(key.get_public_key_hex(), ensure_bytes(pubkey_hex))
         self.assertEqual(key.to_address(), address)
+
+    def _test_deserialize(self, child, *vector):
+        self._test(
+            Wallet.deserialize(
+                child.serialize(private=True), network=DogecoinMainNet),
+            *vector)
+        self._test(
+            Wallet.deserialize(
+                child.serialize(private=False), network=DogecoinMainNet),
+            *vector, include_private=False)
 
 
 class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
@@ -510,6 +521,7 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
         ]
         key = self.master_key.get_child(0, True)
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0p_1(self):
         vector = [
@@ -522,6 +534,7 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
         key = (self.master_key.get_child(0, True)
                .get_child(1))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0p_1_2p(self):
         vector = [
@@ -535,6 +548,7 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
                .get_child(1)
                .get_child(2, True))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0p_1_2p_2(self):
         vector = [
@@ -549,6 +563,7 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
                .get_child(2, True)
                .get_child(2))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0p_1_2p_2_1000000000(self):
         vector = [
@@ -564,6 +579,7 @@ class TestWalletVectorsDogecoin1(_TestWalletVectorsDogecoin):
                .get_child(2)
                .get_child(1000000000))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
 
 class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
@@ -576,6 +592,8 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
             'DMeAv9o4rFgDTFDhSYupoRHEwNmE98FDDi'
         ]
         self._test(self.master_key, *vector)
+        self._test_deserialize(self.master_key, *vector)
+        self._test_deserialize(self.master_key, *vector)
 
     def test_m_0(self):
         vector = [
@@ -585,7 +603,9 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
             '029820c6a6046cebadb9a40c717326b004257f4cc111010b571daacfe58b542565',  # nopep8
             'D6DLgbqjac4JqFQj7TkU2q5uqVAKFvAUHz'
         ]
-        self._test(self.master_key.get_child(0), *vector)
+        key = self.master_key.get_child(0)
+        self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0_2147483647p(self):
         vector = [
@@ -597,6 +617,7 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
         ]
         key = self.master_key.get_child(0).get_child(2147483647, True)
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0_2147483647p_1(self):
         vector = [
@@ -610,6 +631,7 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
                get_child(2147483647, True).
                get_child(1))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0_2147483647p_1_2147483646p(self):
         vector = [
@@ -624,6 +646,7 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
                .get_child(1)
                .get_child(2147483646, True))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
 
     def test_m_0_2147483647p_1_2147483646p_2(self):
         vector = [
@@ -639,3 +662,4 @@ class TestWalletVectorsDogecoin2(_TestWalletVectorsDogecoin):
                .get_child(2147483646, True)
                .get_child(2))
         self._test(key, *vector)
+        self._test_deserialize(key, *vector)
