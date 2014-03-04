@@ -155,21 +155,24 @@ class TestWallet(TestCase):
             public_key=w.public_key)
 
 
-class TestNewAddressForUser(TestWallet):
+class TestNewAddressForUser(TestCase):
+    def setUp(self):
+        self.w = Wallet.new_random_wallet()
+
     def test_invalid_user_id(self):
         self.assertRaises(
             ValueError,
-            self.master_key.create_new_address_for_user,
+            self.w.create_new_address_for_user,
             -10)
         self.assertRaises(
             ValueError,
-            self.master_key.create_new_address_for_user,
+            self.w.create_new_address_for_user,
             0x80000000 + 1)
 
     def test_new_address(self):
-        child = self.master_key.create_new_address_for_user(10)
+        child = self.w.create_new_address_for_user(10)
         self.assertEqual(
-            self.master_key.get_child(10, as_private=False), child)
+            self.w.get_child(10, as_private=False), child)
 
 
 class TestCrackPrivateKey(TestCase):
