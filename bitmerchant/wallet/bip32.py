@@ -1,5 +1,6 @@
 from binascii import hexlify
 from binascii import unhexlify
+from hashlib import sha256
 from hashlib import sha512
 import hmac
 
@@ -67,18 +68,26 @@ class Wallet(object):
         """
         if (not (private_exponent or private_key) and
                 not (public_pair or public_key)):
-            raise ValueError(
+            raise InsufficientKeyDataError(
                 "You must supply one of private_exponent or public_pair")
 
         self.private_key = None
         self.public_key = None
         if private_key:
+            if not isinstance(private_key, PrivateKey):
+                raise InvalidPrivateKeyError(
+                    "private_key must be of type "
+                    "bitmerchant.wallet.keys.PrivateKey")
             self.private_key = private_key
         elif private_exponent:
             self.private_key = PrivateKey(
                 private_exponent, network=network)
 
         if public_key:
+            if not isinstance(public_key, PublicKey):
+                raise InvalidPublicKeyError(
+                    "public_key must be of type "
+                    "bitmerchant.wallet.keys.PublicKey")
             self.public_key = public_key
         elif public_pair:
             self.public_key = PublicKey.from_public_pair(
@@ -88,7 +97,7 @@ class Wallet(object):
 
         if (self.private_key and self.private_key.get_public_key() !=
                 self.public_key):
-            raise ValueError(
+            raise KeyMismatchError(
                 "Provided private and public values do not match")
 
         def h(val, hex_len):
@@ -225,7 +234,7 @@ class Wallet(object):
                 part = part.replace("'", "").replace("p", "")
             try:
                 child_number = long_or_int(part)
-            except TypeError:
+            except ValueError:
                 raise InvalidPathError("%s is not a valid path" % path)
             child = child.get_child(child_number, is_prime)
         if not as_private:
@@ -267,10 +276,11 @@ class Wallet(object):
         boundary = 0x80000000
         max_child = 0xFFFFFFFF
 
+        if child_number > max_child or child_number < -1 * boundary:
+            raise ValueError("Invalid child number %s" % child_number)
+
         # If is_prime isn't set, then we can infer it from the child_number
         if is_prime is None:
-            if child_number > max_child or child_number < -1 * boundary:
-                raise ValueError("Invalid child number %s" % child_number)
             # Prime children are either < 0 or > 0x80000000
             if child_number < 0:
                 child_number = abs(child_number)
@@ -578,6 +588,22 @@ class Wallet(object):
                    chain_code=long_or_int(hexlify(I_R), 16),
                    network=network)
 
+    @classmethod
+    def from_master_secret_slow(cls, password, network=BitcoinMainNet):
+        """
+        Generate a new key from a password using 50,000 rounds of HMAC-SHA256.
+
+        This should generate the same result as bip32.org.
+
+        WARNING: The security of this method has not been evaluated.
+        """
+        # Make sure the password string is bytes
+        key = ensure_bytes(password)
+        data = unhexlify(b"0" * 64)  # 256-bit 0
+        for i in range(50000):
+            data = hmac.new(key, msg=data, digestmod=sha256).digest()
+        return cls.from_master_secret(data, network)
+
     def __eq__(self, other):
         attrs = [
             'chain_code',
@@ -605,4 +631,20 @@ class Wallet(object):
 
 
 class InvalidPathError(Exception):
+    pass
+
+
+class InsufficientKeyDataError(ValueError):
+    pass
+
+
+class InvalidPrivateKeyError(ValueError):
+    pass
+
+
+class InvalidPublicKeyError(ValueError):
+    pass
+
+
+class KeyMismatchError(ValueError):
     pass

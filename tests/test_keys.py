@@ -59,6 +59,9 @@ class TestPrivateKey(_TestPrivateKeyBase):
         self.assertEqual(
             key.get_public_key().to_address(), expected_pub_address)
 
+    def test_invalid_exponent(self):
+        self.assertRaises(ValueError, PrivateKey, 'abcd')
+
 
 class TestWIF(_TestPrivateKeyBase):
     @classmethod

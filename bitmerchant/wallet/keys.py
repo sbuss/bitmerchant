@@ -2,8 +2,6 @@ from binascii import hexlify
 from binascii import unhexlify
 from collections import namedtuple
 from hashlib import sha256
-import hmac
-import re
 
 import base58
 from ecdsa import SigningKey
@@ -43,26 +41,6 @@ class Key(object):
         return not self == other
 
     __hash__ = object.__hash__
-
-    def is_hex_bytes(self, key):
-        if len(key) == 32 and not self.is_hex(key):
-            try:
-                hexlify(key)
-                return True
-            except Exception:
-                pass
-        return False
-
-    def hex_bytes_to_hex(self, key):
-        return hexlify(key)
-
-    def is_hex(self, key):
-        return (len(key) == 64 and
-                re.match(r'[A-Fa-f0-9]+', key) is not None)
-
-    @classmethod
-    def decompress(self, key):
-        "TODO"
 
     def get_key(self):
         raise NotImplementedError()
@@ -193,21 +171,6 @@ class PrivateKey(Key):
         key = sha256(password).hexdigest()
         return cls.from_hex_key(key, network)
 
-    @classmethod
-    def from_master_password_slow(cls, password, network=BitcoinMainNet):
-        """
-        Generate a new key from a password using 50,000 rounds of HMAC-SHA256.
-
-        This should generate the same result as bip32.org.
-
-        WARNING: This is not yet tested.
-        """
-        # Make sure the password string is bytes
-        key = ensure_bytes(password)
-        for i in xrange(50000):
-            key = hmac.new(key, digestmod=sha256).digest()
-        return cls.from_hex_key(key, network)
-
     __hash__ = Key.__hash__
 
     def __eq__(self, other):
@@ -225,8 +188,6 @@ class PrivateKey(Key):
         k1 = self._private_key.privkey.secret_multiplier
         k2 = other._private_key.privkey.secret_multiplier
         result = (k1 - k2) % SECP256k1.order
-        if result < 0:
-            result += SECP256k1.order
         return self.__class__(result, network=self.network)
 
 
