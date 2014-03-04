@@ -600,7 +600,7 @@ class Wallet(object):
         # Make sure the password string is bytes
         key = ensure_bytes(password)
         data = unhexlify(b"0" * 64)  # 256-bit 0
-        for i in xrange(50000):
+        for i in range(50000):
             data = hmac.new(key, msg=data, digestmod=sha256).digest()
         return cls.from_master_secret(data, network)
 
