@@ -38,6 +38,44 @@ class TestWallet(TestCase):
         self.assertEqual(Wallet.from_master_secret(secret),
                          self.master_key)
 
+    def test_from_master_secret_slow(self):
+        """Verified against bip32.org"""
+        password = "correct horse battery staple"
+        w = Wallet.from_master_secret_slow(password)
+        self.assertEqual(
+            w.serialize_b58(private=True),
+            "xprv9s21ZrQH143K3JDqHk5kEb6o2w8pEwm3cmt8qaSw9coaHCYJFtaybzUob6d4"
+            "WyJDf8uspZkBAt7DcEVhvCDRBHZEavVJg51HZEGdVH2uXLK")
+        self.assertEqual(w.depth, 0)
+        self.assertEqual(w.parent_fingerprint, b"0x00000000")
+        self.assertEqual(w.child_number, 0)
+        self.assertEqual(
+            w.chain_code,
+            (b'7c73c15c623128246dcf37d439be2a9d'
+             b'da5fb33b2aec18e66a806d10a236b5c9'))
+        self.assertEqual(
+            w.export_to_wif(),
+            'KxTFZmNVYgAupo2w8QUNpfDjSEMhGN7RaQ6rhNRvsSHBggASpEr1')
+        child = w.get_child(0, is_prime=False)
+        self.assertEqual(
+            child.serialize_b58(private=True),
+            "xprv9vExvbix4MQgazj3vovZ4UEwmLSEQrktY8yZAVhFAB7W7xzqS9RXH8ZaNEdw"
+            "KoQzbPixY3YSVjK58S3K5h4ktjVEpHrfjUarsiUfKDe6A4i")
+        self.assertEqual(
+            child.export_to_wif(),
+            'L3LA3KxJELbwCyVjFaSrvvUsnfKcZ9TPmGXbq4s6zmK5kaBVja29')
+        self.assertEqual(
+            child.serialize_b58(private=False),
+            "xpub69EKL7FqtixyoUoX2qTZRcBgKNGipKUjuMu9xt6riWeUzmKyygjmpvt4DXaL"
+            "U2vyoVqYtpqyuDYDHsxbzzReQmou1PtwVthP3SJkjcHEEg4")
+        self.assertEqual(
+            child.get_public_key_hex(),
+            (b"03b18ba94530690859a3f6ebb2b866d1"
+             b"51f8499b3164d027ba5b464e4ed71329aa"))
+        self.assertEqual(
+            child.to_address(),
+            "1MfJvR28iULUb8AwtY7hp7xpc1A8Wg1ojX")
+
     def test_invalid_network_prefix(self):
         key = self.expected_key
         key = (long_to_hex(BitcoinTestNet.EXT_SECRET_KEY, 8) +

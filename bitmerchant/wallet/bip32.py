@@ -1,5 +1,6 @@
 from binascii import hexlify
 from binascii import unhexlify
+from hashlib import sha256
 from hashlib import sha512
 import hmac
 
@@ -586,6 +587,22 @@ class Wallet(object):
         return cls(private_exponent=long_or_int(hexlify(I_L), 16),
                    chain_code=long_or_int(hexlify(I_R), 16),
                    network=network)
+
+    @classmethod
+    def from_master_secret_slow(cls, password, network=BitcoinMainNet):
+        """
+        Generate a new key from a password using 50,000 rounds of HMAC-SHA256.
+
+        This should generate the same result as bip32.org.
+
+        WARNING: The security of this method has not been evaluated.
+        """
+        # Make sure the password string is bytes
+        key = ensure_bytes(password)
+        data = unhexlify(b"0" * 64)  # 256-bit 0
+        for i in xrange(50000):
+            data = hmac.new(key, msg=data, digestmod=sha256).digest()
+        return cls.from_master_secret(data, network)
 
     def __eq__(self, other):
         attrs = [

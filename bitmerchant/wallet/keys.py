@@ -2,7 +2,6 @@ from binascii import hexlify
 from binascii import unhexlify
 from collections import namedtuple
 from hashlib import sha256
-import hmac
 
 import base58
 from ecdsa import SigningKey
@@ -170,21 +169,6 @@ class PrivateKey(Key):
         """
         password = ensure_bytes(password)
         key = sha256(password).hexdigest()
-        return cls.from_hex_key(key, network)
-
-    @classmethod
-    def from_master_password_slow(cls, password, network=BitcoinMainNet):
-        """
-        Generate a new key from a password using 50,000 rounds of HMAC-SHA256.
-
-        This should generate the same result as bip32.org.
-
-        WARNING: This is not yet tested.
-        """
-        # Make sure the password string is bytes
-        key = ensure_bytes(password)
-        for i in xrange(50000):
-            key = hmac.new(key, digestmod=sha256).digest()
         return cls.from_hex_key(key, network)
 
     __hash__ = Key.__hash__
