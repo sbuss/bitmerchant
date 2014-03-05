@@ -1,23 +1,23 @@
 [![Build Status](https://travis-ci.org/sbuss/bitmerchant.png?branch=master)](https://travis-ci.org/sbuss/bitmerchant) [![Coverage Status](https://coveralls.io/repos/sbuss/bitmerchant/badge.png)](https://coveralls.io/r/sbuss/bitmerchant)
 
-# WORK IN PROGRESS
-
-The README below is a goal I am working toward. This library is not ready
-for public use.
-
 # Bitmerchant
 Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
 merchant uses.
 
-The first goal is an easy to use [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#)
-wallet for linking user payments with their accounts.
+Bitmerchant currently supports:
 
-Up next is a system that monitors the blockchain and sends out a signal
-when a payment is received at an address you're tracking.
+1. Easy to use [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#) wallet for linking user payments with their accounts.
+
+These features are planned (or in development where marked):
+
+1. Regular and M-of-N transactions (under development)
+2. A system that monitors the blockchain and sends out a signal when a payment is received at an address you're tracking.
+3. Automatic forwarding transactions
 
 ---
 
-If you find this library useful, please consider a small donation to
+If you find this library useful, please consider a small donation. Donations
+will be used to reward developers for bugfixes.
 
 |BTC|Doge|
 |:-:|:--:|
