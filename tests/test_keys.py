@@ -202,6 +202,7 @@ class TestVectors(TestCase):
         address = "1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs"
         self._test(BitcoinMainNet, secret, address, True)
 
+    # https://github.com/dogecoin/dogecoin/blob/master-1.5/src/test/key_tests.cpp  # nopep8
     def test_dogecoin_1(self):
         secret = "6JFPe8b4jbpup7petSB98M8tcaqXCigji8fGrC8bEbbDQxQkQ68"
         address = "DSpgzjPyfQB6ZzeSbMWpaZiTTxGf2oBCs4"
