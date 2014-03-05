@@ -4,6 +4,7 @@ from unittest import TestCase
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
 from bitmerchant.network import DogecoinMainNet
+from bitmerchant.network import LitecoinMainNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.bip32 import InsufficientKeyDataError
 from bitmerchant.wallet.bip32 import InvalidPathError
@@ -322,6 +323,10 @@ class TestSerialize(TestCase):
 
 class TestSerializeDogecoin(TestSerialize):
     network = DogecoinMainNet
+
+
+class TestSerializeLitecoin(TestSerialize):
+    network = LitecoinMainNet
 
 
 class _TestWalletVectors(TestCase):
