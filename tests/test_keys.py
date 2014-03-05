@@ -6,6 +6,7 @@ import base58
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
 from bitmerchant.network import DogecoinMainNet
+from bitmerchant.network import LitecoinMainNet
 from bitmerchant.wallet.keys import ChecksumException
 from bitmerchant.wallet.keys import IncompatibleNetworkException
 from bitmerchant.wallet.keys import KeyParseError  # TODO test this
@@ -201,6 +202,7 @@ class TestVectors(TestCase):
         address = "1CRj2HyM1CXWzHAXLQtiGLyggNT9WQqsDs"
         self._test(BitcoinMainNet, secret, address, True)
 
+    # https://github.com/dogecoin/dogecoin/blob/master-1.5/src/test/key_tests.cpp  # nopep8
     def test_dogecoin_1(self):
         secret = "6JFPe8b4jbpup7petSB98M8tcaqXCigji8fGrC8bEbbDQxQkQ68"
         address = "DSpgzjPyfQB6ZzeSbMWpaZiTTxGf2oBCs4"
@@ -220,3 +222,24 @@ class TestVectors(TestCase):
         secret = "QTuro8Pwx5yaonvJmU4jbBfwuEmTViyAGNeNyfnG82o7HWJmnrLj"
         address = "DP7rGcDbpAvMb1dKup981zNt1heWUuVLP7"
         self._test(DogecoinMainNet, secret, address, True)
+
+    # https://github.com/litecoin-project/litecoin/blob/master-0.8/src/test/key_tests.cpp  # nopep8
+    def test_litecoin_1(self):
+        secret = "6uu5bsZLA2Lm6yCxgwxDxHyZmhYeqBMLQT83Fyq738YhYucQPQf"
+        address = "LWaFezDtucfCA4xcVEfs3R3xfgGWjSwcZr"
+        self._test(LitecoinMainNet, secret, address, False)
+
+    def test_litecoin_2(self):
+        secret = "6vZDRwYgTNidWzmKs9x8QzQGeWCqbdUtNRpEKZMaP67ZSn8XMjb"
+        address = "LXwHM6mRd432EzLJYwuKQMPhTzrgr7ur9K"
+        self._test(LitecoinMainNet, secret, address, False)
+
+    def test_litecoin_3(self):
+        secret = "T6UsJv9hYpvDfM5noKYkB3vfeHxhyegkeWJ4y7qKeQJuyXMK11XX"
+        address = "LZWK8h7C166niP6GmpUmiGrvn4oxPqQgFV"
+        self._test(LitecoinMainNet, secret, address, True)
+
+    def test_litecoin_4(self):
+        secret = "T9PBs5kq9QrkBPxeGNWKitMi4XuFVr25jaXTnuopLVZxCUAJbixA"
+        address = "Lgb6tdqmdW3n5E12johSuEAqRMt4kAr7yu"
+        self._test(LitecoinMainNet, secret, address, True)
