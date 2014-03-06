@@ -15,6 +15,5 @@ rst2html.py README.rst > readme.html
 Then prepare the project for distribution.
 
 ```python
-python setup.py sdist bdist_wheel
-twine upload dist/*
+python setup.py sdist bdist_wheel upload
 ```
