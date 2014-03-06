@@ -1,0 +1,6 @@
+# Packages necessary for packaging
+
+-r requirements-dev.txt
+
+twine==1.2.3
+wheel==0.22.0
