@@ -57,5 +57,7 @@ setup(
     install_requires=[
         'base58==0.2.1',
         'ecdsa==0.10',
+        'pycrypto==2.6.1',
+        'six==1.5.2',
     ],
 )
