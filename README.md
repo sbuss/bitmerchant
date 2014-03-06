@@ -38,7 +38,7 @@ Then to verify it's working:
 ```python
 from bitmerchant.wallet import Wallet
 
-w = Wallet.from_master_password("correct horse battery staple")
+w = Wallet.from_master_secret("correct horse battery staple")
 assert w.to_address() == "1AJ7EDxyRwyGNcL4scXfUU7XqYkmVcwHqe"
 ```
 
