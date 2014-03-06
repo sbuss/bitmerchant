@@ -43,13 +43,13 @@ bitmerchant is on pypi_, so just use pip:
 
 .. _pypi: https://pypi.python.org/pypi/bitmerchant>
 
-.. code:: sh
+.. code-block:: bash
 
     pip install bitmerchant
 
 Then to verify it's working:
 
-.. code:: python
+.. code-block:: python
 
     from bitmerchant.wallet import Wallet
 
@@ -69,7 +69,7 @@ ID to the ``create_new_address_for_user`` method:
 TL;DR
 -----
 
-.. code:: python
+.. code-block:: python
 
     ## DO THIS ON AN OFFLINE MACHINE, NOT YOUR WEBSERVER
     from bitmerchant.wallet import Wallet
@@ -108,7 +108,7 @@ BIP32 wallets have a vulnerability/bug that allows an attacker to recover the
 master private key when given a master public key and a publicly-derived
 private child. In other words:
 
-.. code:: python
+.. code-block:: python
 
     from bitmerchant.wallet import Wallet
 
@@ -124,7 +124,7 @@ elliptic curve. This has been implemented as ``Wallet.crack_private_key``,
 because if it's possible to do this, then anyone should be able to do it so the
 attack is well known:
 
-.. code:: python
+.. code-block:: python
 
     public_master = Wallet.deserialize(master_public_key)
     private_child = Wallet.deserialize(private_child_key)
@@ -151,7 +151,7 @@ If you haven't created a wallet yet, do so like this:
 **IMPORTANT** You must back up your wallet's private key, otherwise you won't
 be able to retrieve the coins sent to your public addresses.
 
-.. code:: python
+.. code-block:: python
 
     from bitmerchant.wallet import Wallet
 
@@ -183,7 +183,7 @@ in compromised child wallets to new child wallets and you'll be ok.
 
 Let's generate a new child wallet for your first website!
 
-.. code:: python
+.. code-block:: python
 
     # Lets assume you're loading a wallet from your safe private key backup
     my_wallet = Wallet.deserialize(private_key)
@@ -212,7 +212,7 @@ Generating new public addresses
 BIP32 wallets allow you to generate public addresses without revealing your
 private key. Just pass in the user ID that needs a wallet:
 
-.. code:: python
+.. code-block:: python
 
     from bitmerchant.wallet import Wallet
     from myapp.settings import WALLET_PUBKEY  # Created above
@@ -266,7 +266,7 @@ Once you generate a new wallet you should write down the private key on a piece
 of paper (or print it out ...but can you *really* trust your printer?) and
 store it in a secure location.
 
-.. code:: sh
+.. code-block:: bash
 
     sudo apt-get install python
     sudo apt-get install pip
@@ -279,7 +279,7 @@ store it in a secure location.
 
 Once inside your ipython shell, generate a new wallet:
 
-.. code:: python
+.. code-block:: python
 
     from bitmerchant.wallet import Wallet
 
@@ -336,7 +336,7 @@ Testing
 
 All of these work, though I typically use nosetest:
 
-.. code:: sh
+.. code-block:: bash
 
     python setup.py test
     nosetests
