@@ -1,4 +1,8 @@
-|Build Status| |Coverage Status|
+.. image:: https://travis-ci.org/sbuss/bitmerchant.png?branch=master
+    :target: https://travis-ci.org/sbuss/bitmerchant
+
+.. image:: https://coveralls.io/repos/sbuss/bitmerchant/badge.png
+   :target: https://coveralls.io/r/sbuss/bitmerchant
 
 Bitmerchant
 ===========
@@ -341,9 +345,5 @@ Packaging
 
 See `packaging <PACKAGING.md>`__
 
-.. |Build Status| image:: https://travis-ci.org/sbuss/bitmerchant.png?branch=master
-   :target: https://travis-ci.org/sbuss/bitmerchant
-.. |Coverage Status| image:: https://coveralls.io/repos/sbuss/bitmerchant/badge.png
-   :target: https://coveralls.io/r/sbuss/bitmerchant
 .. |Donate BTC| image:: https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.gif
 .. |Donate DOGE| image:: https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif
