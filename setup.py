@@ -1,10 +1,13 @@
+import os
+
 from setuptools import setup
 
 
 def load_readme():
+    PROJECT_DIR = os.path.dirname(__file__)
     readme_file = "README.rst"
     try:
-        return open(readme_file, 'r').read()
+        return open(os.path.join(PROJECT_DIR, readme_file), 'r').read()
     except Exception:
         raise RuntimeError("Cannot find readme file {fname}.".format(
             fname=readme_file))
