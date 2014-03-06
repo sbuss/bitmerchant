@@ -98,8 +98,11 @@ TL;DR
         wallet_for_user = wallet.create_new_address_for_user(user.id)
         return wallet_for_user.to_address()
 
+.. _security:
+
 Security warning
 ----------------
+
 
 BIP32 wallets have a vulnerability/bug that allows an attacker to recover the
 master private key when given a master public key and a publicly-derived
@@ -170,7 +173,7 @@ an insecure server. You should create a new prime child wallet for every
 website you run (or a new wallet entirely), and perhaps a new prime child for
 each user (though that requires pre-generating a bunch of prime children
 offline, since you need the private key). Try to use prime children where
-possible (see `security <#security>`__).
+possible (see `security`_).
 
 It's a good idea to create at least *one* prime child wallet for use on your
 website. The thinking being that if your website's wallet gets compromised
@@ -196,12 +199,12 @@ Let's generate a new child wallet for your first website!
     print(public_key)
 
 You can store your public key in your app's source code, as long as you never
-reveal any private keys. See the `security notice <#security>`__ above.
+reveal any private keys. See the `security`_ notice above.
 
 Be aware that if someone gets a hold of your public key then they can generate
 all of your subsequent child addresses, which means they'll know exactly how
 many coins you have. The attacker cannot spend any coins, however, unless they
-are able to `recover the private key <#security>`__.
+are able to recover the private key (see `security`_).
 
 Generating new public addresses
 -------------------------------
