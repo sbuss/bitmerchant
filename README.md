@@ -293,3 +293,30 @@ Forthcoming versions of bitmerchant will allow you to generate transactions
 offline that you can safely transfer to a networked computer, allowing you to
 spend your child funds without ever putting a private key on a networked
 machine.
+
+# Development
+
+I'd love for you to contribute to bitmerchant! If you can't write code, then
+please open a ticket for feature requests or bugs you find!
+
+If you can code and you'd like to submit a pull request, please be sure to
+include tests. This library is quite well tested and I intend to keep coverage
+above 95% indefinitely.
+
+Rewards may be given out to developers depending on the severity of bugs
+found/patched. The donation addresses mentioned at the top of this document
+will be used to fund rewards.
+
+## Testing
+
+All of these work, though I typically use nosetest:
+
+```sh
+python setup.py test
+nosetests
+python -m unittest discover
+```
+
+## Packaging
+
+See [packaging](PACKAGING.md)
