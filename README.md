@@ -26,7 +26,7 @@ will be used to reward developers for bugfixes.
 
 # Installation
 
-bitmerchant is on [pypi](https://pypi.python.org/pypi/bitmerchant/0.0.1), so
+bitmerchant is on [pypi](https://pypi.python.org/pypi/bitmerchant), so
 just use pip:
 
 ```sh
