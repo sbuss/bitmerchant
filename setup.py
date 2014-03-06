@@ -49,6 +49,7 @@ setup(
     ],
     packages=[
         'bitmerchant',
+        'bitmerchant.wallet',
     ],
     test_suite="tests",
     install_requires=[
