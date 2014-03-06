@@ -55,6 +55,7 @@ setup(
         "Programming Language :: Python :: 3.3",
     ],
     packages=[
+        'bitmerchant',
         'bitmerchant.wallet',
     ],
     package_data={'': ['LICENSE']},
