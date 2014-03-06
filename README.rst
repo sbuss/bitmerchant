@@ -345,7 +345,6 @@ All of these work, though I typically use nosetest:
 Packaging
 ---------
 
-See `packaging <PACKAGING.md>`__
 
 .. |Donate BTC| image:: https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.gif
 .. |Donate DOGE| image:: https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif
