@@ -12,9 +12,9 @@ merchant uses.
 
 Bitmerchant currently supports:
 
-#. Easy to use
-   `BIP32 <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#>`__
-   wallet for linking user payments with their accounts.
+.. _BIP32: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+
+#. Easy to use BIP32_ wallet for linking user payments with their accounts.
 
 These features are planned (or in development where marked):
 
@@ -39,8 +39,9 @@ will be used to reward developers for bugfixes.
 Installation
 ============
 
-bitmerchant is on `pypi <https://pypi.python.org/pypi/bitmerchant>`__,
-so just use pip:
+bitmerchant is on pypi_, so just use pip:
+
+.. _pypi: https://pypi.python.org/pypi/bitmerchant>
 
 .. code:: sh
 
@@ -58,10 +59,9 @@ Then to verify it's working:
 BIP32 wallets
 =============
 
-`BIP32 <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#>`__
-wallets are hierarchical deterministic wallets. They allow you to generate
-bitcoin/altcoin addresses without exposing your private key to a potentially
-insecure server.
+BIP32_ wallets are hierarchical deterministic wallets. They allow you to
+generate bitcoin/altcoin addresses without exposing your private key to a
+potentially insecure server.
 
 To link a user with a new bitcoin address, you just need to provide the user's
 ID to the ``create_new_address_for_user`` method:
