@@ -25,11 +25,11 @@ If you find this library useful, please consider a small donation.  Donations
 will be used to reward developers for bugfixes.
 
 +--------------------------------------+--------------------------------------+
-BTC                                  | Doge                                 |
+| BTC                                  | Doge                                 |
 +======================================+======================================+
-19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7   | DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv   |
+| 19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7   | DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv   |
 +--------------------------------------+--------------------------------------+
-|Donate BTC|                         | |Donate DOGE|                        |
+| |Donate BTC|                         | |Donate DOGE|                        |
 +--------------------------------------+--------------------------------------+
 
 Installation
