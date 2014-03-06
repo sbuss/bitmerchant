@@ -48,13 +48,18 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Programming Language :: Python",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.3",
     ],
     packages=[
         'bitmerchant.wallet',
     ],
+    package_data={'': ['LICENSE']},
+    include_package_data=True,
+    license='MIT License',
     test_suite="tests",
     install_requires=[
         'base58==0.2.1',
