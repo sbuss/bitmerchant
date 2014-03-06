@@ -1,3 +1,5 @@
+# Packages necessary for testing
+
 -r requirements.txt
 
 coveralls

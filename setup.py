@@ -1,13 +1,13 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils import setup  # NOQA
+import os
+
+from setuptools import setup
 
 
 def load_readme():
-    readme_file = "README.md"
+    PROJECT_DIR = os.path.dirname(__file__)
+    readme_file = "README.rst"
     try:
-        return open(readme_file, 'r').read()
+        return open(os.path.join(PROJECT_DIR, readme_file), 'r').read()
     except Exception:
         raise RuntimeError("Cannot find readme file {fname}.".format(
             fname=readme_file))
@@ -46,16 +46,20 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.3",
     ],
     packages=[
-        'bitmerchant',
+        'bitmerchant.wallet',
     ],
     test_suite="tests",
     install_requires=[
         'base58==0.2.1',
         'ecdsa==0.10',
+        'pycrypto==2.6.1',
+        'six==1.5.2',
     ],
 )
