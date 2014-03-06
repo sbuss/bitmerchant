@@ -24,6 +24,25 @@ will be used to reward developers for bugfixes.
 |19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7|DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv|
 |![Donate BTC](https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.gif)|![Donate DOGE](https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif)|
 
+# Installation
+
+bitmerchant is on [pypi](https://pypi.python.org/pypi/bitmerchant/0.0.1), so
+just use pip:
+
+```sh
+pip install bitmerchant
+```
+
+Then to verify it's working:
+
+```python
+from bitmerchant.wallet import Wallet
+
+w = Wallet.from_master_password("correct horse battery staple")
+assert w.to_address() == "1AJ7EDxyRwyGNcL4scXfUU7XqYkmVcwHqe"
+```
+
+
 # BIP32 wallets
 
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#)
