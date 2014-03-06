@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 def load_readme():
-    readme_file = "README.md"
+    readme_file = "README.rst"
     try:
         return open(readme_file, 'r').read()
     except Exception:
