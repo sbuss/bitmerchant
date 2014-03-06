@@ -48,7 +48,6 @@ setup(
         "Programming Language :: Python :: 2.7",
     ],
     packages=[
-        'bitmerchant',
         'bitmerchant.wallet',
     ],
     test_suite="tests",
