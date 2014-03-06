@@ -40,8 +40,7 @@ Installation
 ============
 
 bitmerchant is on `pypi <https://pypi.python.org/pypi/bitmerchant>`__,
-so
-just use pip:
+so just use pip:
 
 .. code:: sh
 
