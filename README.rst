@@ -41,7 +41,7 @@ Installation
 
 bitmerchant is on pypi_, so just use pip:
 
-.. _pypi: https://pypi.python.org/pypi/bitmerchant>
+.. _pypi: https://pypi.python.org/pypi/bitmerchant
 
 .. code-block:: bash
 
