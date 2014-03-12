@@ -287,6 +287,28 @@ class TestSubkeyPath(TestCase):
             self.wallet.get_child,
             0xFFFFFFFF + 1)
 
+    def test_path_bigger_than_boundary(self):
+        offset = 1
+        child_number = 0x80000000 + offset
+        self.assertNotEqual(
+            self.wallet.get_child_for_path("m/%s" % offset),
+            self.wallet.get_child_for_path("m/%s" % child_number))
+        self.assertEqual(
+            self.wallet.get_child_for_path("m/%s'" % offset),
+            self.wallet.get_child_for_path("m/%s" % child_number))
+
+    def test_child_bigger_than_boundary(self):
+        offset = 1
+        child_number = 0x80000000 + offset
+        self.assertRaises(
+            ValueError, self.wallet.get_child, -1, is_prime=True)
+        self.assertRaises(
+            ValueError, self.wallet.get_child, -1, is_prime=False)
+        self.assertRaises(
+            ValueError, self.wallet.get_child, child_number, is_prime=True)
+        self.assertRaises(
+            ValueError, self.wallet.get_child, child_number, is_prime=False)
+
 
 class TestSerialize(TestCase):
     network = BitcoinMainNet
