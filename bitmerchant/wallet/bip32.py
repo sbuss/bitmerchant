@@ -228,7 +228,7 @@ class Wallet(object):
         for part in parts:
             if part.lower() == "m":
                 continue
-            is_prime = False
+            is_prime = None  # Let primeness be figured out by the child number
             if part[-1] in "'p":
                 is_prime = True
                 part = part.replace("'", "").replace("p", "")
