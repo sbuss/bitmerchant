@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         default="tests/bip32_test_vector.json")
     parser.add_argument("-n", "--num-keys", type=int, default=100,
                         help="Number of keys to generate")
-    parser.add_argument("-s", "--seed", type=int, default=None,
+    parser.add_argument("-s", "--seed", type=int, default=1234,
                         help="The random seed for random wallets. Optional.")
     args = parser.parse_args()
     generate_address_vector(
