@@ -267,14 +267,6 @@ class TestSubkeyPath(TestCase):
             self.wallet.get_child_for_path,
             "M/1234/4567m")
 
-    def test_path_too_big(self):
-        self.assertTrue(
-            self.wallet.get_child_for_path("m/%s" % 0xFFFFFFFF))
-        self.assertRaises(
-            ValueError,
-            self.wallet.get_child_for_path,
-            "m/%s" % (0xFFFFFFFF + 1))
-
     def test_child_too_small(self):
         self.assertRaises(
             ValueError,
@@ -288,18 +280,19 @@ class TestSubkeyPath(TestCase):
             0xFFFFFFFF + 1)
 
     def test_path_bigger_than_boundary(self):
-        offset = 1
-        child_number = 0x80000000 + offset
+        child_number = 0x80000000
+        self.assertRaises(
+            ValueError,
+            self.wallet.get_child_for_path, "m/%s" % child_number)
+        self.assertRaises(
+            ValueError,
+            self.wallet.get_child_for_path, "m/%s" % (child_number + 1))
         self.assertNotEqual(
-            self.wallet.get_child_for_path("m/%s" % offset),
-            self.wallet.get_child_for_path("m/%s" % child_number))
-        self.assertEqual(
-            self.wallet.get_child_for_path("m/%s'" % offset),
-            self.wallet.get_child_for_path("m/%s" % child_number))
+            self.wallet.get_child_for_path("m/%s'" % (child_number - 1)),
+            self.wallet.get_child_for_path("m/%s" % (child_number - 1)))
 
     def test_child_bigger_than_boundary(self):
-        offset = 1
-        child_number = 0x80000000 + offset
+        child_number = 0x80000000
         self.assertRaises(
             ValueError, self.wallet.get_child, -1, is_prime=True)
         self.assertRaises(
