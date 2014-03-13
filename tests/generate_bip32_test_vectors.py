@@ -29,15 +29,11 @@ def get_new_address(wallet_num):
     # Just go five deep
     path = "m"
     for depth in range(5):
-        child_number = random.randint(0, 0xFFFFFFFF)
-        boundary = 0x80000000
-        if child_number >= boundary:
-            # Pycoin doesn't parse large child numbers correctly. It always
-            # treats them as non-prime.
-            # See https://github.com/richardkiss/pycoin/issues/20
-            path = "%s/%s'" % (path, child_number - boundary)
-        else:
-            path = "%s/%s" % (path, child_number)
+        child_number = random.randint(0, 0x80000000)
+        path = "%s/%s" % (path, child_number)
+        prime = random.choice([True, False])
+        if prime:
+            path += "'"
         children.append(
             {"path": path,
              "child": dump_node(wallet.subkey_for_path(path[2:]))})
