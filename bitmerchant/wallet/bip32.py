@@ -259,8 +259,7 @@ class Wallet(object):
         Positive child_numbers (less than 2,147,483,648) produce publicly
         derived children.
 
-        Negative numbers (or numbers between 2,147,483,648 & 4,294,967,295)
-        uses private derivation.
+        Negative numbers (greater than -2,147,483,648) uses private derivation.
 
         NOTE: Python can't do -0, so if you want the privately derived 0th
         child you need to manually set is_prime=True.
@@ -274,9 +273,8 @@ class Wallet(object):
         https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#child-key-derivation-functions  # nopep8
         """
         boundary = 0x80000000
-        max_child = 0xFFFFFFFF
 
-        if child_number > max_child or child_number < -1 * boundary:
+        if abs(child_number) >= boundary:
             raise ValueError("Invalid child number %s" % child_number)
 
         # If is_prime isn't set, then we can infer it from the child_number
