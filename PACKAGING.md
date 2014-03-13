@@ -6,6 +6,12 @@ nosetests
 
 Make sure to update the version following semantic versioning guidelines.
 
+Then git tag it
+
+```sh
+git tag -a va.b.c -m "Version a.b.c"
+```
+
 Ensure the README is valid RST:
 
 ```sh
