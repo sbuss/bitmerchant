@@ -5,7 +5,7 @@ from hashlib import sha512
 import hmac
 
 import base58
-from Crypto.Random import random
+from Crypto.Random import get_random_bytes
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 import six
@@ -625,17 +625,17 @@ class Wallet(object):
         """
         Generate a new wallet using a randomly generated 512 bit seed.
 
-        You are encourage to add an optional `user_entropy` long to protect
+        You are encouraged to add an optional `user_entropy` string to protect
         against a compromised CSPRNG. This will be combined with the output
-        from the CSPRNG.
+        from the CSPRNG. Note that if you do supply this value it only adds
+        additional entropy and will not be sufficient to recover the random
+        wallet. If you're even saving `user_entropy` at all, you're doing it
+        wrong.
         """
-        random_seed = random.getrandbits(512)
+        random_seed = get_random_bytes(512/8)
         if user_entropy:
-            # Convert an int to a long. Will break if fed a string.
-            user_entropy = long(user_entropy)
             random_seed += user_entropy
-        random_hex_bytes = long_to_hex(random_seed, 128)  # 64 Bytes
-        return cls.from_master_secret(random_hex_bytes, network=network)
+        return cls.from_master_secret(random_seed, network=network)
 
 
 class InvalidPathError(Exception):
