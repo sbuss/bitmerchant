@@ -632,9 +632,9 @@ class Wallet(object):
         wallet. If you're even saving `user_entropy` at all, you're doing it
         wrong.
         """
-        random_seed = get_random_bytes(512/8)
+        random_seed = get_random_bytes(64)  # 512/8
         if user_entropy:
-            random_seed += user_entropy
+            random_seed += str(user_entropy)
         return cls.from_master_secret(random_seed, network=network)
 
 
