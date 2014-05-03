@@ -621,9 +621,19 @@ class Wallet(object):
     __hash__ = object.__hash__
 
     @classmethod
-    def new_random_wallet(cls, network=BitcoinMainNet):
-        """Generate a new wallet using a randomly generated 512 bit seed."""
+    def new_random_wallet(cls, user_entropy=None, network=BitcoinMainNet):
+        """
+        Generate a new wallet using a randomly generated 512 bit seed.
+
+        You are encourage to add an optional `user_entropy` long to protect
+        against a compromised CSPRNG. This will be combined with the output
+        from the CSPRNG.
+        """
         random_seed = random.getrandbits(512)
+        if user_entropy:
+            # Convert an int to a long. Will break if fed a string.
+            user_entropy = long(user_entropy)
+            random_seed += user_entropy
         random_hex_bytes = long_to_hex(random_seed, 128)  # 64 Bytes
         return cls.from_master_secret(random_hex_bytes, network=network)
 
