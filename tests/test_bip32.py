@@ -107,6 +107,14 @@ class TestWallet(TestCase):
         self.assertEqual(w.parent_fingerprint, b'0x' + long_to_hex(0, 8))
         self.assertEqual(w.child_number, 0)
 
+        w2 = Wallet.new_random_wallet()
+        self.assertNotEqual(w.get_private_key_hex(), w2.get_private_key_hex())
+
+    def test_random_wallet_with_entropy(self):
+        w1 = Wallet.new_random_wallet('foo')
+        w2 = Wallet.new_random_wallet('foo')
+        self.assertNotEqual(w1.get_private_key_hex(), w2.get_private_key_hex())
+
     def test_insuffient_key_data(self):
         self.assertRaises(InsufficientKeyDataError, Wallet,
                           chain_code=self.master_key.chain_code,
