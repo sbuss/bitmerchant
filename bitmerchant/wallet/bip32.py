@@ -639,8 +639,6 @@ class Wallet(object):
         seed += str(int(time.time()*10**6))
         if user_entropy:
             user_entropy = str(user_entropy)  # allow for int/long
-            # Delete the next line? no benefit in hashing this
-            user_entropy = sha512(user_entropy).digest()
             seed += user_entropy
         return cls.from_master_secret(seed, network=network)
 
