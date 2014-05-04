@@ -636,7 +636,7 @@ class Wallet(object):
 
         seed = str(urandom(64))  # 512/8
         # weak extra protection inspired by pybitcointools implementation:
-        seed += str(int(time.time())*10**6)
+        seed += str(int(time.time()*10**6))
         if user_entropy:
             user_entropy = str(user_entropy)  # allow for int/long
             # Delete the next line? no benefit in hashing this
