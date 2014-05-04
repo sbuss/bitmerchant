@@ -5,10 +5,11 @@ from hashlib import sha512
 import hmac
 
 import base58
-from Crypto.Random import get_random_bytes
+from os import urandom
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 import six
+import time
 
 from ..network import BitcoinMainNet
 from .keys import incompatible_network_exception_factory
@@ -632,10 +633,16 @@ class Wallet(object):
         wallet. If you're even saving `user_entropy` at all, you're doing it
         wrong.
         """
-        random_seed = get_random_bytes(64)  # 512/8
+
+        seed = urandom(64)  # 512/8
+        # weak extra protection inspired by pybitcointools implementation:
+        seed += str(int(time.time())**7)
         if user_entropy:
-            random_seed += str(user_entropy)
-        return cls.from_master_secret(random_seed, network=network)
+            user_entropy = str(user_entropy)  # allow for int/long
+            # Delete the next line? no benefit in hashing this
+            user_entropy = sha512(user_entropy).digest()
+            seed += user_entropy
+        return cls.from_master_secret(seed, network=network)
 
 
 class InvalidPathError(Exception):
