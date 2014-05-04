@@ -167,6 +167,20 @@ be able to retrieve the coins sent to your public addresses.
     # If that assertion fails then open a ticket!
     # NOW WRITE DOWN THE PRIVATE KEY AND STORE IT IN A SECURE LOCATION
 
+Note that it's a good idea to supply some extra entropy to `new_random_wallet`
+in case your PRNG is compromised. You can accomplish this easily by banging on
+the keyboard. Here's an example, yours should be *much* longer:
+
+.. code-block:: python
+
+    from bitmerchant.wallet import Wallet
+
+    wallet1 = Wallet.new_random_wallet('asdfasdfasdf')
+    wallet2 = Wallet.new_random_wallet('asdfasdfasdf')
+    assert(wallet1.get_private_key_hex() != wallet2.get_private_key_hex())
+
+    # They're completely different
+
 BIP32 wallets (or hierarchical deterministic wallets) allow you to create child
 wallets which can only generate public keys and don't expose a private key to
 an insecure server. You should create a new prime child wallet for every
