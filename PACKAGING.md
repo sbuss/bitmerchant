@@ -18,6 +18,12 @@ Ensure the README is valid RST:
 rst2html.py README.rst > readme.html
 ```
 
+Make sure all authors are accounted for in the AUTHORS file.
+
+```
+git shortlog --numbered --summary --email | cut -f 2 > AUTHORS
+```
+
 Then prepare the project for distribution.
 
 ```python
