@@ -1,0 +1,7 @@
+include README.rst
+include LICENSE
+include AUTHORS
+include *.md
+include requirements.txt
+include requirements-dev.txt
+include requirements-packaging.txt
