@@ -58,7 +58,7 @@ setup(
         'bitmerchant',
         'bitmerchant.wallet',
     ],
-    package_data={'': ['LICENSE']},
+    package_data={'': ['AUTHORS', 'LICENSE']},
     include_package_data=True,
     license='MIT License',
     test_suite="tests",
