@@ -626,6 +626,11 @@ class Wallet(object):
         """
         Generate a new wallet using a randomly generated 512 bit seed.
 
+        Args:
+            user_entropy: Optional user-supplied entropy which is combined
+                combined with the random seed, to help counteract compromised
+                PRNGs.
+
         You are encouraged to add an optional `user_entropy` string to protect
         against a compromised CSPRNG. This will be combined with the output
         from the CSPRNG. Note that if you do supply this value it only adds
