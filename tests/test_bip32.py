@@ -1,4 +1,6 @@
 import binascii
+from mock import patch
+import time
 from unittest import TestCase
 
 from bitmerchant.network import BitcoinMainNet
@@ -111,9 +113,17 @@ class TestWallet(TestCase):
         self.assertNotEqual(w.get_private_key_hex(), w2.get_private_key_hex())
 
     def test_random_wallet_with_entropy(self):
-        w1 = Wallet.new_random_wallet('foo')
-        w2 = Wallet.new_random_wallet('foo')
-        self.assertNotEqual(w1.get_private_key_hex(), w2.get_private_key_hex())
+        """Ensure that the user_entropy value actually adds entropy."""
+        test_time = time.time()
+        with patch('bitmerchant.wallet.bip32.urandom', return_value=b'0'*64):
+            with patch('bitmerchant.wallet.bip32.time') as mock_time:
+                mock_time.time.return_value = test_time
+                self.assertEqual(
+                    Wallet.new_random_wallet('entropy'),
+                    Wallet.new_random_wallet('entropy'))
+                self.assertNotEqual(
+                    Wallet.new_random_wallet('entropy'),
+                    Wallet.new_random_wallet('foo'))
 
     def test_insuffient_key_data(self):
         self.assertRaises(InsufficientKeyDataError, Wallet,
