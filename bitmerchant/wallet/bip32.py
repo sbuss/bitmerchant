@@ -5,10 +5,11 @@ from hashlib import sha512
 import hmac
 
 import base58
-from Crypto.Random import random
+from os import urandom
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 import six
+import time
 
 from ..network import BitcoinMainNet
 from .keys import incompatible_network_exception_factory
@@ -621,11 +622,29 @@ class Wallet(object):
     __hash__ = object.__hash__
 
     @classmethod
-    def new_random_wallet(cls, network=BitcoinMainNet):
-        """Generate a new wallet using a randomly generated 512 bit seed."""
-        random_seed = random.getrandbits(512)
-        random_hex_bytes = long_to_hex(random_seed, 128)  # 64 Bytes
-        return cls.from_master_secret(random_hex_bytes, network=network)
+    def new_random_wallet(cls, user_entropy=None, network=BitcoinMainNet):
+        """
+        Generate a new wallet using a randomly generated 512 bit seed.
+
+        Args:
+            user_entropy: Optional user-supplied entropy which is combined
+                combined with the random seed, to help counteract compromised
+                PRNGs.
+
+        You are encouraged to add an optional `user_entropy` string to protect
+        against a compromised CSPRNG. This will be combined with the output
+        from the CSPRNG. Note that if you do supply this value it only adds
+        additional entropy and will not be sufficient to recover the random
+        wallet. If you're even saving `user_entropy` at all, you're doing it
+        wrong.
+        """
+        seed = str(urandom(64))  # 512/8
+        # weak extra protection inspired by pybitcointools implementation:
+        seed += str(int(time.time()*10**6))
+        if user_entropy:
+            user_entropy = str(user_entropy)  # allow for int/long
+            seed += user_entropy
+        return cls.from_master_secret(seed, network=network)
 
 
 class InvalidPathError(Exception):
