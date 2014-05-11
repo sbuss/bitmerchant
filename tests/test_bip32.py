@@ -3,11 +3,15 @@ from mock import patch
 import time
 from unittest import TestCase
 
+from ecdsa import SECP256k1
+from ecdsa.ellipticcurve import INFINITY
+
 from bitmerchant.network import BitcoinMainNet
 from bitmerchant.network import BitcoinTestNet
 from bitmerchant.network import DogecoinMainNet
 from bitmerchant.network import LitecoinMainNet
 from bitmerchant.wallet import Wallet
+from bitmerchant.wallet.bip32 import InfinityPointException
 from bitmerchant.wallet.bip32 import InsufficientKeyDataError
 from bitmerchant.wallet.bip32 import InvalidPathError
 from bitmerchant.wallet.bip32 import InvalidPrivateKeyError
@@ -172,6 +176,27 @@ class TestWallet(TestCase):
             chain_code=b'0' * 64,
             private_key=self.master_key.private_key,
             public_key=w.public_key)
+
+
+class TestInvalidChildren(TestCase):
+    def test_key_too_large(self):
+        w = Wallet.new_random_wallet()
+        order = binascii.unhexlify(long_to_hex(SECP256k1.order, 64))
+        return_value = order + order
+        with patch('hmac.HMAC.digest', return_value=return_value):
+            self.assertRaises(
+                InvalidPrivateKeyError,
+                w.get_child,
+                1)
+
+    def test_infinity_point(self):
+        w = Wallet.new_random_wallet()
+        with patch('bitmerchant.wallet.keys.PublicKey.to_point',
+                   return_value=INFINITY):
+            self.assertRaises(
+                InfinityPointException,
+                w.get_child,
+                1)
 
 
 class TestNewAddressForUser(TestCase):

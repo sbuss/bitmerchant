@@ -8,6 +8,7 @@ import base58
 from os import urandom
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
+from ecdsa.ellipticcurve import INFINITY
 import six
 import time
 
@@ -323,6 +324,9 @@ class Wallet(object):
         # Split I into its 32 Byte components.
         I_L, I_R = I[:32], I[32:]
 
+        if long_or_int(hexlify(I_L), 16) >= SECP256k1.order:
+            raise InvalidPrivateKeyError("The derived key is too large.")
+
         c_i = hexlify(I_R)
         private_exponent = None
         public_pair = None
@@ -352,6 +356,8 @@ class Wallet(object):
             private_exponent=private_exponent,
             public_pair=public_pair,
             network=self.network)
+        if child.public_key.to_point() == INFINITY:
+            raise InfinityPointException("The point at infinity is invalid.")
         if not as_private:
             return child.public_copy()
         return child
@@ -664,4 +670,8 @@ class InvalidPublicKeyError(ValueError):
 
 
 class KeyMismatchError(ValueError):
+    pass
+
+
+class InfinityPointException(Exception):
     pass
