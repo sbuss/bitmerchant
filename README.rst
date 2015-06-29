@@ -209,7 +209,7 @@ Let's generate a new child wallet for your first website!
     child = my_wallet.get_child(0, is_prime=True, as_private=False)
 
     # And lets export this child key
-    public_key = my_wallet.serialize_b58(private=False)
+    public_key = child.serialize_b58(private=False)
     print(public_key)
 
 You can store your public key in your app's source code, as long as you never
