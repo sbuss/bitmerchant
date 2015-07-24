@@ -113,5 +113,5 @@ class BlockCypherTestNet(object):
     SCRIPT_ADDRESS = 0x1f  # int(0x1f) = 31
     PUBKEY_ADDRESS = 0x1b  # int(0x1b) = 27  # Used to create payment addresses
     SECRET_KEY = 0x49      # int(0x49) = 73  # Used for WIF format
-    EXT_PUBLIC_KEY = 0x0488B21E  # Used to serialize public BIP32 addresses
-    EXT_SECRET_KEY = 0x0488ADE4  # Used to serialize private BIP32 addresses
+    EXT_PUBLIC_KEY = 0x2d413ff  # Used to serialize public BIP32 addresses
+    EXT_SECRET_KEY = 0x2d40fc3  # Used to serialize private BIP32 addresses
