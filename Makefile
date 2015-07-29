@@ -13,7 +13,7 @@ venv: $(VENV_ACTIVATE)
 
 .PHONY: test
 test: venv
-	$(WITH_VENV) tox
+	$(WITH_VENV) TOXENV=py27 tox
 
 .PHONY: authors
 authors:
