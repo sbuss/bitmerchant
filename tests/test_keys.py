@@ -97,7 +97,8 @@ class TestWIF(_TestPrivateKeyBase):
 
     def test_bad_checksum(self):
         wif = self.key.export_to_wif()
-        bad_checksum = base58.b58encode(binascii.unhexlify('FFFFFFFF'))
+        bad_checksum = base58.b58encode(
+            binascii.unhexlify(ensure_bytes('FFFFFFFF')))
         wif = wif[:-8] + bad_checksum
         self.assertRaises(ChecksumException, PrivateKey.from_wif, wif)
 

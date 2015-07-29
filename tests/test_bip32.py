@@ -425,7 +425,8 @@ class TestWalletVectors1(_TestWalletVectors):
     @classmethod
     def setUpClass(cls):
         cls.master_key = Wallet.from_master_secret(
-            binascii.unhexlify('000102030405060708090a0b0c0d0e0f'))
+            binascii.unhexlify(ensure_bytes(
+                '000102030405060708090a0b0c0d0e0f')))
 
     def test_m(self):
         """[Chain m]"""
@@ -564,10 +565,14 @@ class TestWalletVectors1(_TestWalletVectors):
 class TestWalletVectors2(_TestWalletVectors):
     @classmethod
     def setUpClass(cls):
-        cls.master_key = Wallet.from_master_secret(binascii.unhexlify(
-            'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
-            '9f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'
-        ))
+        cls.master_key = Wallet.from_master_secret(
+            binascii.unhexlify(ensure_bytes(
+                'fffcf9f6f3f0edeae7e4e1dedbd8d5d2'
+                'cfccc9c6c3c0bdbab7b4b1aeaba8a5a2'
+                '9f9c999693908d8a8784817e7b787572'
+                '6f6c696663605d5a5754514e4b484542'
+            ))
+        )
 
     def test_m(self):
         vector = [
