@@ -1,5 +1,6 @@
 import binascii
 from mock import patch
+import six
 import time
 from unittest import TestCase
 
@@ -259,9 +260,9 @@ class TestSubkeyPath(TestCase):
         a compressed point that had an odd beta parameter.
         (see PublicKey.from_hex_key)
         """
-        cls.wallet = Wallet.deserialize(
-            u'xprv9s21ZrQH143K319oTMcEt2n2g51StkEnXq23t52ajHM4zFX7cyPqaHShDod'
-            'cHAqorNQuDW82jUhXJLomy5A8kM36y8HntnosgCvc1szPJ6x')
+        cls.wallet = Wallet.deserialize(six.u(
+            'xprv9s21ZrQH143K319oTMcEt2n2g51StkEnXq23t52ajHM4zFX7cyPqaHShDod'
+            'cHAqorNQuDW82jUhXJLomy5A8kM36y8HntnosgCvc1szPJ6x'))
 
     def assert_public(self, node):
         self.assertEqual(node.private_key, None)
