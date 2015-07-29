@@ -3,3 +3,5 @@
 build/*
 dist/*
 *.pyc
+.venv
+cover/
