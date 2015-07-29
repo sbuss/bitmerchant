@@ -13,7 +13,7 @@ venv: $(VENV_ACTIVATE)
 
 .PHONY: test
 test: venv
-	$(WITH_VENV) python setup.py test
+	$(WITH_VENV) tox
 
 .PHONY: authors
 authors:
@@ -41,4 +41,4 @@ clean:
 
 .PHONY: teardown
 teardown:
-	rm -rf $(VENV_DIR)/
+	rm -rf .tox $(VENV_DIR)/
