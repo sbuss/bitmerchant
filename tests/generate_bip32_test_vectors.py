@@ -5,7 +5,7 @@ from hashlib import sha256
 import json
 import random
 
-from pycoin.wallet import Wallet
+from pycoin.key.bip32 import Wallet
 
 
 def dump_node(node):
