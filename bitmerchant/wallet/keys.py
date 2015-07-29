@@ -89,7 +89,7 @@ class PrivateKey(Key):
         """
         # Add the network byte, creating the "extended key"
         extended_key_hex = self.get_extended_key()
-        extended_key_bytes = unhexlify(extended_key_hex)
+        extended_key_bytes = unhexlify(ensure_bytes(extended_key_hex))
         if compressed is None:
             compressed = self.compressed
         if compressed:
@@ -254,7 +254,7 @@ class PublicKey(Key):
         if len(key) == 130 or len(key) == 66:
             # It might be a hexlified byte array
             try:
-                key = unhexlify(key)
+                key = unhexlify(ensure_bytes(key))
             except TypeError:
                 pass
         key = ensure_bytes(key)
@@ -341,7 +341,7 @@ class PublicKey(Key):
 
         https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
         """
-        key = unhexlify(self.get_key(compressed))
+        key = unhexlify(ensure_bytes(self.get_key(compressed)))
         # First get the hash160 of the key
         hash160_bytes = hash160(key)
         # Prepend the network address byte
