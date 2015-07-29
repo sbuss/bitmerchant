@@ -1,7 +1,6 @@
 coveralls
 coverage
 nose
-nose-timer==0.2.0
 mock>=1.0.1
 
 # For test vector generation script
