@@ -526,7 +526,7 @@ in compromised child wallets to new child wallets and you'll be ok.</p>
 <span class="name">child</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">get_child</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="name">is_prime</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">,</span> <span class="name">as_private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
 
 <span class="comment"># And lets export this child key</span>
-<span class="name">public_key</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+<span class="name">public_key</span> <span class="operator">=</span> <span class="name">child</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
 <span class="keyword">print</span><span class="punctuation">(</span><span class="name">public_key</span><span class="punctuation">)</span>
 </pre>
 <p>You can store your public key in your app's source code, as long as you never
