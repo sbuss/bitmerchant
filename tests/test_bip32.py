@@ -323,6 +323,14 @@ class TestSubkeyPath(TestCase):
             self.wallet.get_child,
             0xFFFFFFFF + 1)
 
+    def test_no_prime_children_of_public_copy(self):
+        pub = self.wallet.public_copy()
+        with self.assertRaises(ValueError) as exc:
+            pub.get_child(0, is_prime=True)
+        self.assertIn("prime child", exc.exception.message)
+        self.assertIn("private key", exc.exception.message)
+        self.assertTrue(pub.get_child(0))
+
     def test_path_bigger_than_boundary(self):
         child_number = 0x80000000
         self.assertRaises(
