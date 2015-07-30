@@ -11,5 +11,5 @@ env:
 install:
     - pip install tox
 script:
-    - travis_wait tox
+    - tox
 after_success: coveralls
