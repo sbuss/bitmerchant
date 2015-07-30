@@ -1,3 +1,4 @@
+import binascii
 from binascii import hexlify
 from binascii import unhexlify
 from collections import namedtuple
@@ -255,7 +256,7 @@ class PublicKey(Key):
             # It might be a hexlified byte array
             try:
                 key = unhexlify(ensure_bytes(key))
-            except TypeError:
+            except (TypeError, binascii.Error):
                 pass
         key = ensure_bytes(key)
 
