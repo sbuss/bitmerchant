@@ -93,7 +93,7 @@ class PrivateKey(Key):
         if compressed is None:
             compressed = self.compressed
         if compressed:
-            extended_key_bytes += '\01'
+            extended_key_bytes += b'\01'
         # And return the base58-encoded result with a checksum
         return ensure_str(base58.b58encode_check(extended_key_bytes))
 
