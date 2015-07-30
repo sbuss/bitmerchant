@@ -3,3 +3,6 @@
 build/*
 dist/*
 *.pyc
+.venv
+cover/
+.tox

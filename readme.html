@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.11: http://docutils.sourceforge.net/" />
+<title></title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document">
+
+
+<a class="reference external image-reference" href="https://travis-ci.org/sbuss/bitmerchant"><img alt="https://travis-ci.org/sbuss/bitmerchant.png?branch=master" src="https://travis-ci.org/sbuss/bitmerchant.png?branch=master" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/r/sbuss/bitmerchant"><img alt="https://coveralls.io/repos/sbuss/bitmerchant/badge.png" src="https://coveralls.io/repos/sbuss/bitmerchant/badge.png" /></a>
+<div class="section" id="bitmerchant">
+<h1>Bitmerchant</h1>
+<p>Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
+merchant uses.</p>
+<p>Bitmerchant currently supports:</p>
+<ol class="arabic simple">
+<li>Easy to use <a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32</a> wallet for linking user payments with their accounts.</li>
+</ol>
+<p>These features are planned (or in development where marked):</p>
+<ol class="arabic simple">
+<li>Regular and M-of-N transactions (under development)</li>
+<li>A system that monitors the blockchain and sends out a signal when a
+payment is received at an address you're tracking.</li>
+<li>Automatic forwarding transactions</li>
+</ol>
+<hr class="docutils" />
+<p>If you find this library useful, please consider a small donation.  Donations
+will be used to reward developers for bugfixes.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">BTC</th>
+<th class="head">Doge</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>19jSqVd8bpevi3qacBedkAdDqEXtGAn5t7</td>
+<td>DQ4b7RJfoniVwFsnrMJr6vi6n6UFeubdiv</td>
+</tr>
+<tr><td><img alt="Donate BTC" src="https://raw.github.com/sbuss/bitmerchant/master/media/donation_btc_qr_code.gif" /></td>
+<td><img alt="Donate DOGE" src="https://raw.github.com/sbuss/bitmerchant/master/media/donation_doge_qr_code.gif" /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="installation">
+<h1>Installation</h1>
+<p>bitmerchant is on <a class="reference external" href="https://pypi.python.org/pypi/bitmerchant">pypi</a>, so just use pip:</p>
+<pre class="code bash literal-block">
+pip install bitmerchant
+</pre>
+<p>Then to verify it's working:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="name">w</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">from_master_secret</span><span class="punctuation">(</span><span class="literal string">&quot;correct horse battery staple&quot;</span><span class="punctuation">)</span>
+<span class="keyword">assert</span> <span class="name">w</span><span class="operator">.</span><span class="name">to_address</span><span class="punctuation">()</span> <span class="operator">==</span> <span class="literal string">&quot;1AJ7EDxyRwyGNcL4scXfUU7XqYkmVcwHqe&quot;</span>
+</pre>
+</div>
+<div class="section" id="bip32-wallets">
+<h1>BIP32 wallets</h1>
+<p><a class="reference external" href="https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki">BIP32</a> wallets are hierarchical deterministic wallets. They allow you to
+generate bitcoin/altcoin addresses without exposing your private key to a
+potentially insecure server.</p>
+<p>To link a user with a new bitcoin address, you just need to provide the user's
+ID to the <tt class="docutils literal">create_new_address_for_user</tt> method:</p>
+<div class="section" id="tl-dr">
+<h2>TL;DR</h2>
+<pre class="code python literal-block">
+<span class="comment">## DO THIS ON AN OFFLINE MACHINE, NOT YOUR WEBSERVER</span>
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="comment"># Create a wallet, and a primary child wallet for your app</span>
+<span class="name">my_wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">()</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">my_wallet</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">))</span>  <span class="comment"># Write this down or print it out and keep in a secure location</span>
+<span class="name">project_0_wallet</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">get_child</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="name">is_prime</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
+<span class="name">project_0_public</span> <span class="operator">=</span> <span class="name">project_0_wallet</span><span class="operator">.</span><span class="name">public_copy</span><span class="punctuation">()</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">project_0_public</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">))</span>  <span class="comment"># Put this in your app's settings file</span>
+
+
+<span class="comment">## THINGS BELOW ARE PUBLIC FOR YOUR WEBSERVER</span>
+
+<span class="comment"># In your app's settings file, declare your public wallet:</span>
+<span class="name">WALLET_PUBKEY</span> <span class="operator">=</span> <span class="literal string">&quot;&lt;public output from above&gt;&quot;</span>
+
+<span class="comment"># Create a payment address for a user as needed:</span>
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+<span class="keyword namespace">from</span> <span class="name namespace">myapp.settings</span> <span class="keyword namespace">import</span> <span class="name">WALLET_PUBKEY</span>
+
+<span class="keyword">def</span> <span class="name function">get_payment_address_for_user</span><span class="punctuation">(</span><span class="name">user</span><span class="punctuation">):</span>
+    <span class="name">user_id</span> <span class="operator">=</span> <span class="name">user</span><span class="operator">.</span><span class="name">id</span>
+    <span class="keyword">assert</span> <span class="name builtin">isinstance</span><span class="punctuation">(</span><span class="name">user_id</span><span class="punctuation">,</span> <span class="punctuation">(</span><span class="name builtin">int</span><span class="punctuation">,</span> <span class="name builtin">long</span><span class="punctuation">))</span>
+    <span class="name">wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">WALLET_PUBKEY</span><span class="punctuation">)</span>
+    <span class="name">wallet_for_user</span> <span class="operator">=</span> <span class="name">wallet</span><span class="operator">.</span><span class="name">create_new_address_for_user</span><span class="punctuation">(</span><span class="name">user</span><span class="operator">.</span><span class="name">id</span><span class="punctuation">)</span>
+    <span class="keyword">return</span> <span class="name">wallet_for_user</span><span class="operator">.</span><span class="name">to_address</span><span class="punctuation">()</span>
+</pre>
+</div>
+<div class="section" id="security-warning">
+<span id="security"></span><h2>Security warning</h2>
+<p>BIP32 wallets have a vulnerability/bug that allows an attacker to recover the
+master private key when given a master public key and a publicly-derived
+private child. In other words:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="name">w</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">()</span>
+<span class="name">child</span> <span class="operator">=</span> <span class="name">w</span><span class="operator">.</span><span class="name">get_child</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="name">is_prime</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>  <span class="comment"># public derivation of a private child</span>
+<span class="name">w_pub</span> <span class="operator">=</span> <span class="name">w</span><span class="operator">.</span><span class="name">public_copy</span><span class="punctuation">()</span>
+<span class="name">master_public_key</span> <span class="operator">=</span> <span class="name">w_pub</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+<span class="name">private_child_key</span> <span class="operator">=</span> <span class="name">child</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)</span>
+</pre>
+<p>Given <tt class="docutils literal">master_public_key</tt> and <tt class="docutils literal">private_child_key</tt>, the steps to recover the
+secret master private key (<tt class="docutils literal">w</tt>) are as simple as a subtraction on the
+elliptic curve. This has been implemented as <tt class="docutils literal">Wallet.crack_private_key</tt>,
+because if it's possible to do this, then anyone should be able to do it so the
+attack is well known:</p>
+<pre class="code python literal-block">
+<span class="name">public_master</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">master_public_key</span><span class="punctuation">)</span>
+<span class="name">private_child</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">private_child_key</span><span class="punctuation">)</span>
+<span class="name">private_master</span> <span class="operator">=</span> <span class="name">public_master</span><span class="operator">.</span><span class="name">crack_private_key</span><span class="punctuation">(</span><span class="name">private_child</span><span class="punctuation">)</span>
+<span class="keyword">assert</span> <span class="name">private_master</span> <span class="operator">==</span> <span class="name">w</span>  <span class="comment"># :(</span>
+</pre>
+<p>This attack can be mitigated by these simple steps:</p>
+<ol class="arabic simple">
+<li>NEVER give out your root master public key.</li>
+<li>When uploading a master public key to a webserver, always use a prime child
+of your master root.</li>
+<li>Never give out a private child key unless the user you're giving it to
+already has control of the parent private key (eg, for user-owned wallets).</li>
+</ol>
+<p>Why &quot;always use a prime child of your master root&quot; in step 2? Because prime
+children use private derivation, which means they cannot be used to recover the
+parent private key (no easier than brute force, anyway).</p>
+</div>
+<div class="section" id="create-a-new-wallet">
+<h2>Create a new wallet</h2>
+<p>If you haven't created a wallet yet, do so like this:</p>
+<p><strong>IMPORTANT</strong> You must back up your wallet's private key, otherwise you won't
+be able to retrieve the coins sent to your public addresses.</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="name">my_wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">()</span>
+
+<span class="comment"># Then back up your private key</span>
+
+<span class="name">private_key</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">serialize</span><span class="punctuation">()</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">private_key</span><span class="punctuation">)</span>
+<span class="comment"># Make sure that you can load your wallet successfully from this key</span>
+<span class="name">wallet_test</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">private_key</span><span class="punctuation">)</span>
+<span class="keyword">assert</span> <span class="name">my_wallet</span> <span class="operator">==</span> <span class="name">wallet_test</span>
+<span class="comment"># If that assertion fails then open a ticket!</span>
+<span class="comment"># NOW WRITE DOWN THE PRIVATE KEY AND STORE IT IN A SECURE LOCATION</span>
+</pre>
+<p>Note that it's a good idea to supply some extra entropy to <cite>new_random_wallet</cite>
+in case your PRNG is compromised. You can accomplish this easily by banging on
+the keyboard. Here's an example, yours should be <em>much</em> longer:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="name">wallet1</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">(</span><span class="literal string">'asdfasdfasdf'</span><span class="punctuation">)</span>
+<span class="name">wallet2</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">(</span><span class="literal string">'asdfasdfasdf'</span><span class="punctuation">)</span>
+<span class="keyword">assert</span><span class="punctuation">(</span><span class="name">wallet1</span><span class="operator">.</span><span class="name">get_private_key_hex</span><span class="punctuation">()</span> <span class="operator">!=</span> <span class="name">wallet2</span><span class="operator">.</span><span class="name">get_private_key_hex</span><span class="punctuation">())</span>
+
+<span class="comment"># They're completely different</span>
+</pre>
+<p>BIP32 wallets (or hierarchical deterministic wallets) allow you to create child
+wallets which can only generate public keys and don't expose a private key to
+an insecure server. You should create a new prime child wallet for every
+website you run (or a new wallet entirely), and perhaps a new prime child for
+each user (though that requires pre-generating a bunch of prime children
+offline, since you need the private key). Try to use prime children where
+possible (see <a class="reference internal" href="#security">security</a>).</p>
+<p>It's a good idea to create at least <em>one</em> prime child wallet for use on your
+website. The thinking being that if your website's wallet gets compromised
+somehow, you haven't completely lost control because your master wallet is
+secured on an offline machine. You can use your master wallet to move any funds
+in compromised child wallets to new child wallets and you'll be ok.</p>
+<p>Let's generate a new child wallet for your first website!</p>
+<pre class="code python literal-block">
+<span class="comment"># Lets assume you're loading a wallet from your safe private key backup</span>
+<span class="name">my_wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">private_key</span><span class="punctuation">)</span>
+
+<span class="comment"># Create a new, public-only prime child wallet. Since you have the master</span>
+<span class="comment"># private key, you can recreate this child at any time in the future and don't</span>
+<span class="comment"># need to securely store its private key.</span>
+<span class="comment"># Remember to generate this as a prime child! See the security notice above.</span>
+<span class="name">child</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">get_child</span><span class="punctuation">(</span><span class="literal number integer">0</span><span class="punctuation">,</span> <span class="name">is_prime</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">,</span> <span class="name">as_private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+
+<span class="comment"># And lets export this child key</span>
+<span class="name">public_key</span> <span class="operator">=</span> <span class="name">child</span><span class="operator">.</span><span class="name">serialize_b58</span><span class="punctuation">(</span><span class="name">private</span><span class="operator">=</span><span class="name builtin pseudo">False</span><span class="punctuation">)</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">public_key</span><span class="punctuation">)</span>
+</pre>
+<p>You can store your public key in your app's source code, as long as you never
+reveal any private keys. See the <a class="reference internal" href="#security">security</a> notice above.</p>
+<p>Be aware that if someone gets a hold of your public key then they can generate
+all of your subsequent child addresses, which means they'll know exactly how
+many coins you have. The attacker cannot spend any coins, however, unless they
+are able to recover the private key (see <a class="reference internal" href="#security">security</a>).</p>
+</div>
+<div class="section" id="generating-new-public-addresses">
+<h2>Generating new public addresses</h2>
+<p>BIP32 wallets allow you to generate public addresses without revealing your
+private key. Just pass in the user ID that needs a wallet:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+<span class="keyword namespace">from</span> <span class="name namespace">myapp.settings</span> <span class="keyword namespace">import</span> <span class="name">WALLET_PUBKEY</span>  <span class="comment"># Created above</span>
+
+<span class="name">master_wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">deserialize</span><span class="punctuation">(</span><span class="name">WALLET_PUBKEY</span><span class="punctuation">)</span>
+<span class="name">user_wallet</span> <span class="operator">=</span> <span class="name">master_wallet</span><span class="operator">.</span><span class="name">create_new_address_for_user</span><span class="punctuation">(</span><span class="name">user_id</span><span class="punctuation">)</span>
+<span class="name">payment_address</span> <span class="operator">=</span> <span class="name">user_wallet</span><span class="operator">.</span><span class="name">to_address</span><span class="punctuation">()</span>
+</pre>
+<p>This assumes that <tt class="docutils literal">user_id</tt> is a unique positive integer and does not change
+for the life of the user (and is less than 2,147,483,648). Now any payments
+received at <tt class="docutils literal">payment_address</tt> should be credited to the user identified by
+<tt class="docutils literal">user_id</tt>.</p>
+</div>
+</div>
+<div class="section" id="staying-secure">
+<h1>Staying secure</h1>
+<div class="section" id="public-keys">
+<h2>Public Keys</h2>
+<p>Public keys are mostly safe to keep on a public webserver. However, even though
+a public key does not allow an attacker to spend any of your coins, you should
+still try to protect the public key from hackers or curious eyes.  Knowing the
+public key allows an attacker to generate all possible child wallets and know
+exactly how many coins you have. This isn't terrible, but nobody likes having
+their books opened up like this.</p>
+<p>As mentioned earlier, knowledge of a master public key and a non-prime private
+child of that key is enough to be able to recover the master private key. Never
+reveal private keys to users unless they already own the master private parent.</p>
+<p>Your master public key can be used to generate a virtually unlimited number of
+child public keys. Your users won't pay to your master public key, but instead
+you'll use your master public key to generate a new wallet for each user.</p>
+</div>
+<div class="section" id="private-keys">
+<h2>Private Keys</h2>
+<p>You must have the private key to spend any of your coins. If your private key
+is stolen then the hacker also has control of all of your coins. With a BIP32
+Wallet, generating a new master wallet is one of the only times that you need
+to be paranoid (and you're not being paranoid if they really <em>are</em> out to get
+you). Paranoia here is good because if anyone gets control of your master
+wallet they can spend all funds in all child wallets.</p>
+<p>You should create your wallet on a computer that is not connected to the
+internet. Ideally, this computer will <em>never</em> be connected to the internet
+after you generate your private key. The safest way to do this is to run Ubuntu
+on a livecd, install python and bitmerchant, and generate a new wallet.</p>
+<p>Once you generate a new wallet you should write down the private key on a piece
+of paper (or print it out ...but can you <em>really</em> trust your printer?) and
+store it in a secure location.</p>
+<pre class="code bash literal-block">
+sudo apt-get install python
+sudo apt-get install pip
+
+pip install bitmerchant
+pip install ipython
+
+<span class="comment"># Then launch the ipython shell
+</span>ipython
+</pre>
+<p>Once inside your ipython shell, generate a new wallet:</p>
+<pre class="code python literal-block">
+<span class="keyword namespace">from</span> <span class="name namespace">bitmerchant.wallet</span> <span class="keyword namespace">import</span> <span class="name">Wallet</span>
+
+<span class="name">my_wallet</span> <span class="operator">=</span> <span class="name">Wallet</span><span class="operator">.</span><span class="name">new_random_wallet</span><span class="punctuation">()</span>
+
+<span class="comment"># Then back up your private key</span>
+
+<span class="name">private_key</span> <span class="operator">=</span> <span class="name">my_wallet</span><span class="operator">.</span><span class="name">serialize</span><span class="punctuation">()</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">private_key</span><span class="punctuation">)</span>
+<span class="comment"># Write down this private key.</span>
+<span class="comment"># Double check it.</span>
+<span class="comment"># Then shut down the computer without connecting to the internet.</span>
+</pre>
+</div>
+<div class="section" id="master-private-key">
+<h2>Master private key</h2>
+<p>Your master private key allows you to spend coins sent to any of your public
+addresses. Guard this with your life, and never put it on a computer that's
+connected to the internet.</p>
+<p>Master private keys must NEVER be put on the internet. They must NEVER be
+located on a computer that is even <em>connected</em> to the internet. The only key
+that should be online is your PUBLIC key. Your private key should be written
+down (yes, on paper) and stored in a safe location, or on a computer that is
+never connected to the internet.</p>
+<p>Security wise, this is the most important part of generating secure public
+payment addresses. A master private key is the only way to retrieve the funds
+paid to a public address. You can use your master private key to generate the
+private keys of any child wallets, and then transfer those to a networked
+computer as necessary, if you want slightly smaller surface area for attacks.</p>
+<p>Forthcoming versions of bitmerchant will allow you to generate transactions
+offline that you can safely transfer to a networked computer, allowing you to
+spend your child funds without ever putting a private key on a networked
+machine.</p>
+</div>
+</div>
+<div class="section" id="development">
+<h1>Development</h1>
+<p>I'd love for you to contribute to bitmerchant! If you can't write code, then
+please open a ticket for feature requests or bugs you find!</p>
+<p>If you can code and you'd like to submit a pull request, please be sure to
+include tests. This library is quite well tested and I intend to keep coverage
+above 95% indefinitely.</p>
+<p>Rewards may be given out to developers depending on the severity of bugs
+found/patched. The donation addresses mentioned at the top of this document
+will be used to fund rewards.</p>
+<div class="section" id="testing">
+<h2>Testing</h2>
+<p>All of these work, though I typically use nosetest:</p>
+<pre class="code bash literal-block">
+python setup.py <span class="name builtin">test
+</span>nosetests
+python -m unittest discover
+</pre>
+</div>
+<div class="section" id="packaging">
+<h2>Packaging</h2>
+<p>See <a class="reference external" href="https://raw.github.com/sbuss/bitmerchant/master/PACKAGING.md">PACKAGING</a></p>
+</div>
+</div>
+</div>
+</body>
+</html>

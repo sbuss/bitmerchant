@@ -1,5 +1,7 @@
 import os
 
+from pip.download import PipSession
+from pip.req import parse_requirements
 from setuptools import setup
 
 
@@ -33,6 +35,13 @@ def load_version():
 version = load_version()
 long_description = load_readme()
 
+install_requirements = [
+    str(req.req) for req in parse_requirements(
+        './requirements.txt', session=PipSession())]
+
+test_requirements = [
+    str(req.req) for req in parse_requirements(
+        './requirements-dev.txt', session=PipSession())]
 setup(
     name='bitmerchant',
     version=version,
@@ -49,10 +58,15 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 2.5",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.0",
+        "Programming Language :: Python :: 3.1",
+        "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
     ],
     packages=[
         'bitmerchant',
@@ -61,10 +75,7 @@ setup(
     package_data={'': ['AUTHORS', 'LICENSE']},
     include_package_data=True,
     license='MIT License',
+    tests_require=test_requirements,
     test_suite="tests",
-    install_requires=[
-        'base58==0.2.1',
-        'ecdsa==0.10',
-        'six==1.5.2',
-    ],
+    install_requires=install_requirements,
 )

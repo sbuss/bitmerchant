@@ -1,4 +1,4 @@
-import binascii
+from binascii import unhexlify
 from unittest import TestCase
 
 import base58
@@ -47,7 +47,7 @@ class TestPrivateKey(_TestPrivateKeyBase):
         self.assertEqual(PrivateKey(exp), self.key)
 
     def test_raw_key_hex_bytes(self):
-        key = binascii.unhexlify(self.key.get_key())
+        key = unhexlify(self.key.get_key())
         self.assertEqual(PrivateKey.from_hex_key(key), self.key)
 
     def test_from_master_password(self):
@@ -76,6 +76,18 @@ class TestWIF(_TestPrivateKeyBase):
             self.key.export_to_wif(),
             self.expected_wif)
 
+    def test_export_to_wif_compressed(self):
+        compressed_wif = self.key.export_to_wif(compressed=True)
+        self.assertNotEqual(compressed_wif, self.expected_key)
+
+        pk = PrivateKey.from_wif(compressed_wif)
+        self.assertEqual(pk, PrivateKey.from_wif(self.expected_wif))
+        self.assertEqual(
+            pk.export_to_wif(compressed=False), self.expected_wif)
+        self.assertEqual(
+            pk.export_to_wif(compressed=True), compressed_wif)
+        self.assertEqual(pk, self.key)
+
     def test_import_wif(self):
         key = PrivateKey.from_wif(self.expected_wif)
         self.assertEqual(key, self.key)
@@ -97,7 +109,8 @@ class TestWIF(_TestPrivateKeyBase):
 
     def test_bad_checksum(self):
         wif = self.key.export_to_wif()
-        bad_checksum = base58.b58encode(binascii.unhexlify('FFFFFFFF'))
+        bad_checksum = base58.b58encode(
+            unhexlify(ensure_bytes('FFFFFFFF')))
         wif = wif[:-8] + bad_checksum
         self.assertRaises(ChecksumException, PrivateKey.from_wif, wif)
 
@@ -142,7 +155,7 @@ class TestPublicKey(_TestPublicKeyBase):
             self.public_key)
 
     def test_unhexlified_key(self):
-        key_bytes = binascii.unhexlify(self.public_key.get_key())
+        key_bytes = unhexlify(self.public_key.get_key())
         self.assertEqual(
             PublicKey.from_hex_key(key_bytes),
             self.public_key)
@@ -156,6 +169,24 @@ class TestPublicKey(_TestPublicKeyBase):
         key = b"00" + key[2:]
         self.assertRaises(KeyParseError,
                           PublicKey.from_hex_key, key)
+
+    def test_uncompressed_bad_len(self):
+        key = self.public_key.get_key(compressed=False)
+        self.assertEqual(len(key), 65*2)
+        # Change the network constant
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key[:-2]))
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key + b'00'))
+
+    def test_compressed_bad_len(self):
+        key = self.public_key.get_key(compressed=True)
+        self.assertEqual(len(key), 33*2)
+        # Change the network constant
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key[:-2]))
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key + b'00'))
 
     def test_compressed(self):
         compressed_key = self.public_key.get_key(compressed=True)

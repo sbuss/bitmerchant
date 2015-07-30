@@ -1,8 +1,8 @@
-.. image:: https://travis-ci.org/sbuss/bitmerchant.png?branch=master
+.. image:: https://travis-ci.org/sbuss/bitmerchant.svg?branch=master
     :target: https://travis-ci.org/sbuss/bitmerchant
 
-.. image:: https://coveralls.io/repos/sbuss/bitmerchant/badge.png
-   :target: https://coveralls.io/r/sbuss/bitmerchant
+.. image:: https://coveralls.io/repos/sbuss/bitmerchant/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/sbuss/bitmerchant?branch=master
 
 Bitmerchant
 ===========
