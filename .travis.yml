@@ -13,6 +13,7 @@ env:
     - TOXENV=pypy3
 install:
     - pip install tox
+    - pip install python-coveralls
 script:
     - tox
 after_success:
