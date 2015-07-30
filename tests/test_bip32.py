@@ -325,10 +325,14 @@ class TestSubkeyPath(TestCase):
 
     def test_no_prime_children_of_public_copy(self):
         pub = self.wallet.public_copy()
-        with self.assertRaises(ValueError) as exc:
+        try:
             pub.get_child(0, is_prime=True)
-        self.assertIn("prime child", exc.exception.message)
-        self.assertIn("private key", exc.exception.message)
+            assert False
+        except ValueError as e:
+            err_msg = str(e)
+            self.assertTrue(
+                "Cannot compute a prime child without a private key"
+                in err_msg)
         self.assertTrue(pub.get_child(0))
 
     def test_path_bigger_than_boundary(self):
