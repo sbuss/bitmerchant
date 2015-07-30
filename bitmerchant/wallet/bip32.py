@@ -258,10 +258,11 @@ class Wallet(object):
             ignored.
         :type as_private: bool
 
-        Positive child_numbers (less than 2,147,483,648) produce publicly
-        derived children.
+        Positive child_numbers (>= 0, < 2,147,483,648) produce publicly
+        derived children. (prime=False)
 
-        Negative numbers (greater than -2,147,483,648) uses private derivation.
+        Negative numbers (> -2,147,483,648, < 0) use private derivation.
+        (prime=True)
 
         NOTE: Python can't do -0, so if you want the privately derived 0th
         child you need to manually set is_prime=True.
@@ -276,6 +277,8 @@ class Wallet(object):
         """
         boundary = 0x80000000
 
+        # Note: If this boundary check gets removed, then children above
+        # the boundary should use private (prime) derivation.
         if abs(child_number) >= boundary:
             raise ValueError("Invalid child number %s" % child_number)
 
@@ -284,9 +287,6 @@ class Wallet(object):
             # Prime children are either < 0 or > 0x80000000
             if child_number < 0:
                 child_number = abs(child_number)
-                is_prime = True
-            elif child_number >= boundary:
-                child_number -= boundary
                 is_prime = True
             else:
                 is_prime = False
