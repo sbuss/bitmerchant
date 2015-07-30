@@ -102,3 +102,16 @@ class DogecoinTestNet(object):
     # https://bitcointalk.org/index.php?topic=409731
     EXT_PUBLIC_KEY = 0x0432a9a8
     EXT_SECRET_KEY = 0x0432a243
+
+
+class BlockCypherTestNet(object):
+    """BlockCypher TestNet version bytes.
+
+    From http://dev.blockcypher.com/#testing
+    """
+    NAME = "BlockCypher Test Net"
+    SCRIPT_ADDRESS = 0x1f  # int(0x1f) = 31
+    PUBKEY_ADDRESS = 0x1b  # int(0x1b) = 27  # Used to create payment addresses
+    SECRET_KEY = 0x49      # int(0x49) = 73  # Used for WIF format
+    EXT_PUBLIC_KEY = 0x2d413ff  # Used to serialize public BIP32 addresses
+    EXT_SECRET_KEY = 0x2d40fc3  # Used to serialize private BIP32 addresses

@@ -1,6 +1,6 @@
 import json
 
-from bitmerchant.network import BitcoinMainNet
+from bitmerchant.network import BitcoinMainNet, BlockCypherTestNet
 from bitmerchant.wallet import Wallet
 from bitmerchant.wallet.utils import ensure_bytes
 
@@ -19,14 +19,21 @@ def _test_wallet(wallet, data):
         data['secret_exponent']
 
 
-def test_bip32():
-    with open("tests/bip32_test_vector.json", 'r') as f:
+def _test_file(filename, network):
+    with open(filename, 'r') as f:
         vectors = json.loads(f.read())
     for wallet_data in vectors:
         wallet = Wallet.deserialize(
-            wallet_data['private_key'], network=BitcoinMainNet)
+            wallet_data['private_key'], network=network)
         # use yield for nose test generation
         yield _test_wallet, wallet, wallet_data
         for child_data in wallet_data['children']:
             child = wallet.get_child_for_path(child_data['path'])
             yield _test_wallet, child, child_data['child']
+
+
+def test_bip32_files():
+    _test_file(filename="tests/bip32_test_vector.json",
+               network=BitcoinMainNet)
+    _test_file(filename="tests/bip32_blockcypher_test_vector.json",
+               network=BlockCypherTestNet)
