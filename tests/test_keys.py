@@ -170,6 +170,24 @@ class TestPublicKey(_TestPublicKeyBase):
         self.assertRaises(KeyParseError,
                           PublicKey.from_hex_key, key)
 
+    def test_uncompressed_bad_len(self):
+        key = self.public_key.get_key(compressed=False)
+        self.assertEqual(len(key), 65*2)
+        # Change the network constant
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key[:-2]))
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key + b'00'))
+
+    def test_compressed_bad_len(self):
+        key = self.public_key.get_key(compressed=True)
+        self.assertEqual(len(key), 33*2)
+        # Change the network constant
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key[:-2]))
+        self.assertRaises(
+            KeyParseError, PublicKey.from_hex_key, unhexlify(key + b'00'))
+
     def test_compressed(self):
         compressed_key = self.public_key.get_key(compressed=True)
         self.assertEqual(len(compressed_key), 66)
