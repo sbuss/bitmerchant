@@ -5,7 +5,7 @@ from hashlib import sha256
 import json
 import random
 
-from pycoin.wallet import Wallet
+from pycoin.key.BIP32Node import BIP32Node
 
 
 def dump_node(node):
@@ -22,7 +22,7 @@ def dump_node(node):
 
 def get_new_address(wallet_num):
     passphrase = sha256(b"%s" % random.randint(0, 2**30)).hexdigest()
-    wallet = Wallet.from_master_secret(passphrase)
+    wallet = BIP32Node.from_master_secret(passphrase)
     ret = dump_node(wallet)
     children = []
     # Now build up some random paths
