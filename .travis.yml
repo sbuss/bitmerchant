@@ -1,13 +1,21 @@
+sudo: false
 language: python
-python:
-  - "3.3"
-  - "2.7"
-  - "2.6"
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+env:
+    - TOXENV=py25
+    - TOXENV=py26
+    - TOXENV=py27
+    - TOXENV=py30
+    - TOXENV=py31
+    - TOXENV=py32
+    - TOXENV=py33
+    - TOXENV=py34
+    - TOXENV=pypy
+    - TOXENV=pypy3
 install:
-  - pip install -r requirements-dev.txt
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
-# command to run tests, e.g. python setup.py test
+    - pip install tox
+    - pip install python-coveralls
+    - pip install codecov
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -m unittest2.__main__ discover; else coverage run -m unittest discover; fi
-after_success: coveralls
+    - tox
+after_success:
+    - codecov

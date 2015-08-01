@@ -161,7 +161,7 @@ class Wallet(object):
         key itself).
         """
         key = self.get_public_key_hex()
-        return ensure_bytes(hexlify(hash160(unhexlify(key))))
+        return ensure_bytes(hexlify(hash160(unhexlify(ensure_bytes(key)))))
 
     @property
     def fingerprint(self):
@@ -258,10 +258,11 @@ class Wallet(object):
             ignored.
         :type as_private: bool
 
-        Positive child_numbers (less than 2,147,483,648) produce publicly
-        derived children.
+        Positive child_numbers (>= 0, < 2,147,483,648) produce publicly
+        derived children. (prime=False)
 
-        Negative numbers (greater than -2,147,483,648) uses private derivation.
+        Negative numbers (> -2,147,483,648, < 0) use private derivation.
+        (prime=True)
 
         NOTE: Python can't do -0, so if you want the privately derived 0th
         child you need to manually set is_prime=True.
@@ -276,6 +277,8 @@ class Wallet(object):
         """
         boundary = 0x80000000
 
+        # Note: If this boundary check gets removed, then children above
+        # the boundary should use private (prime) derivation.
         if abs(child_number) >= boundary:
             raise ValueError("Invalid child number %s" % child_number)
 
@@ -284,9 +287,6 @@ class Wallet(object):
             # Prime children are either < 0 or > 0x80000000
             if child_number < 0:
                 child_number = abs(child_number)
-                is_prime = True
-            elif child_number >= boundary:
-                child_number -= boundary
                 is_prime = True
             else:
                 is_prime = False
@@ -318,8 +318,8 @@ class Wallet(object):
         # Compute a 64 Byte I that is the HMAC-SHA512, using self.chain_code
         # as the seed, and data as the message.
         I = hmac.new(
-            unhexlify(self.chain_code),
-            msg=unhexlify(data),
+            unhexlify(ensure_bytes(self.chain_code)),
+            msg=unhexlify(ensure_bytes(data)),
             digestmod=sha512).digest()
         # Split I into its 32 Byte components.
         I_L, I_R = I[:32], I[32:]
@@ -405,8 +405,8 @@ class Wallet(object):
         child_number_hex = long_to_hex(child_private_key.child_number, 8)
         data = self.get_public_key_hex() + child_number_hex
         I = hmac.new(
-            unhexlify(self.chain_code),
-            msg=unhexlify(data),
+            unhexlify(ensure_bytes(self.chain_code)),
+            msg=unhexlify(ensure_bytes(data)),
             digestmod=sha512).digest()
         I_L, I_R = I[:32], I[32:]
         # Public derivation is the same as private derivation plus some offset
@@ -432,7 +432,7 @@ class Wallet(object):
         # Add the network byte, creating the "extended key"
         extended_key_hex = self.private_key.get_extended_key()
         # BIP32 wallets have a trailing \01 byte
-        extended_key_bytes = unhexlify(extended_key_hex) + b'\01'
+        extended_key_bytes = unhexlify(ensure_bytes(extended_key_hex)) + b'\01'
         # And return the base58-encoded result with a checksum
         return base58.b58encode_check(extended_key_bytes)
 
@@ -474,7 +474,8 @@ class Wallet(object):
     def serialize_b58(self, private=True):
         """Encode the serialized node in base58."""
         return ensure_str(
-            base58.b58encode_check(unhexlify(self.serialize(private))))
+            base58.b58encode_check(
+                unhexlify(ensure_bytes(self.serialize(private)))))
 
     def to_address(self):
         """Create a public address from this Wallet.
@@ -483,7 +484,7 @@ class Wallet(object):
 
         https://en.bitcoin.it/wiki/Technical_background_of_Bitcoin_addresses
         """
-        key = unhexlify(self.get_public_key_hex())
+        key = unhexlify(ensure_bytes(self.get_public_key_hex()))
         # First get the hash160 of the key
         hash160_bytes = hash160(key)
         # Prepend the network address byte
