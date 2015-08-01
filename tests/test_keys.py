@@ -76,6 +76,18 @@ class TestWIF(_TestPrivateKeyBase):
             self.key.export_to_wif(),
             self.expected_wif)
 
+    def test_export_to_wif_compressed(self):
+        compressed_wif = self.key.export_to_wif(compressed=True)
+        self.assertNotEqual(compressed_wif, self.expected_key)
+
+        pk = PrivateKey.from_wif(compressed_wif)
+        self.assertEqual(pk, PrivateKey.from_wif(self.expected_wif))
+        self.assertEqual(
+            pk.export_to_wif(compressed=False), self.expected_wif)
+        self.assertEqual(
+            pk.export_to_wif(compressed=True), compressed_wif)
+        self.assertEqual(pk, self.key)
+
     def test_import_wif(self):
         key = PrivateKey.from_wif(self.expected_wif)
         self.assertEqual(key, self.key)
