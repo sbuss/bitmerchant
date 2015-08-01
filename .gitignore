@@ -6,3 +6,5 @@ dist/*
 .venv
 cover/
 .tox
+
+readme.html
