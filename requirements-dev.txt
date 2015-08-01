@@ -1,4 +1,3 @@
-coveralls
 coverage
 nose
 nose-timer==0.2.0
