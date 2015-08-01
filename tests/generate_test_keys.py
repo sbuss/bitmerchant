@@ -8,12 +8,10 @@ $ python generate_test_keys.py -o test_keys.json
 """
 import argparse
 import json
-import pyjsonrpc
+from bitcoinrpc.authproxy import AuthServiceProxy
 
-client = pyjsonrpc.HttpClient(
-    'http://localhost:8332',
-    username='bitcoinrpc',
-    password='bitmerchanttest')
+client = AuthServiceProxy(
+    'http://%s:%s@localhost:8332' % ('bitcoinrpc', 'bitmerchanttest'))
 
 
 def get_new_address():
