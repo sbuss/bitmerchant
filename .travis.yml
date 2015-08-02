@@ -19,3 +19,12 @@ script:
 - tox
 after_success:
 - codecov
+deploy:
+  provider: pypi
+  user: sbuss
+  password:
+    secure: O6mfmB8NaEkZt1q2zMjgFhJg768WMsg0qREwZ4eRZ6IFrKtEdAUQyilt7N8SgHoleZhpvLc2n3B+4/MgRKBuPxcNdUtr14UsKOO0lu0/4GVNquMuc5UjQHFoy+oXajhYnmJrdIhRGob2zjqN/tP56imVOdsX3UOSs2CInxlhi2A=
+  on:
+    tags: true
+    repo: sbuss/bitmerchant
+    branch: master
