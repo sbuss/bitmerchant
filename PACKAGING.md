@@ -1,31 +1,34 @@
-First ensure that all tests pass:
+Create a release branch, eg `release-0.1.6`.
 
-```python
-nosetests
-```
-
-Make sure to update the version following semantic versioning guidelines.
-
-Then git tag it
-
-```sh
-git tag -a va.b.c -m "Version a.b.c"
-```
+Ensure that all tests pass via travis-ci.
 
 Ensure the README is valid RST:
 
 ```sh
-rst2html.py README.rst > readme.html
+make readme.html
 ```
 
 Make sure all authors are accounted for in the AUTHORS file.
 
 ```
-git shortlog --numbered --summary --email | cut -f 2 > AUTHORS
+make authors
 ```
 
-Then prepare the project for distribution.
+Update `bitmerchant/_version.py` following semantic versioning guidelines.
 
-```python
-python setup.py sdist bdist_wheel upload
+Ensure the sdist builds correctly
+
+```
+make sdist
+```
+
+Open a PR against master from the release branch. Once it merges, tag the
+merge into master and push to github. Travis-ci will then publish the package
+to pypi.
+
+```sh
+git checkout master
+git pull master
+git tag -a a.b.c -m "Version a.b.c"
+git push --tags
 ```
