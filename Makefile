@@ -22,14 +22,10 @@ authors:
 readme.html: readme.rst
 	$(WITH_VENV) rst2html.py README.rst > readme.html
 
-.PHONY: dist
-dist: authors venv readme.html
+# Ensure the sdist builds correctly
+.PHONY: sdist
+sdist: authors venv readme.html
 	$(WITH_VENV) python setup.py sdist bdist_wheel
-
-.PHONY: upload
-upload: dist
-	$(WITH_VENV) python setup.py sdist bdist_wheel upload
-
 
 .PHONY: clean
 clean:
