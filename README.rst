@@ -348,13 +348,20 @@ will be used to fund rewards.
 Testing
 -------
 
-All of these work, though I typically use nosetest:
+I use tox & travis-ci to test against all python versions >= 2.5. Locally,
+you can use the `make test` target, which will only test against python-2.7.
+You can, of course, call tox directly:
 
 .. code-block:: bash
 
-    python setup.py test
-    nosetests
-    python -m unittest discover
+    make setup
+    tox
+    tox -e py34
+    tox -- tests.test_bip32:TestWallet
+
+Note that the full test suite on py-{2.5..3.4} takes about 5 minutes to run.
+pypy and pypy3 are considerably slower at about 25 minutes, due to unoptimized
+crypto operations.
 
 Packaging
 ---------
