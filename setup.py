@@ -1,7 +1,5 @@
 import os
 
-from pip.download import PipSession
-from pip.req import parse_requirements
 from setuptools import setup
 
 
@@ -35,13 +33,6 @@ def load_version():
 version = load_version()
 long_description = load_readme()
 
-install_requirements = [
-    str(req.req) for req in parse_requirements(
-        './requirements.txt', session=PipSession())]
-
-test_requirements = [
-    str(req.req) for req in parse_requirements(
-        './requirements-dev.txt', session=PipSession())]
 setup(
     name='bitmerchant',
     version=version,
@@ -75,7 +66,20 @@ setup(
     package_data={'': ['AUTHORS', 'LICENSE']},
     include_package_data=True,
     license='MIT License',
-    tests_require=test_requirements,
+    tests_require=[
+        'coverage',
+        'nose',
+        'mock>=1.0.1',
+        # For test vector generation script
+        'bunch>=1.0.1',
+        'python-bitcoinrpc>=0.1',
+        # For bip32 test vector generation
+        'pycoin>=0.26',
+    ],
     test_suite="tests",
-    install_requires=install_requirements,
+    install_requires=[
+        'base58>=0.2.1',
+        'ecdsa>=0.10',
+        'six>=1.5.2',
+    ]
 )
