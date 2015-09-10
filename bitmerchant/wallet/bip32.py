@@ -494,7 +494,6 @@ class Wallet(object):
         return ensure_str(base58.b58encode_check(network_hash160_bytes))
 
     @classmethod
-    @lru_cache(maxsize=2048)
     def deserialize(cls, key, network=BitcoinMainNet):
         """Load the ExtendedBip32Key from a hex key.
 
