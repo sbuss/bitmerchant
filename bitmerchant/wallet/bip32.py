@@ -6,6 +6,7 @@ import hmac
 
 import base58
 from os import urandom
+from cachetools.func import lru_cache
 from ecdsa import SECP256k1
 from ecdsa.ecdsa import Public_key as _ECDSA_Public_key
 from ecdsa.ellipticcurve import INFINITY
@@ -24,7 +25,6 @@ from .utils import hash160
 from .utils import is_hex_string
 from .utils import long_or_int
 from .utils import long_to_hex
-from .utils import memoize
 
 
 class Wallet(object):
@@ -243,7 +243,7 @@ class Wallet(object):
             return child.public_copy()
         return child
 
-    @memoize
+    @lru_cache(maxsize=1024)
     def get_child(self, child_number, is_prime=None, as_private=True):
         """Derive a child key.
 
@@ -494,7 +494,7 @@ class Wallet(object):
         return ensure_str(base58.b58encode_check(network_hash160_bytes))
 
     @classmethod
-    @memoize
+    @lru_cache(maxsize=2048)
     def deserialize(cls, key, network=BitcoinMainNet):
         """Load the ExtendedBip32Key from a hex key.
 
