@@ -62,7 +62,7 @@ def memoize(f):
     def _c(*args, **kwargs):
         if not hasattr(f, 'cache'):
             f.cache = dict()
-        key = (args, tuple(kwargs))
+        key = (args, tuple(kwargs.items()))
         if key not in f.cache:
             f.cache[key] = f(*args, **kwargs)
         return f.cache[key]
