@@ -107,6 +107,17 @@ class TestWallet(TestCase):
         self.assertEqual(child.private_key, None)
         self.assertRaises(ValueError, child.serialize)
 
+    def test_prime_not_prime(self):
+        prime_child = self.master_key.get_child(0, is_prime=True)
+        not_prime_child = self.master_key.get_child(0, is_prime=False)
+        self.assertNotEqual(prime_child, not_prime_child)
+
+        pub = self.master_key.public_copy()
+        not_prime_pub = pub.get_child(0, is_prime=False)
+        self.assertNotEqual(not_prime_child, not_prime_pub)
+        self.assertEqual(not_prime_child.public_key, not_prime_pub.public_key)
+        self.assertRaises(ValueError, pub.get_child, 0, is_prime=True)
+
     def test_random_wallet(self):
         w = Wallet.new_random_wallet()
         self.assertTrue(Wallet.deserialize(w.serialize()), w)
