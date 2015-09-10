@@ -1,4 +1,3 @@
-from functools import wraps
 import hashlib
 from hashlib import sha256
 import re
@@ -55,15 +54,3 @@ def long_to_hex(l, size):
 
 def long_or_int(val, *args):
     return long(val, *args)
-
-
-def memoize(f):
-    """Memoization decorator for a function taking one or more arguments."""
-    def _c(*args, **kwargs):
-        if not hasattr(f, 'cache'):
-            f.cache = dict()
-        key = (args, tuple(kwargs))
-        if key not in f.cache:
-            f.cache[key] = f(*args, **kwargs)
-        return f.cache[key]
-    return wraps(f)(_c)

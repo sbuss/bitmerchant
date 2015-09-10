@@ -20,7 +20,6 @@ from .utils import hash160
 from .utils import is_hex_string
 from .utils import long_or_int
 from .utils import long_to_hex
-from .utils import memoize
 
 
 PublicPair = namedtuple("PublicPair", ["x", "y"])
@@ -60,7 +59,6 @@ class PrivateKey(Key):
         """Get the key - a hex formatted private exponent for the curve."""
         return ensure_bytes(hexlify(self._private_key.to_string()))
 
-    @memoize
     def get_public_key(self):
         """Get the PublicKey for this PrivateKey."""
         return PublicKey.from_verifying_key(
@@ -299,7 +297,6 @@ class PublicKey(Key):
         return cls.from_public_pair(public_pair, network=network,
                                     compressed=compressed)
 
-    @memoize
     def create_point(self, x, y):
         """Create an ECDSA point on the SECP256k1 curve with the given coords.
 

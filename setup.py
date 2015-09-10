@@ -81,5 +81,6 @@ setup(
         'base58>=0.2.1',
         'ecdsa>=0.10',
         'six>=1.5.2',
+        'cachetools>=1.1.1',
     ]
 )
