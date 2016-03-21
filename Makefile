@@ -19,7 +19,7 @@ test: venv
 authors:
 	git shortlog --numbered --summary --email | cut -f 2 > AUTHORS
 
-readme.html: readme.rst
+readme.html: README.rst
 	$(WITH_VENV) rst2html.py README.rst > readme.html
 
 # Ensure the sdist builds correctly
