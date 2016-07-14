@@ -8,3 +8,5 @@ python-bitcoinrpc>=0.1
 
 # For bip32 test vector generation
 pycoin>=0.26
+
+tox==2.3.1
