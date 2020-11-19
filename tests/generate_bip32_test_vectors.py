@@ -20,7 +20,7 @@ def dump_node(node):
     }
 
 
-def get_new_address(wallet_num):
+def get_new_address():
     passphrase = sha256(b"%s" % random.randint(0, 2**30)).hexdigest()
     wallet = BIP32Node.from_master_secret(passphrase)
     ret = dump_node(wallet)
@@ -47,7 +47,7 @@ def generate_address_vector(outfile, num_addresses, seed):
     with open(outfile, 'w') as f:
         f.write("[\n")
         for i in range(num_addresses):
-            f.write(json.dumps(get_new_address(i)))
+            f.write(json.dumps(get_new_address()))
             if i < (num_addresses - 1):
                 f.write(",")
             f.write("\n")
