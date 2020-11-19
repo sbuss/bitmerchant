@@ -7,6 +7,22 @@
 Bitmerchant
 ===========
 
+**THIS PACKAGE IS ABANDONED**
+
+I have not worked on this project in several years, and do not intend to
+maintain it, fix any bugs, or provide support. If you are not comfortable with
+the low-level details of BIP32 wallets, including how to re-derive addresses,
+then you should NOT use this package.
+
+**THIS PACKAGE IS ABANDONED**
+
+If you are interested in taking over maintenance and getting access to the
+``bitmerchant`` pypi project, please create an issue showing what work you've
+put in to your fork and stating how much effort you will expend to maintain it.
+
+**THIS PACKAGE IS ABANDONED**
+
+
 Bitmerchant is a work-in-progress python library for common bitcoin/altcoin
 merchant uses.
 
